@@ -26,7 +26,7 @@ const MainNav: React.FC = () => {
           <Link to="/" className="mx-auto ms-lg-0">
             <img
               src="/media/logos/logo.png"
-              alt="Blitxpress"
+              alt="UgFlix"
               className="main-logo"
             />
           </Link>

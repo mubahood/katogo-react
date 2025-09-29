@@ -22,8 +22,8 @@ interface CategorySchemaProps {
 const CategorySchema: React.FC<CategorySchemaProps> = ({ 
   category, 
   businessInfo = {
-    name: "BlitXpress",
-    url: "https://blitxpress.com"
+    name: "UgFlix",
+    url: "https://ugflix.com"
   }
 }) => {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';

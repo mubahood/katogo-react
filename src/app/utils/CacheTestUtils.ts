@@ -161,7 +161,7 @@ export class CacheTestUtils {
       // Test batch operations
       const batchSet = CacheUtils.setBatch([
         { key: 'CATEGORIES', data: [{ id: 1, name: 'Test Cat' }] },
-        { key: 'MANIFEST', data: { app_name: 'BlitXpress' } }
+        { key: 'MANIFEST', data: { app_name: 'UgFlix' } }
       ]);
       console.log('✓ Batch set:', batchSet.every(r => r) ? 'SUCCESS' : 'FAILED');
       
@@ -224,7 +224,7 @@ export class CacheTestUtils {
       { id: 2, name: 'Clothing' },
       { id: 3, name: 'Books' }
     ];
-    const manifest = { app_name: 'BlitXpress', version: '1.0.0' };
+    const manifest = { app_name: 'UgFlix', version: '1.0.0' };
     
     CacheService.set('CATEGORIES', categories);
     CacheService.set('MANIFEST', manifest);

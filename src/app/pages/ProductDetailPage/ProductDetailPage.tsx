@@ -2442,7 +2442,7 @@ const ProductDetailPage: React.FC = () => {
           currency: "KES",
           imageUrl: product.feature_photo,
           availability: product.in_stock > 0 ? "InStock" : "OutOfStock",
-          brand: "BlitXpress",
+          brand: "UgFlix",
           sku: `PRODUCT-${product.id}`,
           category: product.category_text || undefined,
           rating: product.average_rating > 0 ? {

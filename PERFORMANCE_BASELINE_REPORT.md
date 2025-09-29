@@ -1,6 +1,6 @@
 # 📊 Performance Baseline Report
 **Date**: September 15, 2025  
-**Project**: BlitXpress E-commerce App
+**Project**: UgFlix E-commerce App
 
 ---
 

@@ -1,11 +1,11 @@
 /* ===================================================================
-   MAIN STYLESHEET - BlitXpress Theme
+   MAIN STYLESHEET - UgFlix Theme
    =================================================================== */
 
 /* Import all component styles in proper order */
 
 /* 1. Theme Variables and Base Styles */
-@import "../components/css/blitxpress-theme.css";
+@import "../components/css/ugflix-theme.css";
 @import "../components/css/wishlist-utilities.css";
 
 /* 2. Layout Components */

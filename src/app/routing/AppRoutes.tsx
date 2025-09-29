@@ -35,7 +35,7 @@ const TermsPage = React.lazy(() => import("../pages/legal/TermsPage"));
 const PrivacyPage = React.lazy(() => import("../pages/legal/PrivacyPage"));
 
 // Static Pages
-const SellOnBlitXpress = React.lazy(() => import("../pages/static/SellOnBlitXpress"));
+const SellOnUgFlix = React.lazy(() => import("../pages/static/SellOnUgFlix"));
 const BuyerProtection = React.lazy(() => import("../pages/static/BuyerProtection"));
 const Help = React.lazy(() => import("../pages/static/Help"));
 const MobileApps = React.lazy(() => import("../pages/static/MobileApps"));
@@ -190,12 +190,12 @@ const AppRoutes: React.FC = () => {
           <Route path="contact" element={<Contact />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="help" element={<Help />} />
-          <Route path="sell" element={<SellOnBlitXpress />} />
+          <Route path="sell" element={<SellOnUgFlix />} />
           <Route path="buyer-protection" element={<BuyerProtection />} />
           <Route path="mobile-apps" element={<MobileApps />} />
           <Route path="terms" element={<Terms />} />
           <Route path="privacy" element={<Privacy />} />
-          <Route path="sell" element={<SellOnBlitXpress />} />
+          <Route path="sell" element={<SellOnUgFlix />} />
           <Route path="buyer-protection" element={<BuyerProtection />} />
           <Route path="mobile-apps" element={<MobileApps />} />
           

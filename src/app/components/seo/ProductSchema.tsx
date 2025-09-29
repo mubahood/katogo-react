@@ -40,9 +40,9 @@ interface ProductSchemaProps {
 const ProductSchema: React.FC<ProductSchemaProps> = ({ 
   product, 
   businessInfo = {
-    name: "BlitXpress",
-    url: "https://blitxpress.com",
-    logo: "https://blitxpress.com/logo.png"
+    name: "UgFlix",
+    url: "https://ugflix.com",
+    logo: "https://ugflix.com/logo.png"
   }
 }) => {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';

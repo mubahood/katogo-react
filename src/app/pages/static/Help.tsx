@@ -234,7 +234,7 @@ const Help: React.FC = () => {
           </p>
           <div className="static-app-buttons">
             <a 
-              href={`https://wa.me/${COMPANY_INFO.WHATSAPP.replace(/\D/g, '')}?text=Hi, I need help with my BlitXpress order`}
+              href={`https://wa.me/${COMPANY_INFO.WHATSAPP.replace(/\D/g, '')}?text=Hi, I need help with my UgFlix order`}
               className="static-app-button"
               target="_blank"
               rel="noopener noreferrer"

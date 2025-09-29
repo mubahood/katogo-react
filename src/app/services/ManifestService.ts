@@ -188,7 +188,7 @@ export class ManifestService {
     const fallbackBanners = [
       {
         id: 1,
-        title: 'Welcome to BlitXpress',
+        title: 'Welcome to UgFlix',
         subtitle: 'Your one-stop shop',
         description: 'Discover amazing products at unbeatable prices',
         image: 'media/auth/bg1.jpg',

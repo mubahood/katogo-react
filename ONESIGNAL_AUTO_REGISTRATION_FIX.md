@@ -145,7 +145,7 @@ static Future<void> completeSetupAfterLogin(String userId) async {
 
 This ensures:
 - ✅ User is linked to OneSignal player ID
-- ✅ Device is registered with BlitXpress backend
+- ✅ Device is registered with UgFlix backend
 - ✅ User segmentation tags are applied  
 - ✅ Backend can send targeted notifications
 
@@ -182,7 +182,7 @@ The automatic OneSignal registration issue has been comprehensively fixed with:
 
 - **3 Registration Points**: OnBoardingScreen, BoardingWelcomeScreen, FullApp
 - **Complete Coverage**: All user navigation paths now trigger OneSignal setup
-- **Backend Integration**: Devices automatically register with BlitXpress API
+- **Backend Integration**: Devices automatically register with UgFlix API
 - **Error Handling**: Robust error management prevents disruption
 - **Debug Logging**: Clear logs for monitoring registration success
 

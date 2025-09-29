@@ -18,7 +18,7 @@ const BuyerProtection: React.FC = () => {
       <div>
         <h2>Our Commitment to You</h2>
         <p>
-          At BlitXpress, your safety and satisfaction are our top priorities. We've implemented comprehensive 
+          At UgFlix, your safety and satisfaction are our top priorities. We've implemented comprehensive 
           buyer protection measures to ensure you have a safe, secure, and enjoyable shopping experience.
         </p>
 
@@ -35,7 +35,7 @@ const BuyerProtection: React.FC = () => {
 
         <h2>Secure Payment Processing</h2>
         <p>
-          All payments on BlitXpress are processed through secure, encrypted channels. We support multiple 
+          All payments on UgFlix are processed through secure, encrypted channels. We support multiple 
           payment methods including:
         </p>
         <ul>
@@ -57,7 +57,7 @@ const BuyerProtection: React.FC = () => {
         </ul>
 
         <h2>Order Protection</h2>
-        <p>Every order on BlitXpress is protected by our comprehensive order protection program:</p>
+        <p>Every order on UgFlix is protected by our comprehensive order protection program:</p>
         <ul>
           <li><strong>Order Tracking:</strong> Track your order from dispatch to delivery</li>
           <li><strong>Delivery Guarantee:</strong> We ensure your order reaches you or provide a full refund</li>
@@ -140,7 +140,7 @@ const BuyerProtection: React.FC = () => {
         <div className="static-app-download">
           <h3 className="static-app-title">Shop with Confidence</h3>
           <p className="static-app-description">
-            With our comprehensive buyer protection, you can shop on BlitXpress with complete peace of mind.
+            With our comprehensive buyer protection, you can shop on UgFlix with complete peace of mind.
           </p>
           <div className="static-app-buttons">
             <a href="/products" className="static-app-button">

@@ -191,7 +191,7 @@ GET /api/products?attributes={"Brand":"Premium Quality","Material":"High-grade"}
 
 ### Backend Files Modified/Created:
 ```
-/Applications/MAMP/htdocs/blitxpress/
+/Applications/MAMP/htdocs/ugflix/
 ├── app/Models/Product.php (enhanced)
 ├── app/Models/ProductHasAttribute.php (existing)
 ├── app/Http/Controllers/ApiResurceController.php (enhanced)

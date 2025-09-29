@@ -571,7 +571,7 @@ const ProductsPage: React.FC = () => {
       if (category) {
         return generateCategoryMetaTags({
           name: category.category,
-          description: `Shop ${category.category} products online in Uganda. Best prices and fast delivery at BlitXpress.`,
+          description: `Shop ${category.category} products online in Uganda. Best prices and fast delivery at UgFlix.`,
           productCount: productsData?.total || 0
         });
       }
@@ -592,7 +592,7 @@ const ProductsPage: React.FC = () => {
       if (category) {
         return {
           name: category.category,
-          description: `Shop ${category.category} products online in Uganda. Best prices and fast delivery at BlitXpress.`,
+          description: `Shop ${category.category} products online in Uganda. Best prices and fast delivery at UgFlix.`,
           productCount: productsData?.total || 0,
           url: window.location.href
         };

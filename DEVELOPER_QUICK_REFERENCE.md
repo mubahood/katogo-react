@@ -174,7 +174,7 @@ interface HomepageManifest {
 // Banners are created from categories with banner images or fallback promotional banners
 const banner = new BannerModel({
   id: 1,
-  title: "Welcome to BlitXpress",
+  title: "Welcome to UgFlix",
   subtitle: "Your one-stop shop",
   description: "Discover amazing products",
   image: "banner.jpg",

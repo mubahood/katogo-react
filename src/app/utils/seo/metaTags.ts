@@ -47,14 +47,14 @@ export interface MetaTagsConfig {
  * @returns Complete meta tags configuration
  */
 export const generateMetaTags = (config: SEOConfig): MetaTagsConfig => {
-  const baseUrl = 'https://blitxpress.com'; // Update with your actual domain
-  const defaultImage = '/images/blitxpress-og-image.jpg'; // Update with your default OG image
+  const baseUrl = 'https://ugflix.com'; // Update with your actual domain
+  const defaultImage = '/images/ugflix-og-image.jpg'; // Update with your default OG image
   
   return {
     basic: {
       title: config.title,
       description: config.description,
-      keywords: config.keywords || 'blitxpress, uganda, electronics, gadgets, online shopping'
+      keywords: config.keywords || 'ugflix, uganda, electronics, gadgets, online shopping'
     },
     openGraph: {
       title: config.title,
@@ -62,7 +62,7 @@ export const generateMetaTags = (config: SEOConfig): MetaTagsConfig => {
       image: config.image || defaultImage,
       url: config.url || baseUrl,
       type: config.type || 'website',
-      siteName: config.siteName || 'BlitXpress',
+      siteName: config.siteName || 'UgFlix',
       locale: config.locale || 'en_UG'
     },
     twitter: {
@@ -70,12 +70,12 @@ export const generateMetaTags = (config: SEOConfig): MetaTagsConfig => {
       title: config.title,
       description: config.description,
       image: config.image || defaultImage,
-      site: '@blitxpress', // Update with your Twitter handle
-      creator: '@blitxpress'
+      site: '@ugflix', // Update with your Twitter handle
+      creator: '@ugflix'
     },
     additional: {
-      'application-name': 'BlitXpress',
-      'apple-mobile-web-app-title': 'BlitXpress',
+      'application-name': 'UgFlix',
+      'apple-mobile-web-app-title': 'UgFlix',
       'theme-color': '#007bff',
       'msapplication-TileColor': '#007bff'
     }
@@ -96,10 +96,10 @@ export const generateProductMetaTags = (product: {
   category?: string;
   availability?: string;
 }): MetaTagsConfig => {
-  const productTitle = `${product.name} | BlitXpress Uganda`;
+  const productTitle = `${product.name} | UgFlix Uganda`;
   const productDescription = product.description 
     ? `${product.description.substring(0, 155)}...`
-    : `Buy ${product.name} online in Uganda. Best prices on electronics and gadgets at BlitXpress.`;
+    : `Buy ${product.name} online in Uganda. Best prices on electronics and gadgets at UgFlix.`;
   
   const productKeywords = [
     product.name.toLowerCase(),
@@ -107,7 +107,7 @@ export const generateProductMetaTags = (product: {
     'uganda',
     'online shopping',
     'electronics',
-    'blitxpress'
+    'ugflix'
   ].filter(Boolean).join(', ');
 
   return generateMetaTags({
@@ -115,7 +115,7 @@ export const generateProductMetaTags = (product: {
     description: productDescription,
     keywords: productKeywords,
     image: product.image,
-    url: `https://blitxpress.com/products/${product.id}`,
+    url: `https://ugflix.com/products/${product.id}`,
     type: 'product',
     price: product.price_1.toString(),
     currency: 'UGX',
@@ -133,10 +133,10 @@ export const generateCategoryMetaTags = (category: {
   description?: string;
   productCount?: number;
 }): MetaTagsConfig => {
-  const categoryTitle = `${category.name} | Buy Online in Uganda | BlitXpress`;
+  const categoryTitle = `${category.name} | Buy Online in Uganda | UgFlix`;
   const categoryDescription = category.description 
     ? `${category.description.substring(0, 155)}...`
-    : `Shop ${category.name} online in Uganda. ${category.productCount ? `${category.productCount}+ products` : 'Great selection'} with fast delivery. Best prices at BlitXpress.`;
+    : `Shop ${category.name} online in Uganda. ${category.productCount ? `${category.productCount}+ products` : 'Great selection'} with fast delivery. Best prices at UgFlix.`;
   
   const categoryKeywords = [
     category.name.toLowerCase(),
@@ -144,14 +144,14 @@ export const generateCategoryMetaTags = (category: {
     'online shopping',
     'electronics',
     'best prices',
-    'blitxpress'
+    'ugflix'
   ].join(', ');
 
   return generateMetaTags({
     title: categoryTitle,
     description: categoryDescription,
     keywords: categoryKeywords,
-    url: `https://blitxpress.com/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`,
+    url: `https://ugflix.com/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`,
     type: 'website'
   });
 };
@@ -162,10 +162,10 @@ export const generateCategoryMetaTags = (category: {
  */
 export const generateHomePageMetaTags = (): MetaTagsConfig => {
   return generateMetaTags({
-    title: 'BlitXpress - Your One-Stop Electronics Shop in Uganda | Best Prices Online',
+    title: 'UgFlix - Your One-Stop Electronics Shop in Uganda | Best Prices Online',
     description: 'Shop the best electronics, gadgets, and accessories in Uganda. Fast delivery, competitive prices, and quality products. Mobile phones, computers, audio equipment, and more.',
-    keywords: 'electronics uganda, online shopping uganda, mobile phones, computers, gadgets, audio equipment, blitxpress, best prices uganda',
-    url: 'https://blitxpress.com',
+    keywords: 'electronics uganda, online shopping uganda, mobile phones, computers, gadgets, audio equipment, ugflix, best prices uganda',
+    url: 'https://ugflix.com',
     type: 'website'
   });
 };
@@ -177,14 +177,14 @@ export const generateHomePageMetaTags = (): MetaTagsConfig => {
  * @returns Search meta tags configuration
  */
 export const generateSearchMetaTags = (query: string, resultCount: number): MetaTagsConfig => {
-  const searchTitle = `"${query}" Search Results | BlitXpress Uganda`;
-  const searchDescription = `Found ${resultCount} products for "${query}" in Uganda. Shop electronics and gadgets with fast delivery at BlitXpress.`;
+  const searchTitle = `"${query}" Search Results | UgFlix Uganda`;
+  const searchDescription = `Found ${resultCount} products for "${query}" in Uganda. Shop electronics and gadgets with fast delivery at UgFlix.`;
   
   return generateMetaTags({
     title: searchTitle,
     description: searchDescription,
-    keywords: `${query}, search results, electronics uganda, blitxpress`,
-    url: `https://blitxpress.com/search?q=${encodeURIComponent(query)}`,
+    keywords: `${query}, search results, electronics uganda, ugflix`,
+    url: `https://ugflix.com/search?q=${encodeURIComponent(query)}`,
     type: 'website'
   });
 };

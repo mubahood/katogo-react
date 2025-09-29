@@ -124,8 +124,8 @@ Product 4: Photography (tags: photography, premium, durable, professional)
 ## 📁 Files Modified
 
 ### Backend
-- `/Applications/MAMP/htdocs/blitxpress/app/Models/Product.php`
-- `/Applications/MAMP/htdocs/blitxpress/app/Http/Controllers/ApiResurceController.php`
+- `/Applications/MAMP/htdocs/ugflix/app/Models/Product.php`
+- `/Applications/MAMP/htdocs/ugflix/app/Http/Controllers/ApiResurceController.php`
 
 ### Frontend  
 - `/Users/mac/Desktop/github/shop-js/src/app/pages/ProductDetailPage/ProductDetailPage.tsx`

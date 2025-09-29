@@ -217,7 +217,7 @@ const Contact: React.FC = () => {
             <div className="col-md-6">
               <div className="faq-item">
                 <h5>How can I become a seller?</h5>
-                <p>Visit our "Sell on BlitXpress" page to learn about the requirements and apply to become a seller.</p>
+                <p>Visit our "Sell on UgFlix" page to learn about the requirements and apply to become a seller.</p>
               </div>
               <div className="faq-item">
                 <h5>What is your return policy?</h5>

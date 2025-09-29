@@ -71,7 +71,7 @@ export class ToastService {
 
   static registerSuccess(userName?: string) {
     this.success(
-      userName ? `Welcome to BlitXpress, ${userName}!` : "Account created successfully!",
+      userName ? `Welcome to UgFlix, ${userName}!` : "Account created successfully!",
       { autoClose: 3000 } // Reduced from 4000ms to 3000ms
     );
   }

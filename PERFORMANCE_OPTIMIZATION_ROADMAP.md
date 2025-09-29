@@ -1,5 +1,5 @@
 # 🚀 Performance Optimization Roadmap
-**BlitXpress E-commerce App - React Performance Enhancement Plan**
+**UgFlix E-commerce App - React Performance Enhancement Plan**
 
 *Last Updated: September 15, 2025*
 

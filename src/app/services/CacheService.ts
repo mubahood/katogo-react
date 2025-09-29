@@ -1,6 +1,6 @@
 // src/app/services/CacheService.ts
 /**
- * CacheService - Comprehensive caching system for BlitXpress
+ * CacheService - Comprehensive caching system for UgFlix
  * 
  * Features:
  * - Multiple storage backends (localStorage, sessionStorage, IndexedDB)

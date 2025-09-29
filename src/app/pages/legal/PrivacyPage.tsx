@@ -146,7 +146,7 @@ const PrivacyPage: React.FC = () => {
                 If you have any questions about this Privacy Policy or our data practices, please contact us at:
               </p>
               <ul className="list-unstyled">
-                <li><strong>Email:</strong> privacy@blitxpress.com</li>
+                <li><strong>Email:</strong> privacy@ugflix.com</li>
                 <li><strong>Phone:</strong> +256 783 204 665</li>
                 <li><strong>Address:</strong> Bwera, Kasese, Uganda</li>
               </ul>

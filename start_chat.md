@@ -34,7 +34,7 @@ const TermsPage = React.lazy(() => import("../pages/legal/TermsPage"));
 const PrivacyPage = React.lazy(() => import("../pages/legal/PrivacyPage"));
 
 // Static Pages
-const SellOnBlitXpress = React.lazy(() => import("../pages/static/SellOnBlitXpress"));
+const SellOnUgFlix = React.lazy(() => import("../pages/static/SellOnUgFlix"));
 const BuyerProtection = React.lazy(() => import("../pages/static/BuyerProtection"));
 const Help = React.lazy(() => import("../pages/static/Help"));
 const MobileApps = React.lazy(() => import("../pages/static/MobileApps"));
@@ -157,12 +157,12 @@ const AppRoutes: React.FC = () => {
           <Route path="contact" element={<Contact />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="help" element={<Help />} />
-          <Route path="sell" element={<SellOnBlitXpress />} />
+          <Route path="sell" element={<SellOnUgFlix />} />
           <Route path="buyer-protection" element={<BuyerProtection />} />
           <Route path="mobile-apps" element={<MobileApps />} />
           <Route path="terms" element={<Terms />} />
           <Route path="privacy" element={<Privacy />} />
-          <Route path="sell" element={<SellOnBlitXpress />} />
+          <Route path="sell" element={<SellOnUgFlix />} />
           <Route path="buyer-protection" element={<BuyerProtection />} />
           <Route path="mobile-apps" element={<MobileApps />} />
           
@@ -206,8 +206,8 @@ const AppRoutes: React.FC = () => {
 export default AppRoutes;
 
 // export const BASE_URL = "https://skills-ug-api.8technologies.net";
-export const BASE_URL = "https://blit.blitxpress.com";
-// export const BASE_URL = "http://localhost:8888/blitxpress";
+export const BASE_URL = "https://blit.ugflix.com";
+// export const BASE_URL = "http://localhost:8888/ugflix";
 export const API_URL = BASE_URL + "/api";
 export const TIMEOUT = 8000;
 export const MAX_RETRIES = 3;
@@ -216,7 +216,7 @@ export const CURRENCY = "UGX";
 export const LOCAL_MANIFEST = "LOCAL_MANIFEST";
 export const CART_ITEMS = "CART_ITEMS";
 export const LOCAL_DISTRICTS = "LOCAL_DISTRICTS";
-export const APP_NAME = "BlitXpress";
+export const APP_NAME = "UgFlix";
 export const LOCAL_JOBSEEKER_MANIFEST = "LOCAL_JOBSEEKER_MANIFEST";
 export const LOGO =
   "https://skills-ug-api.8technologies.net/storage/images/8tech.png";
@@ -903,7 +903,7 @@ export class ManifestService {
     const fallbackBanners = [
       {
         id: 1,
-        title: 'Welcome to BlitXpress',
+        title: 'Welcome to UgFlix',
         subtitle: 'Your one-stop shop',
         description: 'Discover amazing products at unbeatable prices',
         image: 'media/auth/bg1.jpg',

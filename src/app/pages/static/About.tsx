@@ -36,7 +36,7 @@ const About: React.FC = () => {
     {
       year: "2023",
       title: "Company Founded",
-      description: "BlitXpress was established with a vision to revolutionize e-commerce in Uganda."
+      description: "UgFlix was established with a vision to revolutionize e-commerce in Uganda."
     },
     {
       year: "2024",
@@ -57,14 +57,14 @@ const About: React.FC = () => {
 
   return (
     <StaticPageLayout
-      title="About BlitXpress"
+      title="About UgFlix"
       subtitle="Uganda's leading e-commerce platform connecting buyers and sellers nationwide"
       breadcrumbs={breadcrumbs}
     >
       <div>
         <h2>Our Story</h2>
         <p>
-          BlitXpress was born from a simple yet powerful vision: to create Uganda's most trusted and 
+          UgFlix was born from a simple yet powerful vision: to create Uganda's most trusted and 
           convenient e-commerce platform. We recognized the need for a reliable online marketplace 
           that could connect buyers with quality products while supporting local businesses and vendors.
         </p>
@@ -99,7 +99,7 @@ const About: React.FC = () => {
         </div>
 
         <h2>What We Offer</h2>
-        <p>BlitXpress provides a comprehensive e-commerce solution with:</p>
+        <p>UgFlix provides a comprehensive e-commerce solution with:</p>
         <ul>
           <li><strong>Wide Product Range:</strong> From electronics to fashion, home goods to personal care</li>
           <li><strong>Verified Vendors:</strong> All our sellers are carefully vetted for quality and reliability</li>
@@ -156,7 +156,7 @@ const About: React.FC = () => {
           ))}
         </div>
 
-        <h2>Why Choose BlitXpress?</h2>
+        <h2>Why Choose UgFlix?</h2>
         <ul>
           <li><strong>Local Understanding:</strong> We understand the Ugandan market and customer needs</li>
           <li><strong>Quality Assurance:</strong> Rigorous quality control ensures you get genuine products</li>

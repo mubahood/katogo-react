@@ -13,14 +13,14 @@ export const SECURITY_HEADERS = {
       https://fonts.googleapis.com 
       https://cdnjs.cloudflare.com;
     img-src 'self' data: blob: 
-      https://blit.blitxpress.com 
+      https://blit.ugflix.com 
       https://www.google-analytics.com
       https://www.facebook.com;
     font-src 'self' 
       https://fonts.gstatic.com 
       https://cdnjs.cloudflare.com;
     connect-src 'self' 
-      https://blit.blitxpress.com 
+      https://blit.ugflix.com 
       https://www.google-analytics.com
       https://pesapal.com 
       https://*.pesapal.com;
@@ -69,10 +69,10 @@ export const SECURITY_HEADERS = {
 
 // Nginx Configuration Example
 export const NGINX_CONFIG_EXAMPLE = `
-# Security Headers for BlitXpress
+# Security Headers for UgFlix
 server {
     listen 443 ssl http2;
-    server_name blitxpress.com www.blitxpress.com;
+    server_name ugflix.com www.ugflix.com;
 
     # SSL Configuration
     ssl_certificate /path/to/certificate.crt;
@@ -89,7 +89,7 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     
     # CSP Header
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://blit.blitxpress.com https://www.google-analytics.com; connect-src 'self' https://blit.blitxpress.com https://www.google-analytics.com https://pesapal.com https://*.pesapal.com;" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://blit.ugflix.com https://www.google-analytics.com; connect-src 'self' https://blit.ugflix.com https://www.google-analytics.com https://pesapal.com https://*.pesapal.com;" always;
 
     # GZIP Compression
     gzip on;
@@ -111,7 +111,7 @@ server {
 
     # API Proxy (if needed)
     location /api/ {
-        proxy_pass https://blit.blitxpress.com/api/;
+        proxy_pass https://blit.ugflix.com/api/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -122,21 +122,21 @@ server {
 # Redirect HTTP to HTTPS
 server {
     listen 80;
-    server_name blitxpress.com www.blitxpress.com;
+    server_name ugflix.com www.ugflix.com;
     return 301 https://$server_name$request_uri;
 }
 `;
 
 // Apache .htaccess Configuration Example
 export const HTACCESS_CONFIG_EXAMPLE = `
-# Security Headers for BlitXpress
+# Security Headers for UgFlix
 <IfModule mod_headers.c>
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-XSS-Protection "1; mode=block"
     Header always set X-Frame-Options "DENY"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://blit.blitxpress.com https://www.google-analytics.com; connect-src 'self' https://blit.blitxpress.com https://www.google-analytics.com https://pesapal.com https://*.pesapal.com;"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://blit.ugflix.com https://www.google-analytics.com; connect-src 'self' https://blit.ugflix.com https://www.google-analytics.com https://pesapal.com https://*.pesapal.com;"
 </IfModule>
 
 # HTTPS Redirect
@@ -195,8 +195,8 @@ VITE_GA_TRACKING_ID=G-XXXXXXXXXX
 VITE_FACEBOOK_PIXEL_ID=XXXXXXXXXXXX
 
 # API Configuration
-VITE_API_BASE_URL=https://blit.blitxpress.com/api
-VITE_APP_URL=https://blitxpress.com
+VITE_API_BASE_URL=https://blit.ugflix.com/api
+VITE_APP_URL=https://ugflix.com
 
 # Security
 VITE_ENABLE_ANALYTICS=true

@@ -262,7 +262,7 @@ src/app/components/
 ├── shared/
 │   └── ProductCard2.css   # Component-specific styles
 └── css/
-    └── blitxpress-theme.css # Legacy theme support
+    └── ugflix-theme.css # Legacy theme support
 ```
 
 ### CSS Custom Properties Strategy

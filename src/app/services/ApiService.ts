@@ -721,10 +721,10 @@ export class ApiService {
    * Get or create a session ID for guest users
    */
   private static getOrCreateSessionId(): string {
-    let sessionId = localStorage.getItem('blitxpress_session_id');
+    let sessionId = localStorage.getItem('ugflix_session_id');
     if (!sessionId) {
       sessionId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('blitxpress_session_id', sessionId);
+      localStorage.setItem('ugflix_session_id', sessionId);
     }
     return sessionId;
   }

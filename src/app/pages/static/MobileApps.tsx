@@ -11,7 +11,7 @@ const MobileApps: React.FC = () => {
 
   return (
     <StaticPageLayout
-      title="BlitXpress Mobile Apps"
+      title="UgFlix Mobile Apps"
       subtitle="Download our app and shop anywhere, anytime"
       breadcrumbs={breadcrumbs}
     >

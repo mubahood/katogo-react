@@ -12,8 +12,8 @@ export * from "../../Constants";
 // ===================================================================
 
 /* 
-  BASE_URL: "http://localhost:8888/blitxpress",
-  API_URL: "http://localhost:8888/blitxpress/api",
+  BASE_URL: "http://localhost:8888/ugflix",
+  API_URL: "http://localhost:8888/ugflix/api",
 */
 
 export const API_CONFIG = {
@@ -163,10 +163,10 @@ export const SUCCESS_MESSAGES = {
 // ===================================================================
 
 export const COMPANY_INFO = {
-  NAME: "BlitXpress",
+  NAME: "UgFlix",
   TAGLINE: "Your trusted marketplace for quality products",
   DESCRIPTION:
-    "BlitXpress is Uganda's leading e-commerce platform connecting buyers and sellers across the country.",
+    "UgFlix is Uganda's leading e-commerce platform connecting buyers and sellers across the country.",
   EMAIL: "blitelofficial@gmail.com",
   PHONE: "0800200146",
   WHATSAPP: "+256 790 742428",
@@ -189,9 +189,9 @@ export const SOCIAL_MEDIA = {
 // ===================================================================
 
 export const APP_LINKS = {
-  IOS: "https://apps.apple.com/in/app/blitxpress/id6742859129",
+  IOS: "https://apps.apple.com/in/app/ugflix/id6742859129",
   ANDROID:
-    "https://play.google.com/store/apps/details?id=com.eurosatgroup.blitxpress&pli=1",
+    "https://play.google.com/store/apps/details?id=com.eurosatgroup.ugflix&pli=1",
 } as const;
 
 // ===================================================================
@@ -201,7 +201,7 @@ export const APP_LINKS = {
 export const STATIC_CONTENT = {
   BUYER_PROTECTION: {
     TITLE: "Buyer Protection",
-    SUBTITLE: "Shop with confidence on BlitXpress",
+    SUBTITLE: "Shop with confidence on UgFlix",
     FEATURES: [
       {
         icon: "bi-shield-check",

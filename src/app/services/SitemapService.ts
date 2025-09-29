@@ -19,7 +19,7 @@ export interface SitemapData {
  * Handles products, categories, and static pages
  */
 export class SitemapService {
-  private static readonly BASE_URL = 'https://blitxpress.com';
+  private static readonly BASE_URL = 'https://ugflix.com';
   private static readonly MAX_URLS_PER_SITEMAP = 50000; // Google's limit
 
   /**
@@ -72,7 +72,7 @@ export class SitemapService {
       { path: '/privacy', priority: 0.5, changefreq: 'yearly' as const },
       { path: '/buyer-protection', priority: 0.6, changefreq: 'monthly' as const },
       { path: '/mobile-apps', priority: 0.7, changefreq: 'monthly' as const },
-      { path: '/sell-on-blitxpress', priority: 0.8, changefreq: 'monthly' as const }
+      { path: '/sell-on-ugflix', priority: 0.8, changefreq: 'monthly' as const }
     ];
 
     return staticPages.map(page => ({

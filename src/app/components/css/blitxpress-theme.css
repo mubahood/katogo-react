@@ -1,5 +1,5 @@
 /* ===================================================================
-   Blitxpress Core Stylesheet - CONSISTENT SQUARE DESIGN
+   UgFlix Core Stylesheet - CONSISTENT SQUARE DESIGN
    Version: 7.0 (Square, Minimal, Consistent)
    =================================================================== */
 
@@ -679,7 +679,7 @@ a, button, .btn, .form-control, .card, .product-card,
   .card-body, .card-header, .card-footer { padding: var(--spacing-md); }
 }
 
-/* Font Weight Utilities (re-confirmed for blitxpress-theme.css) */
+/* Font Weight Utilities (re-confirmed for ugflix-theme.css) */
 .fw-100 { font-weight: 100; }
 .fw-200 { font-weight: 200; }
 .fw-300 { font-weight: 300; }
@@ -690,11 +690,11 @@ a, button, .btn, .form-control, .card, .product-card,
 .fw-800 { font-weight: 800; }
 .fw-900 { font-weight: 900; }
 
-/* Font Color Utilities (re-confirmed for blitxpress-theme.css) */
+/* Font Color Utilities (re-confirmed for ugflix-theme.css) */
 .fc-gray { color: var(--text-color-light); }
 .fc-gray-dark { color: var(--text-color-dark); }
 
-/* Font Size Utilities (re-confirmed for blitxpress-theme.css) */
+/* Font Size Utilities (re-confirmed for ugflix-theme.css) */
 .fs-14 { font-size: 14px; }
 .fs-15 { font-size: 15px; }
 .fs-16 { font-size: 16px; }

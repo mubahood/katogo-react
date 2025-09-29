@@ -191,7 +191,7 @@ const MinimalRegister: React.FC = () => {
             marginBottom: 'var(--spacing-lg)',
             color: 'white'
           }}>
-            Join BlitXpress
+            Join UgFlix
           </h1>
           <p style={{ 
             fontSize: 'var(--font-size-lg)', 

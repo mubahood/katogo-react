@@ -1,11 +1,11 @@
-# 🚀 BlitXpress Production Deployment Guide
+# 🚀 UgFlix Production Deployment Guide
 
-This guide covers the complete deployment process for BlitXpress e-commerce application to production.
+This guide covers the complete deployment process for UgFlix e-commerce application to production.
 
 ## 📋 Pre-Deployment Checklist
 
 ### High Priority (Must Complete)
-- [x] ✅ Production API endpoint configured (`https://blit.blitxpress.com`)
+- [x] ✅ Production API endpoint configured (`https://blit.ugflix.com`)
 - [x] ✅ Error boundary implemented for production error handling
 - [x] ✅ Analytics service ready (Google Analytics 4)
 - [x] ✅ Performance monitoring implemented
@@ -63,8 +63,8 @@ VITE_GA_TRACKING_ID=G-XXXXXXXXXX
 VITE_FACEBOOK_PIXEL_ID=XXXXXXXXXXXX
 
 # API Configuration
-VITE_API_BASE_URL=https://blit.blitxpress.com/api
-VITE_APP_URL=https://blitxpress.com
+VITE_API_BASE_URL=https://blit.ugflix.com/api
+VITE_APP_URL=https://ugflix.com
 
 # Security
 VITE_ENABLE_ANALYTICS=true
@@ -94,7 +94,7 @@ VITE_PESAPAL_ENVIRONMENT=live
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name blitxpress.com www.blitxpress.com;
+    server_name ugflix.com www.ugflix.com;
 
     # SSL Configuration
     ssl_certificate /path/to/certificate.crt;
@@ -109,7 +109,7 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     
     # CSP Header
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://blit.blitxpress.com; connect-src 'self' https://blit.blitxpress.com https://pesapal.com;" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://blit.ugflix.com; connect-src 'self' https://blit.ugflix.com https://pesapal.com;" always;
 
     # Compression
     gzip on;
@@ -133,7 +133,7 @@ server {
 # Redirect HTTP to HTTPS
 server {
     listen 80;
-    server_name blitxpress.com www.blitxpress.com;
+    server_name ugflix.com www.ugflix.com;
     return 301 https://$server_name$request_uri;
 }
 ```
@@ -191,7 +191,7 @@ sudo chmod -R 755 /var/www/html/
 ### 3. SSL Certificate
 ```bash
 # Using Let's Encrypt (recommended)
-sudo certbot --nginx -d blitxpress.com -d www.blitxpress.com
+sudo certbot --nginx -d ugflix.com -d www.ugflix.com
 
 # Or install your purchased SSL certificate
 ```
@@ -220,19 +220,19 @@ sudo certbot --nginx -d blitxpress.com -d www.blitxpress.com
 ### 1. Smoke Testing
 ```bash
 # Test key functionality
-curl -I https://blitxpress.com
-curl -I https://blitxpress.com/api/health
+curl -I https://ugflix.com
+curl -I https://ugflix.com/api/health
 
 # Test core pages
-curl https://blitxpress.com/
-curl https://blitxpress.com/products
-curl https://blitxpress.com/cart
+curl https://ugflix.com/
+curl https://ugflix.com/products
+curl https://ugflix.com/cart
 ```
 
 ### 2. Performance Testing
 ```bash
 # Using Lighthouse
-npx lighthouse https://blitxpress.com --view
+npx lighthouse https://ugflix.com --view
 
 # Using PageSpeed Insights
 # Visit: https://pagespeed.web.dev/
@@ -241,10 +241,10 @@ npx lighthouse https://blitxpress.com --view
 ### 3. Security Testing
 ```bash
 # SSL Test
-https://www.ssllabs.com/ssltest/analyze.html?d=blitxpress.com
+https://www.ssllabs.com/ssltest/analyze.html?d=ugflix.com
 
 # Security Headers Test
-https://securityheaders.com/?q=blitxpress.com
+https://securityheaders.com/?q=ugflix.com
 ```
 
 ## 🔄 Continuous Deployment
@@ -317,7 +317,7 @@ For deployment issues or questions:
 
 ## 🎉 Deployment Complete!
 
-Once deployed, your BlitXpress e-commerce application will be running in production with:
+Once deployed, your UgFlix e-commerce application will be running in production with:
 - ✅ Production-optimized build
 - ✅ Security headers configured
 - ✅ Analytics and monitoring active

@@ -38,7 +38,7 @@
 @import './auth-theme.css';
 
 /* BlitzXpress core theme (from components folder) */
-@import '../components/css/blitxpress-theme.css';
+@import '../components/css/ugflix-theme.css';
 
 /* Wishlist utilities */
 @import '../components/css/wishlist-utilities.css';
