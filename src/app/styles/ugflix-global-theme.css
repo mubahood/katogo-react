@@ -53,7 +53,12 @@
   --ugflix-active-bg: rgba(183, 28, 28, 0.3);        /* Active state background */
   --ugflix-accent-hover-bg: rgba(249, 168, 37, 0.1); /* Accent hover background */
   
-  /* === EFFECTS & SHADOWS === */\n  --ugflix-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);\n  --ugflix-shadow-hover: 0 8px 24px rgba(183, 28, 28, 0.25);\n  --ugflix-shadow-focus: 0 0 0 3px rgba(183, 28, 28, 0.2);\n  --ugflix-shadow-accent: 0 4px 16px rgba(249, 168, 37, 0.3);\n  --ugflix-shadow-accent-hover: 0 8px 32px rgba(249, 168, 37, 0.4);
+  /* === EFFECTS & SHADOWS === */
+  --ugflix-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --ugflix-shadow-hover: 0 8px 24px rgba(183, 28, 28, 0.25);
+  --ugflix-shadow-focus: 0 0 0 3px rgba(183, 28, 28, 0.2);
+  --ugflix-shadow-accent: 0 4px 16px rgba(249, 168, 37, 0.3);
+  --ugflix-shadow-accent-hover: 0 8px 32px rgba(249, 168, 37, 0.4);
   
   /* === TRANSITIONS === */
   --ugflix-transition: all 0.3s ease;

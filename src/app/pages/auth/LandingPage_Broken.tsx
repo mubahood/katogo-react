@@ -4,8 +4,9 @@ import { Link } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
 import { APP_CONFIG } from "../../constants";
 import { SEOHead } from "../../components/seo";
-import AuthGuard from "../../components/Auth/AuthGuard";
 import "../../styles/auth-theme.css";
+import AuthGuard from "../../components/Auth/AuthGuard";
+
 
 const LandingPage: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);

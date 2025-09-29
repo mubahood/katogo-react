@@ -1,0 +1,347 @@
+/* ===================================================================
+   UGFLIX CSS ARCHITECTURE INDEX v2.0
+   Master import file for all stylesheets
+   Mobile-first, design system-based approach
+   =================================================================== */
+
+/* ===================================================================
+   1. DESIGN SYSTEM FOUNDATION
+   Core design tokens, variables, and system definitions
+   =================================================================== */
+@import './design-system.css';
+
+/* ===================================================================
+   2. RESET & BASE STYLES
+   CSS reset, normalize, and base element styling
+   =================================================================== */
+
+/* CSS Reset - Built into components.css base styles */
+
+/* ===================================================================
+   3. COMPONENT LIBRARY
+   Reusable UI components and patterns
+   =================================================================== */
+@import './components.css';
+
+/* ===================================================================
+   4. THEME LAYERS
+   Theme-specific styling and overrides
+   =================================================================== */
+
+/* Global theme foundation */
+@import './ugflix-global-theme.css';
+
+/* Main application theme */
+@import './ugflix-theme.css';
+
+/* Authentication-specific theme */
+@import './auth-theme.css';
+
+/* BlitzXpress core theme (from components folder) */
+@import '../components/css/blitxpress-theme.css';
+
+/* Wishlist utilities */
+@import '../components/css/wishlist-utilities.css';
+
+/* ===================================================================
+   5. LAYOUT SYSTEMS
+   Page layout, grid systems, and structural components
+   =================================================================== */
+
+/* Layout utilities are included in components.css */
+
+/* Header and navigation components */
+@import '../components/Header/Header.css';
+
+/* Authentication layout */
+@import '../components/Layout/AuthLayout.css';
+
+/* ===================================================================
+   6. PAGE-SPECIFIC STYLES
+   Individual page styling that extends the component library
+   =================================================================== */
+
+/* Note: Page-specific styles should be imported individually 
+   by each page component to avoid CSS bloat */
+
+/* ===================================================================
+   7. RESPONSIVE OVERRIDES
+   Mobile-first responsive adjustments
+   =================================================================== */
+
+/* Mobile First (Base Styles) - Already defined above */
+
+/* Small devices (576px and up) */
+@media (min-width: 576px) {
+  .container {
+    max-width: 540px;
+  }
+  
+  /* Additional responsive adjustments */
+  .btn {
+    padding: 0 var(--btn-padding-x-lg);
+  }
+  
+  .card-body {
+    padding: var(--space-6);
+  }
+}
+
+/* Medium devices (768px and up) */
+@media (min-width: 768px) {
+  .container {
+    max-width: 720px;
+  }
+  
+  /* Typography scaling */
+  html {
+    font-size: 17px; /* Slightly larger base for larger screens */
+  }
+  
+  /* Navigation adjustments */
+  .nav-link {
+    padding: var(--space-3) var(--space-4);
+  }
+}
+
+/* Large devices (992px and up) */
+@media (min-width: 992px) {
+  .container {
+    max-width: 960px;
+  }
+  
+  /* Larger spacing for desktop */
+  .card {
+    margin-bottom: var(--space-6);
+  }
+  
+  /* Button hover effects more pronounced on desktop */
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* Extra large devices (1200px and up) */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+  
+  html {
+    font-size: 18px; /* Optimal reading size for large screens */
+  }
+  
+  /* Enhanced spacing for very large screens */
+  .container {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+/* Extra extra large devices (1400px and up) */
+@media (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+  }
+  
+  /* Maximum comfortable reading width */
+  .text-content {
+    max-width: 65ch;
+  }
+}
+
+/* ===================================================================
+   8. UTILITY OVERRIDES
+   Final utility classes and important overrides
+   =================================================================== */
+
+/* High specificity utilities for overriding component styles */
+.force-hide {
+  display: none !important;
+}
+
+.force-show {
+  display: block !important;
+}
+
+.force-primary {
+  color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+}
+
+.force-accent {
+  color: var(--brand-accent) !important;
+  border-color: var(--brand-accent) !important;
+}
+
+/* ===================================================================
+   9. PRINT STYLES
+   Optimized styles for print media
+   =================================================================== */
+
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .page-break-before {
+    page-break-before: always;
+  }
+  
+  .page-break-after {
+    page-break-after: always;
+  }
+  
+  .page-break-inside {
+    page-break-inside: avoid;
+  }
+}
+
+/* ===================================================================
+   10. DARK MODE SUPPORT
+   Dark mode overrides and adjustments
+   =================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  /* Dark mode is handled by CSS custom properties in design-system.css */
+  /* Additional dark mode specific adjustments can go here */
+  
+  .card {
+    border-color: var(--neutral-700);
+  }
+  
+  .form-control {
+    border-color: var(--neutral-600);
+  }
+  
+  .btn-secondary {
+    border-color: var(--neutral-500);
+  }
+}
+
+/* ===================================================================
+   11. ACCESSIBILITY ENHANCEMENTS
+   Focus management and accessibility improvements
+   =================================================================== */
+
+/* FORCE LIGHT MODE - Override dark mode preferences */
+html[data-bs-theme="dark"],
+html[data-theme="dark"],
+[data-bs-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: light !important;
+}
+
+/* Override any dark mode media queries */
+@media (prefers-color-scheme: dark) {
+  html,
+  body,
+  * {
+    color-scheme: light !important;
+  }
+}
+
+/* Enhanced focus indicators */
+*:focus-visible {
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Skip link for screen readers */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--brand-primary);
+  color: var(--neutral-0);
+  padding: 8px;
+  text-decoration: none;
+  z-index: var(--z-modal);
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn {
+    border-width: 2px;
+  }
+  
+  .card {
+    border-width: 2px;
+  }
+  
+  .form-control {
+    border-width: 2px;
+  }
+}
+
+/* ===================================================================
+   12. LEGACY BROWSER SUPPORT
+   Fallbacks and polyfills for older browsers
+   =================================================================== */
+
+/* CSS Grid fallback */
+@supports not (display: grid) {
+  .grid-fallback {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .grid-fallback > * {
+    flex: 1 1 auto;
+    margin: var(--space-2);
+  }
+}
+
+/* CSS Custom Properties fallback */
+@supports not (--custom: property) {
+  .legacy-primary {
+    color: #B71C1C;
+  }
+  
+  .legacy-accent {
+    color: #F9A825;
+  }
+  
+  .legacy-background {
+    background-color: #000000;
+  }
+}
+
+/* ===================================================================
+   IMPORT ORDER REFERENCE
+   
+   The order of imports is critical for proper CSS cascade:
+   
+   1. Design System (variables, tokens, foundations)
+   2. Components (reusable UI patterns)
+   3. Themes (brand-specific styling)
+   4. Responsive (mobile-first breakpoints)
+   5. Utilities (helper classes and overrides)
+   6. Print (print-specific styles)
+   7. Accessibility (a11y enhancements)
+   8. Legacy (browser fallbacks)
+   
+   This ensures proper specificity and prevents cascade conflicts.
+   =================================================================== */

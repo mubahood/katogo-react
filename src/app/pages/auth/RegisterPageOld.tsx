@@ -5,6 +5,7 @@ import { Form, Button, Alert, Spinner, Container, Row, Col } from "react-bootstr
 import { APP_CONFIG } from "../../constants";
 import "../../styles/ugflix-theme.css";
 
+
 interface RegisterFormData {
   firstName: string;
   lastName: string;

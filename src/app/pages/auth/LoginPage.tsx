@@ -5,7 +5,7 @@ import { Form, Button, Alert, Spinner, Container, Row, Col } from "react-bootstr
 import { APP_CONFIG } from "../../constants";
 import { authService } from "../../services/auth.service";
 import AuthGuard from "../../components/Auth/AuthGuard";
-import "../../styles/auth-theme.css";
+
 
 interface LoginFormData {
   email: string;

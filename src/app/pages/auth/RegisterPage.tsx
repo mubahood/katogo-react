@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import AuthGuard from '../../components/Auth/AuthGuard';
 import { APP_CONFIG } from '../../constants';
-import '../../styles/auth-theme.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 interface RegisterFormData {

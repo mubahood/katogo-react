@@ -2,7 +2,6 @@
 import React from 'react';
 import TopUtilityBar from './TopUtilityBar';
 import ModernMainNav from './ModernMainNav';
-import './Header.css';
 
 const HeaderWrapper: React.FC = () => {
   return (

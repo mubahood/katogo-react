@@ -3,8 +3,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Form, Button, Alert, Spinner, Container, Row, Col } from "react-bootstrap";
 import { APP_CONFIG } from "../../constants";
-import { authService } from "../../services/auth.service";
 import "../../styles/ugflix-theme.css";
+import { authService } from "../../services/auth.service";
+
 
 interface LoginFormData {
   email: string;

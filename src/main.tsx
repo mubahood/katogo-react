@@ -28,11 +28,8 @@ observer.observe(document.documentElement, {
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-// UgFlix Centralized Theme System
-import "./app/styles/ugflix-global-theme.css";
-
-// Global Styles - Main theme
-import "./app/styles/main.css";
+// UGFLIX Master CSS Architecture v2.0
+import "./app/styles/index.css";
 
 // App Component
 import App from "./app/App";

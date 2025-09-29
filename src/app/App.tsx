@@ -9,6 +9,9 @@ import { CacheApiService } from "./services/CacheApiService";
 import AnalyticsService from "./services/AnalyticsService";
 import PerformanceService from "./services/PerformanceService";
 
+// Import Master CSS Architecture
+import "./styles/index.css";
+
 // Import React Toastify CSS
 import "react-toastify/dist/ReactToastify.css";
 import "./styles/toast.css";

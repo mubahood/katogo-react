@@ -1,10 +1,11 @@
 // src/app/pages/auth/ForgotPasswordPage.tsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Form, Button, Alert, Spinner, Container, Row, Col } from "react-bootstrap";
+import { Form, Button, Alert, Spinner, Container, Row, Col, Card } from "react-bootstrap";
+import { CheckCircle, Mail, ArrowLeft } from "react-bootstrap-icons";
 import { APP_CONFIG } from "../../constants";
 import AuthGuard from "../../components/Auth/AuthGuard";
-import "../../styles/auth-theme.css";
+
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState("");

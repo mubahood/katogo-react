@@ -1,0 +1,424 @@
+/* ===================================================================
+   UGFLIX DESIGN SYSTEM v2.0
+   Master Design System - Foundation for all components
+   Mobile-first, accessible, consistent theming
+   =================================================================== */
+
+:root {
+  /* ===================================================================
+     BRAND COLORS - Primary Design Tokens
+     =================================================================== */
+  
+  /* Core Brand Identity */
+  --brand-primary: #B71C1C;           /* Main brand red */
+  --brand-primary-50: #FFEBEE;        /* Lightest tint */
+  --brand-primary-100: #FFCDD2;       /* Light tint */
+  --brand-primary-200: #EF9A9A;       /* Medium-light tint */
+  --brand-primary-300: #E57373;       /* Medium tint */
+  --brand-primary-400: #EF5350;       /* Medium-dark tint */
+  --brand-primary-500: #F44336;       /* Base red */
+  --brand-primary-600: #E53935;       /* Medium-dark */
+  --brand-primary-700: #D32F2F;       /* Dark */
+  --brand-primary-800: #C62828;       /* Darker */
+  --brand-primary-900: #B71C1C;       /* Darkest (main) */
+  --brand-primary-A100: #FF8A80;      /* Accent light */
+  --brand-primary-A200: #FF5252;      /* Accent medium */
+  --brand-primary-A400: #FF1744;      /* Accent dark */
+  --brand-primary-A700: #D50000;      /* Accent darkest */
+  
+  /* Accent Color - Amber */
+  --brand-accent: #F9A825;            /* Main brand amber */
+  --brand-accent-50: #FFF8E1;         /* Lightest tint */
+  --brand-accent-100: #FFECB3;        /* Light tint */
+  --brand-accent-200: #FFE082;        /* Medium-light tint */
+  --brand-accent-300: #FFD54F;        /* Medium tint */
+  --brand-accent-400: #FFCA28;        /* Medium-dark tint */
+  --brand-accent-500: #FFC107;        /* Base amber */
+  --brand-accent-600: #FFB300;        /* Medium-dark */
+  --brand-accent-700: #FFA000;        /* Dark */
+  --brand-accent-800: #FF8F00;        /* Darker */
+  --brand-accent-900: #FF6F00;        /* Darkest */
+  --brand-accent-A100: #FFE57F;       /* Accent light */
+  --brand-accent-A200: #FFD740;       /* Accent medium */
+  --brand-accent-A400: #FFC400;       /* Accent dark */
+  --brand-accent-A700: #FFAB00;       /* Accent darkest */
+
+  /* ===================================================================
+     SEMANTIC COLORS
+     =================================================================== */
+  
+  /* Status Colors */
+  --color-success: #4CAF50;
+  --color-success-light: #81C784;
+  --color-success-dark: #388E3C;
+  --color-success-bg: rgba(76, 175, 80, 0.1);
+  
+  --color-warning: var(--brand-accent);
+  --color-warning-light: var(--brand-accent-300);
+  --color-warning-dark: var(--brand-accent-700);
+  --color-warning-bg: rgba(249, 168, 37, 0.1);
+  
+  --color-error: var(--brand-primary);
+  --color-error-light: var(--brand-primary-300);
+  --color-error-dark: var(--brand-primary-700);
+  --color-error-bg: rgba(183, 28, 28, 0.1);
+  
+  --color-info: #2196F3;
+  --color-info-light: #64B5F6;
+  --color-info-dark: #1976D2;
+  --color-info-bg: rgba(33, 150, 243, 0.1);
+
+  /* ===================================================================
+     NEUTRAL COLORS - Gray Scale
+     =================================================================== */
+  
+  /* Light Theme Neutrals */
+  --neutral-0: #FFFFFF;
+  --neutral-50: #FAFAFA;
+  --neutral-100: #F5F5F5;
+  --neutral-200: #EEEEEE;
+  --neutral-300: #E0E0E0;
+  --neutral-400: #BDBDBD;
+  --neutral-500: #9E9E9E;
+  --neutral-600: #757575;
+  --neutral-700: #616161;
+  --neutral-800: #424242;
+  --neutral-900: #212121;
+  --neutral-1000: #000000;
+  
+  /* Dark Theme Neutrals */
+  --dark-bg-primary: #0A0A0A;
+  --dark-bg-secondary: #1A1A1A;
+  --dark-bg-tertiary: #2A2A2A;
+  --dark-bg-elevated: #1E1E1E;
+  --dark-bg-overlay: #262626;
+  
+  --dark-text-primary: #FFFFFF;
+  --dark-text-secondary: #E0E0E0;
+  --dark-text-tertiary: #B0B0B0;
+  --dark-text-disabled: #666666;
+  
+  --dark-border-primary: #333333;
+  --dark-border-secondary: #444444;
+  --dark-border-tertiary: #555555;
+
+  /* ===================================================================
+     TYPOGRAPHY SYSTEM
+     =================================================================== */
+  
+  /* Font Families */
+  --font-family-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  --font-family-secondary: 'Inter', var(--font-family-primary);
+  --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+  
+  /* Type Scale - Mobile First */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 1.875rem;    /* 30px */
+  --text-4xl: 2.25rem;     /* 36px */
+  --text-5xl: 3rem;        /* 48px */
+  --text-6xl: 3.75rem;     /* 60px */
+  
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* ===================================================================
+     SPACING SYSTEM - 8px Base Grid
+     =================================================================== */
+  
+  --space-0: 0;
+  --space-1: 0.25rem;      /* 4px */
+  --space-2: 0.5rem;       /* 8px */
+  --space-3: 0.75rem;      /* 12px */
+  --space-4: 1rem;         /* 16px */
+  --space-5: 1.25rem;      /* 20px */
+  --space-6: 1.5rem;       /* 24px */
+  --space-8: 2rem;         /* 32px */
+  --space-10: 2.5rem;      /* 40px */
+  --space-12: 3rem;        /* 48px */
+  --space-16: 4rem;        /* 64px */
+  --space-20: 5rem;        /* 80px */
+  --space-24: 6rem;        /* 96px */
+  --space-32: 8rem;        /* 128px */
+  --space-40: 10rem;       /* 160px */
+  --space-48: 12rem;       /* 192px */
+  --space-56: 14rem;       /* 224px */
+  --space-64: 16rem;       /* 256px */
+
+  /* ===================================================================
+     LAYOUT & SIZING
+     =================================================================== */
+  
+  /* Breakpoints (for CSS custom properties) */
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+  --breakpoint-xxl: 1400px;
+  
+  /* Container Sizes */
+  --container-sm: 540px;
+  --container-md: 720px;
+  --container-lg: 960px;
+  --container-xl: 1140px;
+  --container-xxl: 1320px;
+  
+  /* Common Sizes */
+  --size-header: 70px;
+  --size-sidebar: 280px;
+  --size-footer: 200px;
+
+  /* ===================================================================
+     BORDER & RADIUS SYSTEM
+     =================================================================== */
+  
+  /* Border Widths */
+  --border-width-0: 0;
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --border-width-4: 4px;
+  --border-width-8: 8px;
+  
+  /* Border Radius - Square Design System */
+  --radius-none: 0;
+  --radius-sm: 0;          /* Keep square for brand consistency */
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-full: 0;        /* Even circles are square for consistency */
+
+  /* ===================================================================
+     SHADOWS & EFFECTS
+     =================================================================== */
+  
+  /* Elevation System */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* Brand Shadows */
+  --shadow-primary: 0 4px 14px 0 rgba(183, 28, 28, 0.25);
+  --shadow-primary-lg: 0 8px 30px 0 rgba(183, 28, 28, 0.3);
+  --shadow-accent: 0 4px 14px 0 rgba(249, 168, 37, 0.25);
+  --shadow-accent-lg: 0 8px 30px 0 rgba(249, 168, 37, 0.3);
+
+  /* ===================================================================
+     TRANSITIONS & ANIMATIONS
+     =================================================================== */
+  
+  /* Timing Functions */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* Duration */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --duration-slower: 750ms;
+  
+  /* Common Transitions */
+  --transition-all: all var(--duration-normal) var(--ease-in-out);
+  --transition-colors: color var(--duration-fast) var(--ease-in-out), 
+                       background-color var(--duration-fast) var(--ease-in-out), 
+                       border-color var(--duration-fast) var(--ease-in-out);
+  --transition-transform: transform var(--duration-normal) var(--ease-in-out);
+  --transition-opacity: opacity var(--duration-fast) var(--ease-in-out);
+
+  /* ===================================================================
+     Z-INDEX SYSTEM
+     =================================================================== */
+  
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+  --z-maximum: 2147483647;
+
+  /* ===================================================================
+     COMPONENT TOKENS - Specific Use Cases
+     =================================================================== */
+  
+  /* Buttons */
+  --btn-height-sm: var(--space-8);
+  --btn-height-md: var(--space-10);
+  --btn-height-lg: var(--space-12);
+  --btn-padding-x-sm: var(--space-3);
+  --btn-padding-x-md: var(--space-4);
+  --btn-padding-x-lg: var(--space-6);
+  
+  /* Form Controls */
+  --input-height: var(--space-10);
+  --input-padding-x: var(--space-3);
+  --input-border-width: var(--border-width-1);
+  
+  /* Cards */
+  --card-padding: var(--space-4);
+  --card-padding-sm: var(--space-3);
+  --card-padding-lg: var(--space-6);
+  
+  /* Navigation */
+  --nav-link-padding-x: var(--space-4);
+  --nav-link-padding-y: var(--space-3);
+}
+
+/* ===================================================================
+   RESPONSIVE BREAKPOINT UTILITIES
+   =================================================================== */
+
+/* Mobile First Media Queries */
+@media (min-width: 576px) {
+  :root {
+    /* Tablet adjustments */
+    --text-base: 1.125rem;    /* Slightly larger on tablets */
+    --card-padding: var(--space-5);
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    /* Desktop adjustments */
+    --text-base: 1.125rem;
+    --card-padding: var(--space-6);
+  }
+}
+
+@media (min-width: 992px) {
+  :root {
+    /* Large desktop adjustments */
+    --text-base: 1.125rem;
+  }
+}
+
+/* ===================================================================
+   DARK MODE THEME OVERRIDES
+   =================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Override with dark theme when user prefers dark mode */
+    --color-bg-primary: var(--dark-bg-primary);
+    --color-bg-secondary: var(--dark-bg-secondary);
+    --color-text-primary: var(--dark-text-primary);
+    --color-text-secondary: var(--dark-text-secondary);
+  }
+}
+
+/* Dark mode class override (for manual toggle) */
+.dark-theme {
+  --color-bg-primary: var(--dark-bg-primary);
+  --color-bg-secondary: var(--dark-bg-secondary);
+  --color-bg-tertiary: var(--dark-bg-tertiary);
+  --color-bg-elevated: var(--dark-bg-elevated);
+  
+  --color-text-primary: var(--dark-text-primary);
+  --color-text-secondary: var(--dark-text-secondary);
+  --color-text-tertiary: var(--dark-text-tertiary);
+  --color-text-disabled: var(--dark-text-disabled);
+  
+  --color-border-primary: var(--dark-border-primary);
+  --color-border-secondary: var(--dark-border-secondary);
+  --color-border-tertiary: var(--dark-border-tertiary);
+}
+
+/* ===================================================================
+   LEGACY VARIABLE MAPPINGS
+   Ensure compatibility with existing components
+   =================================================================== */
+
+:root {
+  /* Primary mappings */
+  --primary-color: var(--brand-primary);
+  --primary-color-dark: var(--brand-primary-700);
+  --primary-color-light: var(--brand-primary-300);
+  --primary-color-rgb: 183, 28, 28;
+  
+  /* Accent mappings */
+  --accent-color: var(--brand-accent);
+  --accent-color-dark: var(--brand-accent-700);
+  --accent-color-light: var(--brand-accent-300);
+  --accent-color-rgb: 249, 168, 37;
+  
+  /* UgFlix namespace mappings */
+  --ugflix-primary: var(--brand-primary);
+  --ugflix-primary-dark: var(--brand-primary-700);
+  --ugflix-primary-light: var(--brand-primary-300);
+  --ugflix-primary-rgb: var(--brand-primary-rgb);
+  
+  --ugflix-accent: var(--brand-accent);
+  --ugflix-accent-dark: var(--brand-accent-700);
+  --ugflix-accent-light: var(--brand-accent-300);
+  --ugflix-accent-rgb: var(--brand-accent-rgb);
+  
+  --ugflix-secondary: var(--brand-accent);
+  
+  /* Background mappings */
+  --ugflix-bg-primary: var(--dark-bg-primary);
+  --ugflix-bg-secondary: var(--dark-bg-secondary);
+  --ugflix-bg-tertiary: var(--dark-bg-tertiary);
+  --ugflix-bg-card: var(--dark-bg-elevated);
+  
+  /* Text mappings */
+  --ugflix-text-primary: var(--dark-text-primary);
+  --ugflix-text-secondary: var(--dark-text-secondary);
+  --ugflix-text-muted: var(--dark-text-tertiary);
+  --ugflix-text-accent: var(--brand-primary);
+  
+  /* Border mappings */
+  --ugflix-border: var(--dark-border-primary);
+  --ugflix-border-light: var(--dark-border-secondary);
+  --ugflix-border-focus: var(--brand-primary);
+  --ugflix-border-hover: var(--brand-accent);
+  
+  /* Legacy spacing */
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  
+  /* Legacy text sizes */
+  --font-size-xs: var(--text-xs);
+  --font-size-sm: var(--text-sm);
+  --font-size-base: var(--text-base);
+  --font-size-lg: var(--text-lg);
+  --font-size-xl: var(--text-xl);
+  --font-size-2xl: var(--text-2xl);
+  
+  /* Legacy shadows */
+  --ugflix-shadow: var(--shadow-md);
+  --ugflix-shadow-hover: var(--shadow-primary-lg);
+  --ugflix-shadow-focus: 0 0 0 3px rgba(183, 28, 28, 0.2);
+  
+  /* Legacy transitions */
+  --ugflix-transition: var(--transition-all);
+  --ugflix-transition-fast: all var(--duration-fast) var(--ease-in-out);
+}
