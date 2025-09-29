@@ -106,9 +106,10 @@
      TYPOGRAPHY SYSTEM
      =================================================================== */
   
-  /* Font Families */
-  --font-family-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  --font-family-secondary: 'Inter', var(--font-family-primary);
+  /* Font Families - Google Fonts Integration */
+  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  --font-family-secondary: 'Poppins', 'Inter', var(--font-family-primary);
+  --font-family-display: 'Poppins', var(--font-family-primary); /* For headings and prominent text */
   --font-family-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   
   /* Font Weights */
