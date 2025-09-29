@@ -1,0 +1,139 @@
+/* HeroCarousel Custom Styles */
+
+.hero-carousel-clean {
+  position: relative;
+}
+
+.modern-hero-carousel {
+  border-radius: 0 !important;
+  overflow: hidden;
+}
+
+.modern-hero-carousel .carousel-item {
+  border-radius: 0 !important;
+}
+
+/* Navigation Controls */
+.modern-hero-carousel .carousel-control-prev,
+.modern-hero-carousel .carousel-control-next {
+  width: 50px;
+  height: 50px;
+  background: rgba(var(--bs-primary-rgb), 0.8);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.9;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.modern-hero-carousel .carousel-control-prev {
+  left: 20px;
+}
+
+.modern-hero-carousel .carousel-control-next {
+  right: 20px;
+}
+
+.modern-hero-carousel .carousel-control-prev:hover,
+.modern-hero-carousel .carousel-control-next:hover {
+  opacity: 1;
+  background: rgba(var(--bs-primary-rgb), 1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* Navigation Icons */
+.modern-hero-carousel .carousel-control-prev-icon,
+.modern-hero-carousel .carousel-control-next-icon {
+  width: 20px;
+  height: 20px;
+  background-size: 20px 20px;
+  filter: none;
+}
+
+.modern-hero-carousel .carousel-control-prev-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath d='m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z'/%3e%3c/svg%3e");
+}
+
+.modern-hero-carousel .carousel-control-next-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath d='m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z'/%3e%3c/svg%3e");
+}
+
+/* Navigation Indicators */
+.modern-hero-carousel .carousel-indicators {
+  bottom: 20px;
+  margin-bottom: 0;
+}
+
+.modern-hero-carousel .carousel-indicators [data-bs-target] {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: 0 6px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(var(--bs-primary-rgb), 0.6);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.modern-hero-carousel .carousel-indicators .active {
+  background-color: rgba(var(--bs-primary-rgb), 1);
+  border-color: rgba(255, 255, 255, 0.8);
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.modern-hero-carousel .carousel-indicators [data-bs-target]:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.8);
+  border-color: rgba(255, 255, 255, 0.9);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Hero slide styling */
+.hero-slide {
+  border-radius: 0 !important;
+}
+
+/* Hover overlay styling */
+.hero-slide:hover .hero-slide-overlay {
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.3);
+  transition: opacity 0.3s ease;
+}
+
+.hero-slide-overlay {
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .modern-hero-carousel .carousel-control-prev,
+  .modern-hero-carousel .carousel-control-next {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .modern-hero-carousel .carousel-control-prev {
+    left: 10px;
+  }
+  
+  .modern-hero-carousel .carousel-control-next {
+    right: 10px;
+  }
+  
+  .modern-hero-carousel .carousel-control-prev-icon,
+  .modern-hero-carousel .carousel-control-next-icon {
+    width: 16px;
+    height: 16px;
+    background-size: 16px 16px;
+  }
+  
+  .modern-hero-carousel .carousel-indicators [data-bs-target] {
+    width: 10px;
+    height: 10px;
+    margin: 0 4px;
+  }
+}

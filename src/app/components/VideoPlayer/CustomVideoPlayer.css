@@ -1,0 +1,517 @@
+/* CustomVideoPlayer.css */
+.custom-video-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 0; /* Perfectly square, no rounded corners */
+  overflow: hidden;
+  box-shadow: none; /* No shadows as requested */
+  cursor: pointer;
+}
+
+.custom-video-player.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  border-radius: 0;
+  aspect-ratio: unset;
+}
+
+.video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--ugflix-text-primary, white);
+  z-index: 5;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  color: var(--ugflix-primary, #e50914);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Controls Overlay */
+.controls-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0) 20%,
+    rgba(0, 0, 0, 0) 80%,
+    rgba(0, 0, 0, 0.8) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+.controls-overlay.show {
+  opacity: 1;
+}
+
+.controls-overlay.hide {
+  opacity: 0;
+}
+
+.controls-overlay:hover {
+  opacity: 1;
+}
+
+/* Center Play Button */
+.center-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: var(--ugflix-primary, #e50914);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 15;
+}
+
+.center-play-button:hover {
+  background: var(--ugflix-primary-dark, #b8070f);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.center-play-button svg {
+  margin-left: 4px; /* Center play icon properly */
+}
+
+/* Progress Bar */
+.progress-container {
+  margin-top: auto;
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: height 0.2s ease;
+}
+
+.progress-bar:hover {
+  height: 8px;
+}
+
+.progress-loaded {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-played {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--ugflix-primary, #e50914);
+  border-radius: 3px;
+  transition: width 0.1s ease;
+}
+
+.progress-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  background: var(--ugflix-primary, #e50914);
+  border: 2px solid white;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.progress-bar:hover .progress-handle {
+  opacity: 1;
+}
+
+/* Bottom Controls */
+.bottom-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.controls-left,
+.controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.control-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--ugflix-primary, #e50914);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+}
+
+.skip-text {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Volume Control */
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.volume-slider {
+  width: 80px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--ugflix-primary, #e50914);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--ugflix-primary, #e50914);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Time Display */
+.time-display {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 100px;
+  text-align: center;
+}
+
+/* Speed Control */
+.speed-control {
+  position: relative;
+}
+
+.speed-text {
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+.speed-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  min-width: 80px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.speed-option {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.speed-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.speed-option.active {
+  background: var(--ugflix-primary, #e50914);
+  color: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .controls-overlay {
+    padding: 0.75rem;
+  }
+
+  .bottom-controls {
+    gap: 0.5rem;
+  }
+
+  .controls-left,
+  .controls-right {
+    gap: 0.5rem;
+  }
+
+  .control-btn {
+    padding: 0.4rem;
+  }
+
+  .control-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .center-play-button {
+    width: 60px;
+    height: 60px;
+  }
+
+  .center-play-button svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .volume-slider {
+    width: 60px;
+  }
+
+  .time-display {
+    font-size: 12px;
+    min-width: 80px;
+  }
+
+  /* Hide some controls on small screens */
+  .speed-control {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .controls-overlay {
+    padding: 0.5rem;
+  }
+
+  .progress-container {
+    margin-bottom: 0.75rem;
+  }
+
+  .volume-control {
+    display: none; /* Hide volume slider on very small screens */
+  }
+
+  .time-display {
+    display: none; /* Hide time display on very small screens */
+  }
+
+  .controls-left,
+  .controls-right {
+    gap: 0.25rem;
+  }
+}
+
+/* Touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .controls-overlay.hide {
+    opacity: 0.3; /* Always show some controls on touch devices */
+  }
+
+  .progress-bar {
+    height: 8px; /* Bigger progress bar for touch */
+  }
+
+  .progress-handle {
+    opacity: 1; /* Always show handle on touch devices */
+    width: 16px;
+    height: 16px;
+  }
+
+  .control-btn {
+    padding: 0.6rem; /* Bigger touch targets */
+  }
+}
+
+/* Resume Modal */
+.resume-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+
+.resume-modal {
+  background: var(--ugflix-bg-card, #1e1e1e);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.resume-modal-content h3 {
+  color: var(--ugflix-text-primary, white);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.resume-modal-content p {
+  color: var(--ugflix-text-secondary, #cccccc);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.resume-position {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 0 0 2rem 0;
+  color: var(--ugflix-primary, #ff6b35);
+  font-weight: 500;
+}
+
+.resume-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.resume-btn-secondary,
+.resume-btn-primary {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.resume-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ugflix-text-secondary, #cccccc);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.resume-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--ugflix-text-primary, white);
+}
+
+.resume-btn-primary {
+  background: var(--ugflix-primary, #ff6b35);
+  color: white;
+}
+
+.resume-btn-primary:hover {
+  background: var(--ugflix-primary-dark, #e55a2e);
+  transform: translateY(-1px);
+}
+
+/* Focus states for accessibility */
+.control-btn:focus,
+.progress-bar:focus,
+.volume-slider:focus,
+.resume-btn-secondary:focus,
+.resume-btn-primary:focus {
+  outline: 2px solid var(--ugflix-primary, #e50914);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar for speed menu */
+.speed-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.speed-menu::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.speed-menu::-webkit-scrollbar-thumb {
+  background: var(--ugflix-primary, #e50914);
+  border-radius: 2px;
+}

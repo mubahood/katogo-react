@@ -1,0 +1,241 @@
+/* ProductCardSimple.css - Modern Professional Design */
+
+.product-card-simple {
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  height: fit-content;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.product-card-simple:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(5, 23, 159, 0.15); /* Primary color shadow */
+  text-decoration: none;
+  color: inherit;
+  border-color: rgba(5, 23, 159, 0.2);
+}
+
+/* Image Container */
+.product-image-container {
+  position: relative;
+  width: 100%;
+  height: 180px; /* More compact */
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.shimmer-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.shimmer-image {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.product-image.loading {
+  opacity: 0;
+}
+
+.product-image.loaded {
+  opacity: 1;
+}
+
+.product-card-simple:hover .product-image.loaded {
+  transform: scale(1.05);
+}
+
+/* Discount Badge */
+.discount-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  z-index: 3;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
+}
+
+/* Product Info */
+.product-info {
+  padding: 8px; /* Much tighter padding */
+  background: white;
+}
+
+.product-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2d3748;
+  margin: 0 0 6px 0; /* Reduced margin */
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 2.6em;
+}
+
+.price-section {
+  display: flex;
+  flex-direction: column; /* Stack prices vertically */
+  align-items: flex-start;
+  gap: 2px; /* Very tight gap */
+  margin: 0;
+}
+
+.current-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #05179F; /* Primary color for main price */
+  line-height: 1.2;
+}
+
+.original-price {
+  font-size: 11px;
+  color: #9ca3af;
+  text-decoration: line-through;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .product-card-simple {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .product-image-container {
+    height: 160px; /* Compact on mobile */
+  }
+  
+  .product-info {
+    padding: 6px; /* Tighter padding */
+  }
+  
+  .product-name {
+    font-size: 12px;
+    height: 2.4em;
+    margin: 0 0 4px 0;
+  }
+  
+  .current-price {
+    font-size: 15px;
+  }
+  
+  .original-price {
+    font-size: 10px;
+  }
+  
+  .price-section {
+    gap: 1px; /* Very tight gap */
+  }
+}
+
+@media (max-width: 480px) {
+  .product-image-container {
+    height: 140px; /* Very compact on small screens */
+  }
+  
+  .product-info {
+    padding: 5px; /* Minimal padding */
+  }
+  
+  .product-name {
+    font-size: 11px;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    height: 1.3em;
+    margin: 0 0 3px 0;
+  }
+  
+  .current-price {
+    font-size: 14px;
+  }
+  
+  .original-price {
+    font-size: 9px;
+  }
+  
+  .price-section {
+    gap: 1px;
+  }
+}
+
+/* Grid Layout Support */
+.deals-container .product-card-simple,
+.products-grid .product-card-simple {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Enhanced hover effects with primary color */
+@media (hover: hover) {
+  .product-card-simple:hover .product-name {
+    color: #05179F; /* Primary color on hover */
+  }
+  
+  .product-card-simple:hover .current-price {
+    color: #041266; /* Darker primary on hover */
+  }
+}
+
+/* Additional professional touches */
+.product-card-simple:focus {
+  outline: 2px solid #05179F;
+  outline-offset: 2px;
+}
+
+.product-card-simple:active {
+  transform: translateY(0);
+  transition: transform 0.1s ease;
+}
+
+/* Grid Layout Support */
+.deals-container .product-card-simple,
+.products-grid .product-card-simple {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Clean hover effects */
+@media (hover: hover) {
+  .product-card-simple:hover .product-name {
+    color: #2b6cb0;
+  }
+  
+  .product-card-simple:hover .current-price {
+    color: #2b6cb0;
+  }
+}

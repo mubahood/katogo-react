@@ -1,0 +1,67 @@
+/* Wishlist Page Utility Classes */
+.wishlist-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none !important;
+  background: var(--white);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.wishlist-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.wishlist-image {
+  transition: transform 0.3s ease;
+}
+
+.wishlist-card:hover .wishlist-image {
+  transform: scale(1.05);
+}
+
+/* Price display utilities */
+.price-current {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.price-original {
+  color: var(--text-color-muted);
+  text-decoration: line-through;
+}
+
+.discount-badge {
+  background: var(--accent-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+/* Button improvements */
+.btn-wishlist {
+  background: var(--primary-color);
+  border: none;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.btn-wishlist:hover {
+  background: var(--primary-color-dark);
+  transform: translateY(-1px);
+}
+
+.btn-wishlist-outline {
+  border: 2px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color-dark);
+  transition: all 0.2s ease;
+}
+
+.btn-wishlist-outline:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--primary-color-light);
+}

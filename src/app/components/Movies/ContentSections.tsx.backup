@@ -1,0 +1,242 @@
+// src/app/components/Movies/ContentSections.tsx
+import React, { memo, useCallback } from 'react';
+impo  const { data } = manifest;
+
+  // Debug: Check what data we have
+  console.log('📺 Manifest data structure:', {
+    featuredMovies: data?.featuredMovies || 'undefined',
+    trendingMovies: data?.trendingMovies || 'undefined',
+    categories: data?.categories || 'undefined',
+    allDataKeys: data ? Object.keys(data) : 'no data'
+  });
+
+  return (
+    <div className="content-sections">{ useNavigate } from 'react-router-dom';
+import MovieListBuilder from './MovieListBuilder';
+import type { Movie, MovieCategory, ManifestResponse } from '../../services/manifest.service';
+
+interface ContentSectionsProps {
+  manifest: ManifestResponse;
+  loading?: boolean;
+  onMovieClick?: (movie: Movie) => void;
+  onRetry?: () => void;
+}
+
+const ContentSections: React.FC<ContentSectionsProps> = ({
+  manifest,
+  loading = false,
+  onMovieClick,
+  onRetry
+}) => {
+  const navigate = useNavigate();
+
+  // Debug: Log what we receive
+  console.log('📺 ContentSections rendered with:', {
+    manifest: !!manifest,
+    manifestCode: manifest?.code,
+    loading,
+    hasData: !!manifest?.data,
+    featuredCount: manifest?.data?.featuredMovies?.length || 0,
+    trendingCount: manifest?.data?.trendingMovies?.length || 0,
+    categoriesCount: manifest?.data?.categories?.length || 0
+  });
+
+  // Handle movie play
+  const handleMoviePlay = useCallback((movie: Movie) => {
+    navigate(`/watch/${movie.id}`);
+  }, [navigate]);
+
+  // Handle add to watchlist
+  const handleAddToWatchlist = useCallback((movie: Movie) => {
+    console.log('Add to watchlist:', movie.title);
+  }, []);
+
+  // Handle view all for category
+  const handleViewAll = useCallback((categoryTitle: string) => {
+    const categorySlug = categoryTitle.toLowerCase().replace(/\s+/g, '-');
+    navigate(`/category/${categorySlug}`);
+  }, [navigate]);
+
+  // Handle movie click
+  const handleMovieClick = useCallback((movie: Movie) => {
+    if (onMovieClick) {
+      onMovieClick(movie);
+    } else {
+      navigate(`/movies/${movie.id}`);
+    }
+  }, [navigate, onMovieClick]);
+
+  // If loading or no manifest, show skeleton sections
+  if (loading || !manifest || manifest.code !== 1 || !manifest.data) {
+    return (
+      <div className="content-sections">
+        {/* Featured Movies Skeleton */}
+        <MovieListBuilder
+          title="Featured Movies"
+          movies={[]}
+          loading={true}
+          variant="large"
+          showProgress={false}
+        />
+
+        {/* Trending Skeleton */}
+        <MovieListBuilder
+          title="Trending Now"
+          movies={[]}
+          loading={true}
+          variant="default"
+          showProgress={false}
+        />
+
+        {/* Recommended Skeleton */}
+        <MovieListBuilder
+          title="Recommended for You"
+          movies={[]}
+          loading={true}
+          variant="default"
+          showProgress={true}
+        />
+
+        {/* Additional Category Skeletons */}
+        {Array.from({ length: 3 }).map((_, index) => (
+          <MovieListBuilder
+            key={`skeleton-${index}`}
+            title="Loading..."
+            movies={[]}
+            loading={true}
+            variant="default"
+            showProgress={false}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  const { data } = manifest;
+
+  return (
+    <div className="content-sections">
+      {/* Featured Movies Section */}
+      {data.featuredMovies && data.featuredMovies.length > 0 && (
+        <MovieListBuilder
+          title="Featured Movies"
+          movies={data.featuredMovies}
+          variant="large"
+          showProgress={false}
+          maxItems={10}
+          onMovieClick={handleMovieClick}
+          onMoviePlay={handleMoviePlay}
+          onAddToWatchlist={handleAddToWatchlist}
+          onViewAll={handleViewAll}
+          onRetry={onRetry}
+        />
+      )}
+
+      {/* Trending Movies Section */}
+      {data.trendingMovies && data.trendingMovies.length > 0 && (
+        <MovieListBuilder
+          title="Trending Now"
+          movies={data.trendingMovies}
+          variant="default"
+          showProgress={false}
+          maxItems={12}
+          onMovieClick={handleMovieClick}
+          onMoviePlay={handleMoviePlay}
+          onAddToWatchlist={handleAddToWatchlist}
+          onViewAll={handleViewAll}
+          onRetry={onRetry}
+        />
+      )}
+
+      {/* Recommended Movies Section */}
+      {data.recommendedMovies && data.recommendedMovies.length > 0 && (
+        <MovieListBuilder
+          title="Recommended for You"
+          movies={data.recommendedMovies}
+          variant="default"
+          showProgress={true}
+          maxItems={12}
+          onMovieClick={handleMovieClick}
+          onMoviePlay={handleMoviePlay}
+          onAddToWatchlist={handleAddToWatchlist}
+          onViewAll={handleViewAll}
+          onRetry={onRetry}
+        />
+      )}
+
+      {/* Dynamic Categories from Manifest */}
+      {data.categories && data.categories.length > 0 && (
+        <>
+          {data.categories
+            .filter((category: MovieCategory) => category.movies && category.movies.length > 0)
+            .map((category: MovieCategory) => (
+              <MovieListBuilder
+                key={category.id}
+                title={category.name}
+                movies={category.movies}
+                variant="default"
+                showProgress={false}
+                maxItems={12}
+                onMovieClick={handleMovieClick}
+                onMoviePlay={handleMoviePlay}
+                onAddToWatchlist={handleAddToWatchlist}
+                onViewAll={handleViewAll}
+                onRetry={onRetry}
+              />
+            ))}
+        </>
+      )}
+
+      {/* Continue Watching Section (if user has viewing history) */}
+      {/* Note: This would come from user's watch history in the manifest */}
+      {data.continueWatching && data.continueWatching.length > 0 && (
+        <MovieListBuilder
+          title="Continue Watching"
+          movies={data.continueWatching}
+          variant="default"
+          showProgress={true}
+          maxItems={8}
+          onMovieClick={handleMovieClick}
+          onMoviePlay={handleMoviePlay}
+          onAddToWatchlist={handleAddToWatchlist}
+          onViewAll={handleViewAll}
+          onRetry={onRetry}
+        />
+      )}
+
+      {/* Recently Added */}
+      {data.recentlyAdded && data.recentlyAdded.length > 0 && (
+        <MovieListBuilder
+          title="Recently Added"
+          movies={data.recentlyAdded}
+          variant="compact"
+          showProgress={false}
+          maxItems={15}
+          onMovieClick={handleMovieClick}
+          onMoviePlay={handleMoviePlay}
+          onAddToWatchlist={handleAddToWatchlist}
+          onViewAll={handleViewAll}
+          onRetry={onRetry}
+        />
+      )}
+
+      {/* Popular This Week */}
+      {data.popularThisWeek && data.popularThisWeek.length > 0 && (
+        <MovieListBuilder
+          title="Popular This Week"
+          movies={data.popularThisWeek}
+          variant="default"
+          showProgress={false}
+          maxItems={12}
+          onMovieClick={handleMovieClick}
+          onMoviePlay={handleMoviePlay}
+          onAddToWatchlist={handleAddToWatchlist}
+          onViewAll={handleViewAll}
+          onRetry={onRetry}
+        />
+      )}
+    </div>
+  );
+};
+
+export default memo(ContentSections);

@@ -1,0 +1,314 @@
+/* ===================================================================
+   DeliveryAddressPage.css - Square Design System Compliant
+   =================================================================== */
+
+.delivery-address-page {
+  min-height: 80vh;
+  background-color: var(--background-body);
+  font-family: var(--font-family);
+  padding: var(--spacing-lg) 0;
+}
+
+/* --- Delivery Form Card --- */
+.delivery-form-card {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-speed) var(--transition-timing);
+}
+
+.delivery-form-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* --- Header --- */
+.delivery-header {
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.delivery-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color-dark);
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.025em;
+}
+
+.delivery-subtitle {
+  font-size: 1rem;
+  color: var(--text-color-medium);
+  margin: 0;
+}
+
+/* --- Form Groups --- */
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 500;
+  color: var(--text-color-dark);
+  font-size: 0.9rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: var(--white);
+  transition: all var(--transition-speed) var(--transition-timing);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.25);
+}
+
+.form-control:invalid {
+  border-color: var(--danger-color);
+}
+
+/* --- Select Dropdown --- */
+.form-select {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: var(--white);
+  cursor: pointer;
+  transition: all var(--transition-speed) var(--transition-timing);
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.25);
+}
+
+/* --- Button Styles --- */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: 1px solid var(--primary-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) var(--transition-timing);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-color-dark);
+  border-color: var(--primary-color-dark);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-color-medium);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-speed) var(--transition-timing);
+}
+
+.btn-secondary:hover {
+  background-color: var(--background-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* --- Address Preview --- */
+.address-preview {
+  background-color: var(--background-light);
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+}
+
+.address-preview-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color-dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.address-preview-text {
+  color: var(--text-color-medium);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* --- Delivery Options --- */
+.delivery-options {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color-light);
+}
+
+.delivery-option {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-sm);
+  cursor: pointer;
+  transition: all var(--transition-speed) var(--transition-timing);
+}
+
+.delivery-option:hover {
+  border-color: var(--primary-color);
+  background-color: var(--background-light);
+}
+
+.delivery-option.selected {
+  border-color: var(--primary-color);
+  background-color: rgba(var(--primary-color-rgb), 0.05);
+}
+
+.delivery-option-radio {
+  margin-right: var(--spacing-md);
+}
+
+.delivery-option-details {
+  flex: 1;
+}
+
+.delivery-option-title {
+  font-weight: 600;
+  color: var(--text-color-dark);
+  margin-bottom: var(--spacing-xs);
+}
+
+.delivery-option-description {
+  font-size: 0.9rem;
+  color: var(--text-color-medium);
+  margin: 0;
+}
+
+.delivery-option-price {
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 1.1rem;
+}
+
+/* --- Form Actions --- */
+.form-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color-light);
+}
+
+/* --- Loading State --- */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color-light);
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- Error States --- */
+.form-error {
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin-top: var(--spacing-xs);
+}
+
+.form-control.error {
+  border-color: var(--danger-color);
+}
+
+/* --- Success State --- */
+.success-message {
+  background-color: rgba(var(--success-color), 0.1);
+  border: 1px solid var(--success-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  color: var(--success-color);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 767.98px) {
+  .delivery-address-page {
+    padding: var(--spacing-md) 0;
+  }
+  
+  .delivery-form-card {
+    padding: var(--spacing-lg);
+    margin: 0 var(--spacing-md);
+  }
+  
+  .delivery-title {
+    font-size: 1.5rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .delivery-option {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .delivery-option-radio {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .delivery-form-card {
+    padding: var(--spacing-md);
+    margin: 0 var(--spacing-sm);
+  }
+  
+  .delivery-title {
+    font-size: 1.25rem;
+  }
+  
+  .form-control,
+  .form-select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}

@@ -1,0 +1,228 @@
+/* src/app/components/shared/ProductCard2.css */
+
+/*
+ * This stylesheet is specifically for ProductCard2.
+ * It aims for a bold, modern, professional, and visually impactful design,
+ * emphasizing precise density and a seamless hover experience.
+ * It assumes blitxpress-theme.css is loaded BEFORE this file.
+ */
+
+.product-card2 {
+  background-color: var(--white);
+  border: 1px solid var(--border-color); /* Clean, defined border */
+  border-radius: var(--border-radius); /* Use global minimal radius (2px) */
+  box-shadow: var(--shadow-sm); /* Default subtle shadow for initial depth */
+  overflow: hidden; /* Crucial for clipping the sliding overlay */
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensures consistent height in grids */
+  width: 100%; /* Fills its grid column */
+
+  text-decoration: none;
+  color: inherit;
+  position: relative; /* Crucial: Establishes positioning context for absolute children */
+
+  transition: all var(--transition-speed) var(--transition-timing-function);
+}
+
+.product-card2:hover {
+  transform: translateY(-3px); /* More noticeable lift on hover */
+  box-shadow: var(--shadow-md); /* Stronger shadow on hover */
+  border-color: var(--primary-color); /* Primary color border highlight on hover */
+}
+
+/* Main clickable link now wraps all visible content (image + info) */
+.product-card2-info-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  flex-grow: 1; /* Allows it to take all available space */
+  position: relative; /* To stack correctly above other elements */
+  z-index: 1; /* Ensure it's clickable and doesn't get covered by the button */
+  /* NO PADDING-BOTTOM HERE - the button will overlay */
+}
+
+/* Product Image Section */
+.product-card2-image-wrapper {
+  width: 100%;
+  padding-top: 100%; /* 1:1 aspect ratio */
+  position: relative;
+  overflow: hidden;
+  background-color: #f7f7f7;
+  border-bottom: 1px solid var(--border-color); /* Separator below image */
+}
+
+.product-card2-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform var(--transition-speed) var(--transition-timing-function);
+}
+
+.product-card2:hover .product-card2-image {
+  transform: scale(1.08); /* More noticeable zoom on hover */
+}
+
+.product-card2-discount-badge {
+  position: absolute;
+  top: 10px; /* Prominent position */
+  left: 10px;
+  background: linear-gradient(to right, var(--primary-color-light), var(--primary-color));
+  color: var(--white);
+  padding: 5px 10px; /* More prominent badge */
+  border-radius: var(--border-radius);
+  font-size: 12px; /* Clearer font size */
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  z-index: 2; /* Above image */
+  box-shadow: var(--shadow-sm); /* Subtle shadow on badge */
+}
+
+/* Product Info Section */
+.product-card2-info {
+  padding: 12px; /* Balanced padding: good readability, still compact */
+  flex-grow: 1; /* Allows info to grow vertically */
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card2-name {
+  font-size: 15px; /* Clearer, more readable font size */
+  font-weight: 700; /* Bolder for prominence */
+  color: var(--text-color-dark);
+  line-height: 1.3; /* Comfortable line height */
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(1.3 * 15px * 2); /* Fixed height for 2 lines */
+  margin-bottom: 8px; /* Balanced space below name */
+}
+
+.product-card2-pricing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px; /* Balanced spacing */
+  margin-top: auto; /* Pushes pricing to bottom */
+  margin-bottom: 12px; /* More space before stock progress */
+}
+
+.product-card2-price-new {
+  font-size: 1.6rem; /* VERY impactful primary price */
+  font-weight: 900; /* Extra bold for ultimate prominence */
+  color: var(--primary-color);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.product-card2-price-old {
+  font-size: 0.95rem; /* Clearer old price for readability */
+  color: var(--text-color-light);
+  text-decoration: line-through;
+  white-space: nowrap;
+}
+
+/* Product Stock Progress */
+.product-card2-stock-progress {
+  margin-bottom: 12px; /* More space below progress bar */
+}
+.product-card2-progress-bar-container {
+  width: 100%;
+  height: 6px; /* Slightly thicker progress bar for visual weight */
+  background-color: var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: 4px; /* More space */
+}
+.product-card2-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--primary-color-light), var(--primary-color));
+  border-radius: var(--border-radius);
+  transition: width 0.4s ease-out;
+}
+.product-card2-items-sold-text {
+  font-size: 11px; /* Clearer text */
+  color: var(--text-color-medium);
+  display: block;
+}
+
+/* Add to Cart Button (Full-width bar that slides up on hover, OVERLAYS CONTENT) */
+.product-card2-add-to-cart-bar-btn {
+    position: absolute; /* Positioned relative to .product-card2 */
+    bottom: 0; /* Aligned to the very bottom of the card */
+    left: 0;
+    width: 100%;
+    height: 45px; /* Fixed height for the action bar */
+    background: linear-gradient(to right, var(--primary-color-light), var(--primary-color)); /* Gradient background for the bar */
+    border: none;
+    color: var(--white);
+    font-size: 1.1rem; /* Clearer font size for text */
+    font-weight: 700; /* Bolder text */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and text */
+    text-transform: uppercase; /* Match some e-commerce button styles */
+    box-shadow: none; /* No shadow on the button itself */
+    border-radius: 0; /* SQUARE corners for this button */
+
+    /* Initially hidden below the card's border-bottom */
+    transform: translateY(100%);
+    opacity: 0; /* Also fade out */
+    transition: all var(--transition-speed) var(--transition-timing-function);
+    z-index: 2; /* It should sit above the product info, but below image/badge */
+}
+
+.product-card2:hover .product-card2-add-to-cart-bar-btn {
+    transform: translateY(0); /* Slide up into view */
+    opacity: 1; /* Fade in */
+}
+
+.product-card2-add-to-cart-bar-btn:hover {
+    background: linear-gradient(to right, var(--primary-color), var(--primary-color-dark)); /* Darker gradient on hover */
+    box-shadow: none;
+    transform: none; /* Reset transform to prevent double transformation */
+}
+.product-card2-add-to-cart-bar-btn i {
+    font-size: 1.3em; /* Slightly larger icon */
+}
+
+
+/* Responsive adjustments (general ProductCard2, not grid specific) */
+@media (max-width: 575.98px) {
+    .product-card2-info {
+        padding: 10px; /* Keep consistent padding on small screens */
+    }
+    .product-card2-name {
+        font-size: 13px;
+        min-height: calc(1.3 * 13px * 2);
+    }
+    .product-card2-pricing {
+        margin-bottom: 10px;
+    }
+    .product-card2-price-new {
+        font-size: 1.25rem;
+    }
+    .product-card2-price-old {
+        font-size: 0.8rem;
+    }
+    .product-card2-stock-progress {
+        margin-bottom: 10px;
+    }
+    .product-card2-items-sold-text {
+        font-size: 10px;
+    }
+    .product-card2-add-to-cart-bar-btn {
+        height: 40px; /* Adjust height for smaller screens */
+        font-size: 1rem;
+    }
+}

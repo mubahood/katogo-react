@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Route Test</title>
+</head>
+<body>
+    <h1>Auth Route Test</h1>
+    <div id="test-results"></div>
+    
+    <script>
+        console.log('Testing auth routes...');
+        
+        // Test if we can navigate to auth routes
+        const testRoutes = [
+            '/auth/login',
+            '/auth/register',
+            '/login',
+            '/register'
+        ];
+        
+        const results = document.getElementById('test-results');
+        
+        testRoutes.forEach(route => {
+            const link = document.createElement('a');
+            link.href = route;
+            link.textContent = `Test ${route}`;
+            link.style.display = 'block';
+            link.style.margin = '10px 0';
+            link.style.padding = '10px';
+            link.style.border = '1px solid #ccc';
+            link.target = '_blank';
+            
+            results.appendChild(link);
+        });
+        
+        // Test fetch to see if routes respond
+        fetch('/auth/login')
+            .then(response => {
+                console.log('Auth login route response:', response.status);
+            })
+            .catch(error => {
+                console.error('Auth login route error:', error);
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,711 @@
+/* 
+ * UgFlix Global Theme - Centralized Design System
+ * Master theme file for consistent styling across all components
+ * Dark-first design with 3 core colors: Dark BG, Primary Accent, Secondary Accent
+ */
+
+/* === GLOBAL CSS VARIABLES === */
+:root {
+  /* === CORE BRAND COLORS === */
+  --ugflix-primary: #ff6b35;           /* Main accent color (orange) */
+  --ugflix-primary-dark: #e55a2e;      /* Darker shade for hover states */
+  --ugflix-secondary: #f7931e;         /* Secondary accent (yellow-orange) */
+  --ugflix-accent: #ffd700;            /* Tertiary accent (gold) */
+  
+  /* === BACKGROUND COLORS === */
+  --ugflix-bg-primary: #0a0a0a;        /* Deepest dark background */
+  --ugflix-bg-secondary: #1a1a1a;      /* Main dark background */
+  --ugflix-bg-tertiary: #2a2a2a;       /* Lighter dark for cards/sections */
+  --ugflix-bg-card: #1e1e1e;           /* Card/modal backgrounds */
+  --ugflix-bg-hover: #333333;          /* Hover state backgrounds */
+  
+  /* === TEXT COLORS === */
+  --ugflix-text-primary: #ffffff;      /* Main text color */
+  --ugflix-text-secondary: #cccccc;    /* Secondary text */
+  --ugflix-text-muted: #888888;        /* Muted/disabled text */
+  --ugflix-text-accent: #ff6b35;       /* Accent text color */
+  --ugflix-text-error: #dc3545;        /* Error messages */
+  --ugflix-text-success: #28a745;      /* Success messages */
+  
+  /* === BORDER COLORS === */
+  --ugflix-border: #333333;            /* Main border color */
+  --ugflix-border-light: #444444;      /* Lighter borders */
+  --ugflix-border-focus: #ff6b35;      /* Focus state borders */
+  --ugflix-border-hover: #ff6b35;      /* Hover state borders */
+  
+  /* === EFFECTS & SHADOWS === */
+  --ugflix-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --ugflix-shadow-hover: 0 8px 24px rgba(255, 107, 53, 0.3);
+  --ugflix-shadow-focus: 0 0 0 3px rgba(255, 107, 53, 0.2);
+  
+  /* === TRANSITIONS === */
+  --ugflix-transition: all 0.3s ease;
+  --ugflix-transition-fast: all 0.15s ease;
+  --ugflix-transition-slow: all 0.5s ease;
+  
+  /* === DESIGN SYSTEM === */
+  --ugflix-border-radius: 0px;         /* Square design - no rounded corners */
+  --ugflix-max-width: 1400px;          /* Max content width */
+  --ugflix-header-height: 70px;        /* Header height */
+  --ugflix-topbar-height: 35px;        /* Top utility bar height */
+}
+
+/* === GLOBAL RESETS & BASE STYLES === */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background: var(--ugflix-bg-primary);
+  color: var(--ugflix-text-primary);
+  line-height: 1.6;
+}
+
+/* Force dark background globally */
+body {
+  background: var(--ugflix-bg-primary) !important;
+  color: var(--ugflix-text-primary) !important;
+}
+
+/* Main content spacing to account for fixed header */
+.main-content {
+  padding-top: calc(var(--ugflix-header-height) + var(--ugflix-topbar-height));
+  min-height: calc(100vh - calc(var(--ugflix-header-height) + var(--ugflix-topbar-height)));
+}
+
+/* Homepage specific styling - no top padding for full-screen hero */
+.main-content:has(.ugflix-home) {
+  padding-top: 0 !important;
+}
+
+.ugflix-home {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Fix for browsers that don't support :has() */
+.main-content.homepage-layout {
+  padding-top: 0 !important;
+}
+
+/* WatchPage specific styling - proper spacing from header */
+.main-content:has(.watch-page) {
+  padding-top: 0 !important;
+}
+
+.watch-page {
+  padding-top: 120px !important; /* Significant space from header - header (70px) + topbar (35px) + extra space (15px) */
+  margin-top: 0 !important;
+}
+
+/* Remove default Bootstrap white backgrounds */
+.bg-white {
+  background: var(--ugflix-bg-card) !important;
+}
+
+.bg-light {
+  background: var(--ugflix-bg-tertiary) !important;
+}
+
+/* === HEADER STYLES === */
+.header-container,
+.header-wrapper {
+  background: var(--ugflix-bg-secondary) !important;
+  border-bottom: none !important;
+  box-shadow: var(--ugflix-shadow);
+}
+
+/* Top Utility Bar */
+.top-utility-bar-wrapper {
+  background: var(--ugflix-bg-primary);
+  border-bottom: 1px solid var(--ugflix-border);
+  height: var(--ugflix-topbar-height);
+  font-size: 12px;
+}
+
+.utility-link {
+  color: var(--ugflix-text-muted);
+  text-decoration: none;
+  padding: 8px 12px;
+  transition: var(--ugflix-transition-fast);
+  border-radius: var(--ugflix-border-radius);
+  font-weight: 500;
+}
+
+.utility-link:hover {
+  color: var(--ugflix-primary);
+  background: var(--ugflix-bg-hover);
+  text-decoration: none;
+}
+
+/* Main Navigation */
+.main-nav-wrapper {
+  height: var(--ugflix-header-height);
+  background: var(--ugflix-bg-secondary);
+  /* border-bottom: 1px solid var(--ugflix-border); */
+  padding: 0 16px;
+}
+
+/* Logo Styles */
+.logo-wrapper {
+  padding: 4px 8px;
+  border-radius: var(--ugflix-border-radius);
+  transition: var(--ugflix-transition);
+}
+
+.logo-wrapper:hover {
+  background: var(--ugflix-bg-hover);
+  transform: scale(1.02);
+}
+
+/* Category Toggle */
+.category-toggle-content {
+  padding: 8px 12px;
+  color: var(--ugflix-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--ugflix-border-radius);
+  transition: var(--ugflix-transition);
+}
+
+.category-toggle:hover .category-toggle-content,
+.category-toggle.active .category-toggle-content {
+  color: var(--ugflix-primary);
+  background: var(--ugflix-bg-hover);
+  border-color: var(--ugflix-border);
+}
+
+.category-icon {
+  color: var(--ugflix-primary);
+}
+
+.chevron-icon {
+  color: var(--ugflix-text-muted);
+}
+
+.category-toggle:hover .chevron-icon,
+.category-toggle.active .chevron-icon {
+  color: var(--ugflix-primary);
+}
+
+/* Search Styles */
+.search-input-group {
+  background: var(--ugflix-bg-tertiary);
+  border: 1px solid var(--ugflix-border);
+  border-radius: var(--ugflix-border-radius);
+  overflow: hidden;
+  transition: var(--ugflix-transition);
+}
+
+.search-input-group:focus-within {
+  background: var(--ugflix-bg-card);
+  border-color: var(--ugflix-border-focus);
+  box-shadow: var(--ugflix-shadow-focus);
+}
+
+.search-input {
+  background: transparent !important;
+  border: none !important;
+  color: var(--ugflix-text-primary) !important;
+  padding: 0 16px;
+}
+
+.search-input::placeholder {
+  color: var(--ugflix-text-muted) !important;
+}
+
+.search-input:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.btn-search {
+  background: var(--ugflix-primary);
+  color: var(--ugflix-text-primary);
+  border: none;
+  transition: var(--ugflix-transition);
+  border-radius: var(--ugflix-border-radius);
+}
+
+.btn-search:hover {
+  background: var(--ugflix-primary-dark);
+  transform: scale(1.05);
+}
+
+/* Action Icons */
+.action-link {
+  color: var(--ugflix-text-secondary);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: var(--ugflix-border-radius);
+  transition: var(--ugflix-transition);
+  text-align: center;
+}
+
+.action-link:hover {
+  color: var(--ugflix-primary);
+  background: var(--ugflix-bg-hover);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.action-icon {
+  color: var(--ugflix-text-muted);
+  transition: var(--ugflix-transition);
+}
+
+.action-link:hover .action-icon {
+  color: var(--ugflix-primary);
+  transform: scale(1.1);
+}
+
+/* Badges */
+.cart-badge,
+.notification-dot {
+  background: var(--ugflix-primary);
+  color: var(--ugflix-text-primary);
+  border: 2px solid var(--ugflix-bg-secondary);
+  border-radius: 50%;
+}
+
+/* Mega Menu */
+.mega-menu {
+  background: var(--ugflix-bg-card);
+  border: 1px solid var(--ugflix-border);
+  border-radius: var(--ugflix-border-radius);
+  box-shadow: var(--ugflix-shadow);
+}
+
+.mega-menu-heading {
+  color: var(--ugflix-text-primary);
+  border-bottom: 1px solid var(--ugflix-border);
+}
+
+.mega-menu-link {
+  color: var(--ugflix-text-secondary);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: var(--ugflix-border-radius);
+  transition: var(--ugflix-transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mega-menu-link:hover {
+  color: var(--ugflix-primary);
+  background: var(--ugflix-bg-hover);
+  text-decoration: none;
+  transform: translateX(3px);
+}
+
+.link-icon {
+  color: var(--ugflix-text-muted);
+  transition: var(--ugflix-transition);
+}
+
+.mega-menu-link:hover .link-icon {
+  color: var(--ugflix-primary);
+}
+
+/* Mobile Navigation */
+.mobile-nav-offcanvas {
+  background: var(--ugflix-bg-card);
+  border-left: 1px solid var(--ugflix-border);
+}
+
+.mobile-nav-heading {
+  color: var(--ugflix-text-primary);
+  border-bottom: 1px solid var(--ugflix-border);
+  padding: 12px 16px 8px;
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.nav-links li a {
+  color: var(--ugflix-text-secondary);
+  text-decoration: none;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: var(--ugflix-transition);
+}
+
+.nav-links li a:hover {
+  color: var(--ugflix-primary);
+  background: var(--ugflix-bg-hover);
+  text-decoration: none;
+}
+
+/* === FORM CONTROLS === */
+.form-control {
+  background: var(--ugflix-bg-tertiary) !important;
+  border: 1px solid var(--ugflix-border) !important;
+  color: var(--ugflix-text-primary) !important;
+  border-radius: var(--ugflix-border-radius) !important;
+}
+
+.form-control:focus {
+  background: var(--ugflix-bg-card) !important;
+  border-color: var(--ugflix-border-focus) !important;
+  box-shadow: var(--ugflix-shadow-focus) !important;
+  color: var(--ugflix-text-primary) !important;
+}
+
+.form-control::placeholder {
+  color: var(--ugflix-text-muted) !important;
+}
+
+/* === BUTTONS === */
+/* Primary Button - Orange with Gradient */
+.btn-primary {
+  background: linear-gradient(135deg, var(--ugflix-primary), var(--ugflix-primary-dark)) !important;
+  border: 2px solid var(--ugflix-primary) !important;
+  color: var(--ugflix-text-primary) !important;
+  border-radius: var(--ugflix-border-radius) !important;
+  transition: var(--ugflix-transition);
+  font-weight: 600;
+  padding: 12px 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--ugflix-primary-dark), #d1491f) !important;
+  border-color: var(--ugflix-primary-dark) !important;
+  color: var(--ugflix-text-primary) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 10px rgba(255, 107, 53, 0.3) !important;
+}
+
+/* Secondary Button - Yellow/Gold Gradient */
+.btn-secondary {
+  background: linear-gradient(135deg, var(--ugflix-secondary), var(--ugflix-accent)) !important;
+  border: 2px solid var(--ugflix-secondary) !important;
+  color: #1a1a1a !important;
+  border-radius: var(--ugflix-border-radius) !important;
+  transition: var(--ugflix-transition);
+  font-weight: 600;
+  padding: 12px 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(247, 147, 30, 0.3);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #e6841a, #e6c200) !important;
+  border-color: #e6841a !important;
+  color: #000000 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(247, 147, 30, 0.4);
+}
+
+.btn-secondary:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 10px rgba(247, 147, 30, 0.3) !important;
+}
+
+/* Outline Primary Button */
+.btn-outline-primary {
+  background: transparent !important;
+  border: 2px solid var(--ugflix-primary) !important;
+  color: var(--ugflix-primary) !important;
+  border-radius: var(--ugflix-border-radius) !important;
+  transition: var(--ugflix-transition);
+  font-weight: 600;
+  padding: 12px 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-outline-primary:hover {
+  background: linear-gradient(135deg, var(--ugflix-primary), var(--ugflix-primary-dark)) !important;
+  border-color: var(--ugflix-primary) !important;
+  color: var(--ugflix-text-primary) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+}
+
+.btn-outline-primary:active {
+  transform: translateY(0) !important;
+}
+
+/* Outline Secondary Button */
+.btn-outline-secondary {
+  background: transparent !important;
+  border: 2px solid var(--ugflix-secondary) !important;
+  color: var(--ugflix-secondary) !important;
+  border-radius: var(--ugflix-border-radius) !important;
+  transition: var(--ugflix-transition);
+  font-weight: 600;
+  padding: 12px 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-outline-secondary:hover {
+  background: linear-gradient(135deg, var(--ugflix-secondary), var(--ugflix-accent)) !important;
+  border-color: var(--ugflix-secondary) !important;
+  color: #1a1a1a !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(247, 147, 30, 0.3);
+}
+
+/* Dark Button */
+.btn-dark {
+  background: linear-gradient(135deg, var(--ugflix-bg-tertiary), var(--ugflix-bg-hover)) !important;
+  border: 2px solid var(--ugflix-border) !important;
+  color: var(--ugflix-text-primary) !important;
+  border-radius: var(--ugflix-border-radius) !important;
+  transition: var(--ugflix-transition);
+  font-weight: 600;
+  padding: 12px 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-dark:hover {
+  background: linear-gradient(135deg, var(--ugflix-bg-hover), #4a4a4a) !important;
+  border-color: var(--ugflix-border-light) !important;
+  color: var(--ugflix-text-primary) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(51, 51, 51, 0.4);
+}
+
+/* Accent Gradient Button */
+.btn-accent {
+  background: linear-gradient(135deg, var(--ugflix-accent), #ffed4e) !important;
+  border: 2px solid var(--ugflix-accent) !important;
+  color: #1a1a1a !important;
+  border-radius: var(--ugflix-border-radius) !important;
+  transition: var(--ugflix-transition);
+  font-weight: 700;
+  padding: 12px 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.btn-accent:hover {
+  background: linear-gradient(135deg, #ffed4e, #ffd700) !important;
+  border-color: #ffed4e !important;
+  color: #000000 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5);
+}
+
+/* Small Button Variant */
+.btn-sm {
+  padding: 8px 16px !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.25px !important;
+}
+
+/* Large Button Variant */
+.btn-lg {
+  padding: 16px 32px !important;
+  font-size: 1.125rem !important;
+  letter-spacing: 0.75px !important;
+}
+
+/* Button Group Styling */
+.btn-group .btn {
+  border-radius: 0 !important;
+}
+
+.btn-group .btn:first-child {
+  border-radius: var(--ugflix-border-radius) 0 0 var(--ugflix-border-radius) !important;
+}
+
+.btn-group .btn:last-child {
+  border-radius: 0 var(--ugflix-border-radius) var(--ugflix-border-radius) 0 !important;
+}
+
+/* Disabled Button States */
+.btn:disabled,
+.btn.disabled {
+  background: var(--ugflix-bg-tertiary) !important;
+  border-color: var(--ugflix-border) !important;
+  color: var(--ugflix-text-muted) !important;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+/* === CARDS === */
+.card {
+  background: var(--ugflix-bg-card) !important;
+  border: 1px solid var(--ugflix-border) !important;
+  border-radius: var(--ugflix-border-radius) !important;
+  box-shadow: var(--ugflix-shadow);
+}
+
+.card-header {
+  background: var(--ugflix-bg-tertiary) !important;
+  border-bottom: 1px solid var(--ugflix-border) !important;
+  color: var(--ugflix-text-primary) !important;
+}
+
+.card-body {
+  color: var(--ugflix-text-primary) !important;
+}
+
+/* === UTILITY CLASSES === */
+.text-primary {
+  color: var(--ugflix-primary) !important;
+}
+
+.text-muted {
+  color: var(--ugflix-text-muted) !important;
+}
+
+.bg-dark {
+  background: var(--ugflix-bg-secondary) !important;
+}
+
+.border {
+  border-color: var(--ugflix-border) !important;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 991.98px) {
+  .main-nav-wrapper {
+    height: 60px;
+    padding: 0 12px;
+  }
+  
+  .top-utility-bar-wrapper {
+    display: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .main-nav-wrapper {
+    height: 56px;
+    padding: 0 8px;
+  }
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease;
+}
+
+/* === ACCESSIBILITY === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* === HIGH CONTRAST MODE === */
+@media (prefers-contrast: high) {
+  :root {
+    --ugflix-border: #555555;
+    --ugflix-text-muted: #aaaaaa;
+  }
+}
+
+/* === FOOTER STYLES === */
+.ugflix-footer {
+  background: var(--ugflix-bg-primary);
+  border-top: 2px solid;
+  border-image: linear-gradient(90deg, var(--ugflix-primary), var(--ugflix-secondary), var(--ugflix-accent)) 1;
+  padding: 20px 0;
+  margin-top: auto;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ugflix-footer .container {
+  max-width: var(--ugflix-max-width);
+  margin: 0 auto;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-copyright p {
+  margin: 0;
+  color: var(--ugflix-text-muted);
+  font-size: 14px;
+}
+
+.footer-apps {
+  display: flex;
+  align-items: center;
+}
+
+.app-download-link {
+  color: var(--ugflix-text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: normal;
+  transition: var(--ugflix-transition-fast);
+}
+
+.app-download-link:hover {
+  color: var(--ugflix-primary);
+  text-decoration: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .footer-apps {
+    justify-content: center;
+  }
+  
+  .app-download-link {
+    font-size: 12px;
+  }
+}
+
+/* Override old footer styles */
+.modern-footer {
+  display: none !important;
+}

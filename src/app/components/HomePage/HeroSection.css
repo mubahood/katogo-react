@@ -1,0 +1,245 @@
+/* src/app/components/HomePage/HeroSection.css */
+
+/* ===================================================================
+   1. Hero Section - Side by Side Layout
+   =================================================================== */
+.hero-section {
+  margin: 2rem 0;
+  padding: 0;
+}
+
+/* Clean carousel - no visible card */
+.hero-carousel-clean {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Category List Styling */
+.category-list-wrapper {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 10px 0;
+  height: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  font-size: var(--base-font-size);
+  font-weight: 500;
+  color: var(--text-color);
+  text-decoration: none;
+  border-left: 3px solid transparent; /* For hover effect */
+  transition: all 0.2s ease-in-out;
+}
+
+.category-item:hover {
+  background-color: var(--body-bg);
+  color: var(--primary-color);
+  border-left-color: var(--primary-color);
+}
+
+.category-item i {
+  font-size: 18px;
+  width: 20px; /* Ensures icons are aligned */
+  text-align: center;
+  color: var(--text-color-light);
+}
+
+.category-item:hover i {
+  color: var(--primary-color);
+}
+
+/* ===================================================================
+   2. Hero Carousel Styling
+   =================================================================== */
+.hero-carousel-wrapper {
+  min-height: 400px;
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hero-carousel-wrapper .carousel {
+  min-height: 400px;
+}
+
+.hero-carousel-wrapper .carousel-item {
+  min-height: 400px;
+}
+
+.hero-carousel-wrapper .carousel-item img {
+  min-height: 400px;
+  object-fit: contain;
+  background-color: #f8f9fa;
+}
+
+/* Customizing the Carousel Controls (Arrows) */
+.hero-carousel-wrapper .carousel-control-prev-icon,
+.hero-carousel-wrapper .carousel-control-next-icon {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  background-size: 50%;
+}
+
+/* Customizing the Carousel Indicators (Dots) */
+.hero-carousel-wrapper .carousel-indicators [data-bs-target] {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  margin: 0 5px;
+  border: none;
+}
+
+.hero-carousel-wrapper .carousel-indicators .active {
+  background-color: var(--primary-color);
+}
+
+/* Customizing the Carousel Caption */
+.hero-carousel-wrapper .carousel-caption {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: 2rem; /* More space for caption */
+}
+
+/* Debug styles for carousel */
+.hero-carousel-wrapper .carousel-indicators {
+  bottom: 10px;
+}
+
+.hero-carousel-wrapper .carousel-control-prev,
+.hero-carousel-wrapper .carousel-control-next {
+  width: 5%;
+}
+
+/* Modern Hero Carousel Styles - No Cards */
+.modern-hero-carousel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+}
+
+.modern-hero-carousel .carousel-inner {
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.modern-hero-carousel .carousel-control-prev,
+.modern-hero-carousel .carousel-control-next {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.modern-hero-carousel .carousel-control-prev {
+  left: 20px;
+}
+
+.modern-hero-carousel .carousel-control-next {
+  right: 20px;
+}
+
+.modern-hero-carousel .carousel-control-prev:hover,
+.modern-hero-carousel .carousel-control-next:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.modern-hero-carousel .carousel-control-prev-icon,
+.modern-hero-carousel .carousel-control-next-icon {
+  width: 20px;
+  height: 20px;
+  background-image: none;
+  color: #333;
+  font-weight: bold;
+}
+
+.modern-hero-carousel .carousel-control-prev-icon::before {
+  content: '‹';
+  font-size: 24px;
+  color: #333;
+}
+
+.modern-hero-carousel .carousel-control-next-icon::before {
+  content: '›';
+  font-size: 24px;
+  color: #333;
+}
+
+.modern-hero-carousel .carousel-indicators {
+  bottom: 20px;
+  margin-bottom: 0;
+}
+
+.modern-hero-carousel .carousel-indicators button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid transparent;
+  margin: 0 6px;
+  transition: all 0.3s ease;
+}
+
+.modern-hero-carousel .carousel-indicators button.active {
+  background: white;
+  transform: scale(1.2);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+/* Hero slide hover effects */
+.hero-slide {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.hero-slide:hover {
+  transform: scale(1.02);
+}
+
+.hero-slide-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  transition: opacity 0.3s ease;
+}
+
+.hero-slide:hover .hero-slide-overlay {
+  opacity: 1 !important;
+}
+
+/* Responsive adjustments for the hero section */
+@media (max-width: 991.98px) {
+  .hero-section .row {
+    margin-top: 1rem;
+  }
+}
+
+/* Text shadow for better readability on hero banners */
+.text-shadow {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}

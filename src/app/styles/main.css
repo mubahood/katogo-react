@@ -1,0 +1,115 @@
+/* ===================================================================
+   MAIN STYLESHEET - BlitXpress Theme
+   =================================================================== */
+
+/* Import all component styles in proper order */
+
+/* 1. Theme Variables and Base Styles */
+@import "../components/css/blitxpress-theme.css";
+@import "../components/css/wishlist-utilities.css";
+
+/* 2. Layout Components */
+@import "../components/Header/Header.css";
+@import "../components/Layout/AuthLayout.css";
+
+@import "../components/shared/ProductCard2.css";
+
+/* 4. HomePage Components */
+/* Inline styles moved to respective components */
+
+/* 6. Global Utility Classes and Overrides */
+
+/* FORCE LIGHT MODE - Disable all dark mode */
+html[data-bs-theme="dark"],
+html[data-theme="dark"],
+[data-bs-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: light !important;
+}
+
+/* Override any dark mode media queries */
+@media (prefers-color-scheme: dark) {
+  html,
+  body,
+  * {
+    color-scheme: light !important;
+  }
+}
+
+/* Container improvements */
+.container {
+  max-width: 1200px;
+}
+
+/* Common transitions */
+* {
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove focus outline for mouse users but keep for keyboard users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Common button improvements */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:focus {
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.25);
+}
+
+/* Responsive text */
+@media (max-width: 575.98px) {
+  .display-1 {
+    font-size: 2.5rem;
+  }
+  .display-2 {
+    font-size: 2rem;
+  }
+  .display-3 {
+    font-size: 1.75rem;
+  }
+  .display-4 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Wishlist Page Styles */
+.wishlist-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wishlist-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.wishlist-card .card-img-top {
+  transition: transform 0.3s ease;
+}
+
+.wishlist-card:hover .card-img-top {
+  transform: scale(1.05);
+}

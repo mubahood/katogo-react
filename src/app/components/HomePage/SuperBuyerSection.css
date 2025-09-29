@@ -1,0 +1,483 @@
+/* src/app/components/HomePage/SuperBuyerSection.css */
+
+/*
+ * Note: This CSS relies on variables defined in blitxpress-theme.css.
+ * Ensure blitxpress-theme.css is loaded BEFORE this file in main.tsx.
+ */
+
+.superbuyer-section-wrapper {
+  /* Primary color background */
+  background: #05179F;
+  
+  /* Simple white square box patterns - just outlines */
+  background-image: 
+    /* Horizontal lines for square boxes */
+    repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(255, 255, 255, 0.15) 49px, rgba(255, 255, 255, 0.15) 51px),
+    /* Vertical lines for square boxes */
+    repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(255, 255, 255, 0.15) 49px, rgba(255, 255, 255, 0.15) 51px);
+  
+  /* Pattern sizes */
+  background-size: 
+    50px 50px,
+    50px 50px;
+  
+  /* Pattern positioning */
+  background-position: 
+    0 0,
+    25px 25px;
+  
+  position: relative;
+  /* Removed direct padding-left/right here, Container inside will handle that */
+  padding-top: 50px; /* Increased top padding for the overall section */
+  padding-bottom: 50px; /* Increased bottom padding for the overall section */
+  border-radius: var(--border-radius); /* Apply new minimal radius */
+  overflow: hidden;
+  box-shadow: var(--shadow-md); /* Stronger shadow for the whole block */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* my-4 from HomePage.tsx will apply outer margin */
+  
+  /* Subtle animation for the pattern */
+  animation: superbuyer-pattern-float 20s ease-in-out infinite;
+}
+
+/* Keyframes for subtle pattern animation */
+@keyframes superbuyer-pattern-float {
+  0%, 100% {
+    background-position: 
+      0 0,
+      100px 50px,
+      50px 150px,
+      0 0,
+      30px 30px,
+      75px 25px,
+      25px 75px,
+      125px 125px,
+      0 0,
+      20px 20px,
+      0 0,
+      40px 40px;
+  }
+  50% {
+    background-position: 
+      10px 5px,
+      110px 55px,
+      60px 155px,
+      5px 5px,
+      35px 35px,
+      80px 30px,
+      30px 80px,
+      130px 130px,
+      5px 5px,
+      25px 25px,
+      5px 5px,
+      45px 45px;
+  }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .superbuyer-section-wrapper {
+    animation: none;
+  }
+}
+
+.superbuyer-background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.45) 50%,
+    rgba(0, 0, 0, 0.1) 100%
+  ); /* Bolder gradient */
+  z-index: 1;
+}
+
+/* Container directly within the wrapper to apply max-width and horizontal padding */
+.superbuyer-content-container {
+    position: relative; /* To stack content above overlay */
+    z-index: 2; /* Ensures content is above overlay */
+    /* py-2 from component JSX will add inner vertical padding */
+}
+
+.superbuyer-banner-content-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align content to the top within this flex container */
+  padding-bottom: 60px; /* More space between banner content and highlight cards */
+  flex-wrap: wrap;
+}
+
+.superbuyer-banner-left {
+  color: var(--white);
+  max-width: 480px;
+  padding-right: 30px;
+  /* Removed fixed margin-bottom from here; controlled by flex/gap/component margins */
+}
+
+.superbuyer-title {
+  font-size: 4.5rem; /* Even larger and more dominant title */
+  font-weight: 900;
+  margin-bottom: 20px; /* Space between title and features */
+  line-height: 1;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+}
+
+.superbuyer-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px 25px;
+  font-size: 16px;
+  font-weight: 500;
+  /* Removed direct margin-top, let the title's margin-bottom define spacing */
+}
+.superbuyer-features i {
+  color: #a2d2ff;
+  font-size: 1.2em;
+}
+
+.superbuyer-shop-now-btn {
+  background: #d71529;
+  color: white;
+  font-weight: 700;
+  padding: 15px 35px;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-speed) var(--transition-timing-function);
+  box-shadow: var(--shadow-md);
+  border: none;
+}
+.superbuyer-shop-now-btn:hover {
+  background: #b81222;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+  color: white;
+}
+
+.superbuyer-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  color: var(--white);
+  text-align: left;
+  max-width: 420px;
+  padding-left: 30px;
+}
+
+.superbuyer-stat-item {
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-speed) var(--transition-timing-function);
+  box-shadow: var(--shadow-sm);
+}
+.superbuyer-stat-item:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-md);
+}
+
+.superbuyer-stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+.superbuyer-stat-text {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  margin-bottom: 0;
+}
+.superbuyer-stat-icon {
+  position: absolute;
+  font-size: 5rem;
+  color: rgba(255, 255, 255, 0.08);
+  top: -15px;
+  right: -15px;
+  transform: rotate(-15deg);
+}
+
+.superbuyer-feature-cards-grid {
+  position: relative;
+  z-index: 2;
+  margin-top: 0 !important; /* Ensure no top margin from Bootstrap utilities */
+}
+
+.superbuyer-feature-card {
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow var(--transition-speed)
+      var(--transition-timing-function),
+    transform var(--transition-speed) var(--transition-timing-function);
+}
+.superbuyer-feature-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-5px);
+}
+
+.superbuyer-card-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-color-dark);
+  margin-bottom: 18px;
+}
+
+.superbuyer-mini-products {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.superbuyer-mini-product-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  flex-basis: calc(50% - 7.5px);
+  max-width: calc(50% - 7.5px);
+  padding: 10px;
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-speed)
+    var(--transition-timing-function);
+  border: 1px solid transparent;
+}
+.superbuyer-mini-product-item:hover {
+  background-color: var(--background-light);
+  text-decoration: none;
+  border-color: var(--primary-color);
+}
+
+.mini-product-image-wrapper {
+  width: 90px;
+  height: 90px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.mini-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-product-pricing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+.mini-product-price-new {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+.mini-product-price-old {
+  font-size: 0.8rem;
+  color: var(--text-color-light);
+  text-decoration: line-through;
+}
+
+.mini-product-badge {
+  font-size: 10px;
+  color: var(--text-color-medium);
+  background-color: var(--background-body);
+  padding: 3px 8px;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid var(--border-color);
+}
+
+
+/* --- Responsive Adjustments for SuperBuyer Section --- */
+@media (max-width: 991.98px) {
+  .superbuyer-section-wrapper {
+    padding: 30px;
+    /* Adjust pattern sizes for tablets */
+    background-size: 
+      150px 150px,
+      130px 130px, 
+      170px 170px,
+      45px 45px,
+      45px 45px,
+      110px 110px,
+      90px 90px,
+      100px 100px,
+      30px 30px,
+      30px 30px,
+      60px 60px,
+      60px 60px;
+  }
+  .superbuyer-background-overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.75) 0%,
+      rgba(0, 0, 0, 0.3) 100%
+    );
+  }
+  .superbuyer-banner-content-area {
+    padding-bottom: 30px;
+  }
+  .superbuyer-banner-left {
+    margin-bottom: 25px;
+  }
+  .superbuyer-title {
+    font-size: 3.5rem; /* Larger on tablet than previous mobile */
+  }
+  .superbuyer-shop-now-btn {
+    padding: 12px 25px;
+  }
+  .superbuyer-stats {
+    gap: 15px;
+    padding-left: 0;
+  }
+  .superbuyer-stat-item {
+    padding: 15px;
+  }
+  .superbuyer-stat-number {
+    font-size: 1.8rem;
+  }
+  .superbuyer-stat-text {
+    font-size: 12px;
+  }
+  .superbuyer-stat-icon {
+    font-size: 4rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .superbuyer-section-wrapper {
+    /* Adjust pattern sizes for mobile */
+    background-size: 
+      120px 120px,
+      100px 100px, 
+      140px 140px,
+      35px 35px,
+      35px 35px,
+      90px 90px,
+      70px 70px,
+      80px 80px,
+      25px 25px,
+      25px 25px,
+      50px 50px,
+      50px 50px;
+  }
+  .superbuyer-title {
+    font-size: 2.8rem; /* Further reduced for smaller tablets */
+  }
+  .superbuyer-features {
+    font-size: 14px;
+  }
+  .superbuyer-feature-cards-grid .col-md-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .superbuyer-feature-card {
+    padding: 15px;
+  }
+  .superbuyer-card-title {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  .superbuyer-mini-products {
+    gap: 10px;
+  }
+  .superbuyer-mini-product-item {
+    flex-basis: calc(50% - 5px);
+    max-width: calc(50% - 5px);
+  }
+  .mini-product-image-wrapper {
+    width: 80px;
+    height: 80px;
+  }
+  .mini-product-price-new {
+    font-size: 1rem;
+  }
+  .mini-product-price-old {
+    font-size: 0.75rem;
+  }
+  .mini-product-badge {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .superbuyer-section-wrapper {
+    /* Further reduce pattern sizes for small mobile */
+    background-size: 
+      100px 100px,
+      80px 80px, 
+      120px 120px,
+      30px 30px,
+      30px 30px,
+      70px 70px,
+      60px 60px,
+      65px 65px,
+      20px 20px,
+      20px 20px,
+      40px 40px,
+      40px 40px;
+  }
+  .superbuyer-title {
+    font-size: 2.2rem; /* Final size for smallest mobiles */
+  }
+  .superbuyer-shop-now-btn {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+  .superbuyer-stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .superbuyer-stat-item {
+    padding: 10px;
+  }
+  .superbuyer-mini-product-item {
+    flex-basis: 100%;
+    max-width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-light);
+  }
+  .mini-product-image-wrapper {
+    margin-bottom: 0;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+  .mini-product-pricing {
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+  .mini-product-badge {
+    order: 3;
+    margin-left: auto;
+  }
+}

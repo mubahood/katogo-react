@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Test Without Redux</title>
+</head>
+<body>
+    <div id="test-root"></div>
+    <script type="module">
+        import React from '/node_modules/react/index.js';
+        import ReactDOM from '/node_modules/react-dom/client/index.js';
+
+        console.log('Starting React test without Redux...');
+        
+        function TestComponent() {
+            return React.createElement('div', null, 
+                React.createElement('h1', null, 'React Works!'),
+                React.createElement('p', null, 'This is a basic React component without Redux.')
+            );
+        }
+
+        try {
+            const root = ReactDOM.createRoot(document.getElementById('test-root'));
+            root.render(React.createElement(TestComponent));
+            console.log('React component rendered successfully');
+        } catch (error) {
+            console.error('React rendering error:', error);
+            document.getElementById('test-root').innerHTML = '<h1 style="color: red;">React Error: ' + error.message + '</h1>';
+        }
+    </script>
+</body>
+</html>

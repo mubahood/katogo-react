@@ -1,0 +1,1456 @@
+/* ===================================================================
+   Modern MainNav Enhanced Styles
+   =================================================================== */
+
+/* Enhanced Main Navigation Wrapper */
+.main-nav-wrapper {
+  height: 56px; /* Reduced from var(--header-height) */
+  display: flex;
+  align-items: center;
+  padding: 0 16px; /* Reduced from 20px */
+  background: var(--ugflix-bg-secondary, #1a1a1a);
+  /* border-bottom: 1px solid var(--ugflix-border, #333333); */
+  position: relative;
+  overflow: visible;
+}
+
+/* Responsive Header Container Styles */
+@media (max-width: 1400px) {
+  nav.container-fluid {
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+  }
+}
+
+@media (max-width: 1200px) {
+  nav.container-fluid {
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  nav.container-fluid {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  nav.container-fluid {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Mobile Menu Toggle Enhancement */
+.navbar-toggler {
+  background: none !important;
+  border: none !important;
+  padding: 8px !important;
+  border-radius: var(--ugflix-border-radius, 0px) !important;
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler:hover {
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+  transform: scale(1.05);
+}
+
+.navbar-toggler i {
+  transition: all 0.3s ease;
+}
+
+/* Logo Enhancement */
+.logo-wrapper {
+  transition: all 0.3s ease;
+  border-radius: var(--ugflix-border-radius, 0px);
+  padding: 4px 8px;
+}
+
+.logo-wrapper:hover {
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  transform: scale(1.02);
+}
+
+.main-logo {
+  height: 32px; /* Reduced from 36px to match smaller nav */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  transition: all 0.3s ease;
+}
+
+/* Main Navigation Content */
+.main-nav-content {
+  gap: 12px;
+}
+
+/* ===================================================================
+   Enhanced Category Toggle & Mega Menu - Refined Design
+   =================================================================== */
+
+.category-toggle {
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+  border: none;
+  border-radius: var(--ugflix-border-radius, 0px);
+  overflow: visible;
+  z-index: 1000;
+}
+
+/* Add invisible bridge area to prevent hover gaps */
+.category-toggle::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 4px; /* Bridge height to cover the gap */
+  background: transparent;
+  z-index: 1001;
+  pointer-events: auto;
+}
+
+.category-toggle-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-weight: 600;
+  color: var(--ugflix-text-secondary, #cccccc);
+  transition: all 0.3s ease;
+  border-radius: var(--ugflix-border-radius, 0px);
+  background: transparent;
+  border: none;
+  position: relative;
+}
+
+.category-icon {
+  font-size: 1.1rem;
+  color: var(--ugflix-primary, #ff6b35);
+  transition: all 0.3s ease;
+}
+
+.category-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chevron-icon {
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  color: var(--ugflix-text-muted, #888888);
+  margin-left: 2px;
+}
+
+.category-toggle:hover .category-toggle-content,
+.category-toggle.active .category-toggle-content {
+  color: var(--ugflix-primary, #ff6b35);
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  box-shadow: none;
+  transform: none;
+}
+
+.category-toggle:hover .chevron-icon,
+.category-toggle.active .chevron-icon {
+  transform: rotate(180deg);
+  color: var(--ugflix-primary, #ff6b35);
+}
+
+/* Enhanced Mega Menu */
+.mega-menu {
+  position: absolute;
+  top: calc(100% - 2px); /* Reduced gap to create seamless connection */
+  left: 0;
+  width: 880px;
+  background: var(--ugflix-bg-card, #1e1e1e);
+  border: 1px solid var(--ugflix-border, #333333);
+  border-radius: var(--ugflix-border-radius, 0px);
+  box-shadow: var(--ugflix-shadow, 0 4px 12px rgba(0, 0, 0, 0.5));
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px) scale(0.98);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  pointer-events: none;
+  overflow: hidden;
+  /* Add invisible bridge area to prevent hover loss */
+  margin-top: -2px;
+  padding-top: 2px;
+}
+
+.mega-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.mega-menu-content {
+  padding: 20px; /* Reduced from 25px for more compact look */
+}
+
+.mega-menu-section {
+  padding: 0;
+}
+
+.mega-menu-heading {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ugflix-text-primary, #ffffff);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ugflix-border, #333333);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-section-icon {
+  font-size: 1rem;
+  color: var(--ugflix-primary, #ff6b35);
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  padding: 4px;
+  border-radius: var(--ugflix-border-radius, 0px);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mega-menu-links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mega-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  color: var(--ugflix-text-secondary, #cccccc);
+  text-decoration: none;
+  border-radius: var(--ugflix-border-radius, 0px);
+  transition: all 0.25s ease;
+  position: relative;
+  background: transparent;
+}
+
+.mega-menu-link:hover {
+  color: var(--ugflix-primary, #ff6b35);
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  transform: translateX(3px);
+  text-decoration: none;
+}
+
+.link-icon {
+  font-size: 1rem;
+  color: var(--ugflix-text-muted, #888888);
+  transition: all 0.25s ease;
+  width: 16px;
+  text-align: center;
+}
+
+.mega-menu-link:hover .link-icon {
+  color: var(--ugflix-primary, #ff6b35);
+  transform: scale(1.05);
+}
+
+.item-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--ugflix-text-muted, #888888);
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  padding: 2px 6px;
+  border-radius: var(--ugflix-border-radius, 0px);
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.mega-menu-link:hover .item-count {
+  background: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-text-primary, #ffffff);
+}
+
+/* VJ Links - Clean and Simple */
+.vj-link {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.vj-link:hover {
+  border-left-color: var(--ugflix-primary, #ff6b35);
+  background: rgba(255, 107, 53, 0.1);
+  transform: translateX(2px);
+}
+
+.vj-link span {
+  color: var(--ugflix-text-secondary, #cccccc);
+}
+
+.vj-link:hover span {
+  color: var(--ugflix-primary, #ff6b35);
+}
+
+/* Mega Menu Banner */
+.mega-menu-banner {
+  border-top: 1px solid var(--ugflix-border, #333333);
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.featured-category-card {
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  border: 1px solid var(--ugflix-border, #333333);
+  border-radius: var(--ugflix-border-radius, 0px);
+  padding: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.featured-category-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ugflix-shadow-hover, 0 8px 24px rgba(255, 107, 53, 0.3));
+  border-color: var(--ugflix-primary, #ff6b35);
+}
+
+.featured-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.featured-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--ugflix-primary, #ff6b35), var(--ugflix-primary-dark, #e55a2e));
+  color: var(--ugflix-text-primary, #ffffff);
+  border-radius: var(--ugflix-border-radius, 0px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.featured-icon-secondary {
+  background: linear-gradient(135deg, var(--ugflix-secondary, #f7931e), var(--ugflix-accent, #ffd700));
+}
+
+.featured-text h6 {
+  margin: 0 0 2px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ugflix-text-primary, #ffffff);
+}
+
+.featured-text p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--ugflix-text-secondary, #cccccc);
+  line-height: 1.3;
+}
+
+/* ===================================================================
+   Refined Search Form Design
+   =================================================================== */
+
+.search-form {
+  position: relative;
+  max-width: none;
+  margin: 0 12px; /* Reduced from 16px to 12px for better space utilization */
+  flex-grow: 1;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-group {
+  height: 36px;
+  border-radius: var(--ugflix-border-radius, 0px);
+  overflow: hidden;
+  box-shadow: none;
+  border: 1px solid var(--ugflix-border, #333333);
+  transition: all 0.3s ease;
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  display: flex;
+  backdrop-filter: blur(10px);
+}
+
+.search-input-group:focus-within {
+  background: var(--ugflix-bg-card, #1e1e1e);
+  border-color: var(--ugflix-border-focus, #ff6b35);
+  box-shadow: var(--ugflix-shadow-hover, 0 8px 24px rgba(255, 107, 53, 0.3));
+  transform: translateY(-1px);
+}
+
+.search-input {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent;
+  color: var(--ugflix-text-primary, #ffffff);
+  font-size: 0.85rem;
+  padding: 0 12px;
+  height: 100%;
+  font-weight: 400;
+}
+
+.search-input::placeholder {
+  color: var(--ugflix-text-muted, #888888);
+  font-weight: 400;
+}
+
+.search-input:focus {
+  background: transparent;
+  outline: none;
+}
+
+.btn-search {
+  background: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-text-primary, #ffffff);
+  border: none;
+  width: 44px; /* Increased from 42px for better balance */
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border-radius: 0;
+  cursor: pointer;
+  position: relative;
+  padding: 0; /* Ensure no extra padding */
+}
+
+.btn-search:hover {
+  background: var(--ugflix-primary-dark, #e55a2e);
+  transform: scale(1.02);
+}
+
+.search-icon {
+  font-size: 1rem; /* Increased from 0.95rem for better visibility */
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.btn-search:hover .search-icon {
+  transform: scale(1.05);
+}
+
+/* Better icon centering for the search button */
+.btn-search i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Search Suggestions */
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 0px);
+  left: 0;
+  right: 0;
+  background: var(--ugflix-bg-card, #1e1e1e);
+  border: 1px solid var(--ugflix-border, #333333);
+  border-radius: var(--ugflix-border-radius, 0px);
+  box-shadow: var(--ugflix-shadow, 0 4px 12px rgba(0, 0, 0, 0.5));
+  z-index: 1000;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.suggestions-section {
+  padding: 0;
+}
+
+.suggestion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 8px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ugflix-text-secondary, #cccccc);
+  border-bottom: 1px solid var(--ugflix-border, #333333);
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  color: var(--ugflix-text-secondary, #cccccc);
+  font-size: 0.85rem;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  color: var(--ugflix-primary, #ff6b35);
+}
+
+.suggestion-action {
+  margin-left: auto;
+  font-size: 0.75rem;
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+
+.suggestion-item:hover .suggestion-action {
+  opacity: 1;
+}
+
+/* ===================================================================
+   Enhanced Action Icons
+   =================================================================== */
+
+.action-icons {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Increased for better spacing */
+  flex-shrink: 0;
+}
+
+.action-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--ugflix-text-secondary, #cccccc);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: all 0.2s ease;
+  padding: 10px 12px; /* Better padding for touch targets */
+  border-radius: 8px; /* Slightly rounded for modern look */
+  position: relative;
+  min-width: 70px; /* Consistent button width */
+  border: 1px solid transparent;
+}
+
+.action-link:hover {
+  color: var(--ugflix-primary, #ff6b35);
+  background: transparent;
+  border-color: transparent;
+  text-decoration: none;
+}
+
+.action-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-icon {
+  font-size: 1.6rem;
+  color: var(--ugflix-text-muted, #888888);
+  transition: all 0.3s ease;
+}
+
+.action-link:hover .action-icon {
+  color: var(--ugflix-primary, #ff6b35);
+}
+
+.action-text {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Notification Dot */
+.notification-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: var(--ugflix-primary, #ff6b35);
+  border-radius: 50%;
+  border: 2px solid var(--ugflix-bg-secondary, #1a1a1a);
+  animation: pulse 2s infinite;
+}
+
+/* Cart Badge */
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, var(--ugflix-primary, #ff6b35), var(--ugflix-primary-dark, #e55a2e));
+  color: var(--ugflix-text-primary, #ffffff);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ugflix-bg-secondary, #1a1a1a);
+  animation: bounce 0.6s ease-in-out;
+}
+
+/* ===================================================================
+   Enhanced Mobile Off-Canvas Menu
+   =================================================================== */
+
+.mobile-nav-offcanvas {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: auto;
+  width: 90%;
+  max-width: 350px;
+  height: 100%;
+  background: var(--ugflix-bg-card, #1e1e1e);
+  z-index: 1050;
+  box-shadow: -10px 0px 30px rgba(0,0,0,0.15);
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mobile-nav-offcanvas.show {
+  transform: translateX(0);
+}
+
+.offcanvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 25px 15px 25px;
+  border-bottom: 2px solid var(--ugflix-border, #333333);
+  background: linear-gradient(135deg, var(--ugflix-bg-tertiary, #2a2a2a), var(--ugflix-bg-card, #1e1e1e));
+}
+
+.mobile-logo {
+  height: 32px;
+}
+
+.offcanvas-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: var(--ugflix-text-primary, #ffffff);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--ugflix-border-radius, 0px);
+  transition: all 0.3s ease;
+}
+
+.offcanvas-close-btn:hover {
+  color: var(--ugflix-primary, #ff6b35);
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  transform: scale(1.1);
+}
+
+.offcanvas-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  background: var(--ugflix-bg-card, #1e1e1e);
+}
+
+/* Mobile Search Section */
+.mobile-search-section {
+  padding: 16px 20px; /* Reduced padding */
+  border-bottom: 1px solid var(--ugflix-border, #333333);
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+}
+
+.mobile-search-form {
+  width: 100%; /* Ensure full width */
+}
+
+.mobile-search-form .input-group {
+  height: 42px; /* Slightly reduced height */
+  border-radius: var(--ugflix-border-radius, 0px);
+  overflow: hidden;
+  border: 1px solid var(--ugflix-border, #333333); /* Reduced border width */
+}
+
+/* Mobile Navigation Sections */
+.mobile-nav-section {
+  padding: 0;
+  border: none;
+}
+
+.mobile-nav-heading {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ugflix-primary, #ff6b35);
+  margin: 0;
+  padding: 12px 20px 8px 20px;
+  background: none;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-links li {
+  border: none;
+}
+
+.nav-links li:last-child {
+  border-bottom: none;
+}
+
+.nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: var(--text-color-dark);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: none;
+}
+
+.nav-links a:hover {
+  color: var(--ugflix-primary, #ff6b35);
+  background: rgba(255, 107, 53, 0.08);
+  text-decoration: none;
+  padding-left: 25px;
+}
+
+.nav-links a i {
+  font-size: 1.2rem;
+  color: var(--text-color-light);
+  transition: all 0.3s ease;
+  width: 20px;
+  text-align: center;
+}
+
+.nav-links a:hover i {
+  color: var(--ugflix-primary, #ff6b35);
+  transform: scale(1.1);
+}
+
+.nav-links a .bi-chevron-right {
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: var(--text-color-light);
+}
+
+/* Mobile VJ Links - Compact styling */
+.mobile-vj-links {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.mobile-vj-links a {
+  padding: 8px 20px;
+  font-size: 0.85rem;
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.mobile-vj-links a:hover {
+  border-left-color: var(--ugflix-primary, #ff6b35);
+  background: rgba(255, 107, 53, 0.08);
+  color: var(--ugflix-primary, #ff6b35);
+}
+
+.mobile-vj-links a span:first-child {
+  font-weight: 500;
+}
+
+/* Mobile Badges */
+.mobile-notification-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ugflix-primary, #ff6b35);
+  border-radius: 50%;
+  margin-left: auto;
+  animation: pulse 2s infinite;
+}
+
+.mobile-cart-badge {
+  background: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-bg-card, #1e1e1e);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: auto;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===================================================================
+   Modern Mobile Navigation Layout - UgFlix Dark Theme
+   =================================================================== */
+
+.modern-mobile-nav {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  z-index: 1030 !important;
+  background: var(--ugflix-bg-primary, #0a0a0a) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8) !important;
+  border-bottom: 1px solid var(--ugflix-border, #333333) !important;
+  display: block !important;
+}
+
+/* Mobile Navigation Top Row - UgFlix Dark Theme */
+.modern-mobile-nav .mobile-nav-top {
+  background: var(--ugflix-bg-primary, #0a0a0a) !important;
+  border-bottom: 1px solid var(--ugflix-border, #333333) !important;
+}
+
+.mobile-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px;
+  height: 60px;
+}
+
+/* Mobile Menu Toggle */
+.modern-mobile-nav .mobile-menu-toggle {
+  background: none !important;
+  border: none !important;
+  padding: 8px !important;
+  border-radius: var(--ugflix-border-radius, 0px) !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  height: 44px !important;
+}
+
+.modern-mobile-nav .mobile-menu-toggle:hover {
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+  transform: scale(1.05) !important;
+}
+
+.modern-mobile-nav .mobile-menu-toggle i,
+.modern-mobile-nav .mobile-menu-toggle svg {
+  font-size: 1.5rem !important;
+  color: var(--ugflix-text-primary, #ffffff) !important;
+  stroke: var(--ugflix-text-primary, #ffffff) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Mobile Logo - UgFlix Branding */
+.modern-mobile-nav .mobile-logo-wrapper {
+  flex: 1 !important;
+  display: flex !important;
+  justify-content: center !important;
+  padding: 0 20px !important;
+}
+
+.modern-mobile-nav .mobile-logo {
+  height: 36px !important;
+  max-width: 140px !important;
+  object-fit: contain !important;
+  filter: brightness(1.2) drop-shadow(0 2px 4px rgba(0,0,0,0.5)) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Mobile Action Icons */
+.mobile-action-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modern-mobile-nav .mobile-action-link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: var(--ugflix-border-radius, 0px) !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  text-decoration: none !important;
+}
+
+.modern-mobile-nav .mobile-action-link:hover {
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+}
+
+.modern-mobile-nav .mobile-action-icon-wrapper {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.modern-mobile-nav .mobile-action-link i,
+.modern-mobile-nav .mobile-action-link svg {
+  font-size: 1.3rem !important;
+  color: var(--ugflix-text-primary, #ffffff) !important;
+  stroke: var(--ugflix-text-primary, #ffffff) !important;
+  transition: all 0.3s ease !important;
+}
+
+.modern-mobile-nav .mobile-action-link:hover i,
+.modern-mobile-nav .mobile-action-link:hover svg {
+  color: var(--ugflix-primary, #ff6b35) !important;
+  stroke: var(--ugflix-primary, #ff6b35) !important;
+  transform: scale(1.1) !important;
+}
+
+/* Mobile Action Badges */
+.mobile-notification-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: var(--ugflix-primary, #ff6b35);
+  border-radius: 50%;
+  border: 2px solid var(--ugflix-bg-card, #1e1e1e);
+  animation: pulse 2s infinite;
+}
+
+.mobile-cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, var(--ugflix-primary, #ff6b35) 0%, var(--primary-color-dark) 100%);
+  color: var(--ugflix-bg-card, #1e1e1e);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 2px solid var(--ugflix-bg-card, #1e1e1e);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: bounceIn 0.5s ease-out;
+}
+
+/* Mobile Navigation Bottom Row - UgFlix Dark Search */
+.modern-mobile-nav .mobile-nav-bottom {
+  background: var(--ugflix-bg-secondary, #1a1a1a) !important;
+  padding: 4px 8px 6px 8px !important;
+  border-bottom: 1px solid var(--ugflix-border, #333333) !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100% !important;
+  position: relative !important;
+  z-index: 1 !important;
+  min-height: 42px !important;
+  box-sizing: border-box !important;
+}
+
+/* Override Bootstrap container padding on mobile search */
+.modern-mobile-nav .mobile-nav-bottom .container-fluid,
+.modern-mobile-nav .mobile-nav-bottom .container {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  background: transparent !important;
+}
+
+.modern-mobile-nav .mobile-search-wrapper {
+  width: 100% !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.mobile-search-form {
+  width: 100%;
+}
+
+.modern-mobile-nav .mobile-search-input-group {
+  display: flex !important;
+  align-items: center !important;
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+  border: 1px solid var(--ugflix-border, #333333) !important;
+  border-radius: var(--ugflix-border-radius, 0px) !important;
+  overflow: hidden !important;
+  height: 38px !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+}
+
+.modern-mobile-nav .mobile-search-input-group:focus-within {
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+  border-color: var(--ugflix-primary, #ff6b35) !important;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2) !important;
+}
+
+.modern-mobile-nav .mobile-search-input {
+  flex: 1 !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 12px !important;
+  font-size: 14px !important;
+  color: var(--ugflix-text-primary, #ffffff) !important;
+  height: 100% !important;
+  outline: none !important;
+  width: auto !important;
+}
+
+.modern-mobile-nav .mobile-search-input::placeholder {
+  color: var(--ugflix-text-muted, #888888) !important;
+  font-weight: 400 !important;
+}
+
+.modern-mobile-nav .mobile-search-btn {
+  background: var(--ugflix-primary, #ff6b35) !important;
+  color: var(--ugflix-text-primary, #ffffff) !important;
+  border: none !important;
+  width: 38px !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+.modern-mobile-nav .mobile-search-btn:hover {
+  background: var(--ugflix-primary-dark, #e55a2e) !important;
+}
+
+.modern-mobile-nav .mobile-search-btn i,
+.modern-mobile-nav .mobile-search-btn svg {
+  font-size: 14px !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+/* Mobile Offcanvas Logo */
+.mobile-offcanvas-logo {
+  height: 32px;
+  max-width: 120px;
+  object-fit: contain;
+}
+
+/* ===================================================================
+   Live Search Integration Styles - Light & Minimalistic
+   =================================================================== */
+
+/* Mobile LiveSearchBox Integration - UgFlix Dark Theme */
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box {
+  width: 100% !important;
+  display: block !important;
+  visibility: visible !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Override any white backgrounds in LiveSearchBox for mobile */
+.modern-mobile-nav .livesearch-dropdown-footer {
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+}
+
+.modern-mobile-nav .livesearch-dropdown-footer .btn-link {
+  color: var(--ugflix-primary, #ff6b35) !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .search-input-group {
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+  border: 1px solid var(--ugflix-border, #333333) !important;
+  height: 38px !important;
+  display: flex !important;
+  visibility: visible !important;
+  width: 100% !important;
+  border-radius: var(--ugflix-border-radius, 0px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  align-items: center !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .search-input-group:focus-within {
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+  border-color: var(--ugflix-primary, #ff6b35) !important;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2) !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .search-input {
+  padding: 0 12px !important;
+  font-size: 14px !important;
+  color: var(--ugflix-text-primary, #ffffff) !important;
+  background: transparent !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .search-input::placeholder {
+  color: var(--ugflix-text-muted, #888888) !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .btn-search {
+  width: 38px !important;
+  background: var(--ugflix-primary, #ff6b35) !important;
+  color: var(--ugflix-text-primary, #ffffff) !important;
+  border: none !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .btn-search:hover {
+  background: var(--ugflix-primary-dark, #e55a2e) !important;
+  transform: scale(1.02) !important;
+}
+
+/* Mobile Search Results Dropdown Styling - UgFlix Dark Theme */
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .livesearch-results {
+  background: var(--ugflix-bg-secondary, #1a1a1a) !important;
+  border: 1px solid var(--ugflix-border, #333333) !important;
+  border-top: none !important;
+  border-radius: 0 0 6px 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .livesearch-dropdown-item {
+  color: var(--ugflix-text-primary, #ffffff) !important;
+  border-bottom: 1px solid var(--ugflix-border, #333333) !important;
+  background: transparent !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .livesearch-dropdown-item:hover {
+  background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+}
+
+.modern-mobile-nav .mobile-nav-bottom .mobile-search-box .livesearch-no-results {
+  color: var(--ugflix-text-muted, #888888) !important;
+  background: var(--ugflix-bg-secondary, #1a1a1a) !important;
+}
+
+/* Force dark theme for all LiveSearchBox elements on mobile */
+.modern-mobile-nav .livesearch-wrapper,
+.modern-mobile-nav .livesearch-container,
+.modern-mobile-nav .livesearch-dropdown,
+.modern-mobile-nav .livesearch-results {
+  background: transparent !important;
+}
+
+/* Desktop Search Box Integration */
+.desktop-search-wrapper .live-search-box .search-input-group {
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  border: 1px solid var(--ugflix-border, #333333);
+  height: 40px;
+  border-radius: 0;
+}
+
+.desktop-search-wrapper .live-search-box .search-input-group:focus-within {
+  border-color: var(--ugflix-primary, #ff6b35);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+}
+
+.desktop-search-wrapper .live-search-box .search-input {
+  background: transparent;
+  border: none;
+  color: var(--ugflix-text-primary, #ffffff);
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.desktop-search-wrapper .live-search-box .search-input::placeholder {
+  color: var(--ugflix-text-secondary, #cccccc);
+}
+
+/* Desktop Search Box Integration */
+.desktop-search-box {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* Use LiveSearchBox component styles instead of form-control */
+
+/* Desktop search button uses LiveSearchBox component styling */
+.desktop-search-box .btn-search {
+  /* Remove absolute positioning - let LiveSearchBox handle it */
+  position: relative;
+  background: var(--ugflix-primary, #ff6b35);
+  border: none;
+  color: var(--ugflix-text-primary, #ffffff);
+  width: 40px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.desktop-search-box .btn-search:hover {
+  background: var(--ugflix-primary-hover, #e55a2b);
+  color: var(--ugflix-text-primary, #ffffff);
+}
+
+/* Search suggestions dropdown styling integration */
+.mobile-search-box .live-search-suggestions,
+.desktop-search-box .live-search-suggestions {
+  border: 1px solid var(--ugflix-border, #333333);
+  border-radius: var(--ugflix-border-radius, 0px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: var(--ugflix-bg-card, #1e1e1e);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .mobile-nav-bottom {
+    padding: 12px 0;
+  }
+  
+  .mobile-nav-bottom .mobile-search-box {
+    margin: 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .search-form {
+    margin: 0 20px;
+  }
+}
+
+/* Body padding adjustment for mobile navigation */
+@media (max-width: 991.98px) {
+  body {
+    padding-top: 102px !important; /* 60px top row + 42px search row */
+  }
+  
+  /* Ensure mobile navigation is visible */
+  .modern-mobile-nav {
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* Ensure mobile search bottom section is visible */
+  .mobile-nav-bottom {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Ensure mobile search box is visible */
+  .mobile-nav-bottom .mobile-search-box {
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* Ensure search input group is visible */
+  .mobile-nav-bottom .mobile-search-box .search-input-group {
+    display: flex !important;
+    visibility: visible !important;
+  }
+}
+
+/* ===================================================================
+   Mobile Search Box Debug and Visibility Fixes
+   =================================================================== */
+
+/* Force visibility of mobile navigation on small screens */
+@media (max-width: 991.98px) {
+  .modern-mobile-nav {
+    display: block !important;
+    visibility: visible !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 1030 !important;
+  }
+  
+  .mobile-nav-bottom {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: var(--ugflix-bg-secondary, #1a1a1a) !important;
+    border-bottom: none !important;
+    padding: 8px 12px 12px 12px !important;
+  }
+  
+  .mobile-search-box {
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+  }
+  
+  .mobile-search-box .live-search-box {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .mobile-search-box .search-input-group {
+    display: flex !important;
+    width: 100% !important;
+    height: 38px !important;
+    background: var(--ugflix-bg-tertiary, #2a2a2a) !important;
+    border: 1px solid var(--ugflix-border, #333333) !important;
+  }
+}
+
+/* Hide desktop navigation on mobile */
+@media (max-width: 991.98px) {
+  .d-none.d-lg-block {
+    display: none !important;
+  }
+}
+
+/* Show mobile navigation only on mobile */
+@media (min-width: 992px) {
+  .d-lg-none {
+    display: none !important;
+  }
+}
+
+/* ===================================================================
+   Animations
+   =================================================================== */
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hide scrollbar for webkit browsers in mobile menu */
+.offcanvas-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.offcanvas-body::-webkit-scrollbar-track {
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+}
+
+.offcanvas-body::-webkit-scrollbar-thumb {
+  background: var(--ugflix-primary, #ff6b35);
+  border-radius: 2px;
+}
+
+/* Focus styles for accessibility */
+.category-toggle:focus-visible,
+.search-input:focus-visible,
+.btn-search:focus-visible,
+.action-link:focus-visible {
+  outline: 2px solid var(--ugflix-primary, #ff6b35);
+  outline-offset: 2px;
+}
+
+/* ===================================================================
+   Direct Mobile Search Form (Fallback)
+   =================================================================== */
+
+.mobile-search-wrapper {
+  width: 100%;
+  padding: 0;
+  margin: 0; /* Remove any default margin */
+}
+
+.mobile-search-form {
+  width: 100%;
+  margin: 0;
+  padding: 0; /* Remove any default padding */
+}
+
+.mobile-search-input-group {
+  display: flex !important;
+  align-items: center;
+  background: var(--ugflix-bg-tertiary, #2a2a2a);
+  border: 1px solid var(--ugflix-border, #333333);
+  border-radius: var(--ugflix-border-radius, 0px);
+  overflow: hidden;
+  height: 36px; /* Reduced from 38px */
+  transition: all 0.2s ease;
+  width: 100%;
+  margin: 0; /* Remove any margin */
+}
+
+.mobile-search-input-group:focus-within {
+  background: var(--ugflix-bg-card, #1e1e1e);
+  border-color: var(--ugflix-primary, #ff6b35);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+}
+
+.mobile-search-input {
+  flex: 1 !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 12px !important;
+  font-size: 14px !important;
+  color: #374151 !important;
+  height: 100% !important;
+  outline: none !important;
+  width: auto !important;
+}
+
+.mobile-search-input::placeholder {
+  color: #9ca3af !important;
+  font-weight: 400 !important;
+}
+
+.mobile-search-btn {
+  background: var(--ugflix-primary, #ff6b35) !important;
+  color: var(--ugflix-text-primary, #ffffff) !important;
+  border: none !important;
+  width: 38px !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+.mobile-search-btn:hover {
+  background: #b8121f !important;
+}
+
+.mobile-search-btn i {
+  font-size: 14px !important;
+  color: #ffffff !important;
+}

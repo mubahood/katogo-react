@@ -1,0 +1,166 @@
+/* src/app/components/HomePage/DealsSection.css */
+
+/* ... (Your existing category list styling) ... */
+
+/* ===================================================================
+   3. Deals Section Styling (Updated for Slider Controls)
+   =================================================================== */
+.deals-section-wrapper {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  margin-top: 1rem;
+  padding: 20px 24px;
+  border: 1px solid var(--border-color);
+}
+
+.deals-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.deals-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--primary-color);
+}
+
+.deals-title h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap; /* Prevents title from wrapping on small screens */
+}
+
+/* --- Countdown Timer Styling --- */
+.countdown-timer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 24px;
+  font-weight: 500;
+  color: var(--text-color-light);
+}
+
+.countdown-timer .time-box {
+  background-color: var(--primary-color);
+  color: var(--white);
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.view-all-link {
+  margin-left: auto; /* Pushes it to the end */
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--primary-color);
+  flex-shrink: 0; /* Prevents link from shrinking */
+  padding-left: 16px;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Carousel Container and Controls --- */
+.deals-carousel-controls {
+    position: relative; /* To position buttons absolutely within this container */
+    display: flex;
+    align-items: center;
+    /* Adjust padding to make space for the buttons to overlap if needed */
+    padding: 10px 0; /* Padding for top/bottom */
+}
+
+.deals-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto; /* Enables horizontal scrolling */
+  scroll-snap-type: x mandatory; /* Makes it snap to cards */
+  -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+  padding: 10px 4px; /* Added a little padding for shadow visibility */
+  margin: 0 -4px; /* Compensate for padding */
+  flex-grow: 1; /* Allow container to take available width */
+}
+
+/* Make cards snap to position */
+.deals-container .product-card-simple {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    flex: 0 0 200px;
+    max-width: 200px;
+    width: 200px;
+}
+
+
+/* Professional, custom scrollbar for a polished look */
+.deals-container::-webkit-scrollbar {
+  height: 8px;
+}
+.deals-container::-webkit-scrollbar-track {
+  background: var(--body-bg);
+  border-radius: 4px;
+}
+.deals-container::-webkit-scrollbar-thumb {
+  background: #d3d3d3;
+  border-radius: 4px;
+}
+.deals-container::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
+
+/* Styles for the carousel navigation buttons */
+.carousel-control-btn {
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 36px; /* Size of the button */
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    color: var(--text-color-medium);
+    font-size: 1.2rem; /* Icon size */
+    z-index: 10; /* Ensure buttons are above products */
+    position: sticky; /* Sticky positioning within the flex container */
+    top: 50%;
+    transform: translateY(-50%);
+    transition: background-color var(--transition-speed) var(--transition-timing-function),
+                box-shadow var(--transition-speed) var(--transition-timing-function),
+                color var(--transition-speed) var(--transition-timing-function);
+}
+
+.carousel-control-btn.prev {
+    left: 0px; /* Position it at the start of the container */
+    margin-right: -18px; /* Pull it halfway back into the padding */
+}
+
+.carousel-control-btn.next {
+    right: 0px; /* Position it at the end of the container */
+    margin-left: -18px; /* Pull it halfway back into the padding */
+}
+
+
+.carousel-control-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+}
+.carousel-control-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+/* Hide buttons on very small screens if they block content */
+@media (max-width: 575.98px) {
+    .carousel-control-btn {
+        display: none;
+    }
+    .deals-carousel-controls {
+        padding: 0; /* Remove extra padding when buttons are hidden */
+    }
+}

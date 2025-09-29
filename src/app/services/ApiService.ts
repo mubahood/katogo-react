@@ -1,0 +1,879 @@
+// src/app/services/ApiService.ts
+
+import { http_get, http_post } from "./Api";
+import ProductModel, { PaginatedResponse } from "../models/ProductModel";
+import CategoryModel from "../models/CategoryModel";
+import VendorModel from "../models/VendorModel";
+import ToastService from "./ToastService";
+import { VideoProgress, VideoProgressModel } from "../models/VideoProgressModel";
+
+/**
+ * Comprehensive API service that handles all backend endpoints
+ */
+export class ApiService {
+  
+  // ===== PRODUCTS =====
+  
+  /**
+   * Fetch paginated products with filtering and search
+   */
+  static async getProducts(params: {
+    page?: number;
+    category?: number;
+    search?: string;
+    vendor?: number;
+    min_price?: number;
+    max_price?: number;
+    in_stock?: boolean;
+    sort_by?: 'name' | 'price_1' | 'date_added' | 'metric';
+    sort_order?: 'asc' | 'desc';
+    limit?: number;
+  } = {}): Promise<PaginatedResponse<ProductModel>> {
+    try {
+      const { page = 1, in_stock, ...otherFilters } = params;
+      const filters: Record<string, string | number> = { ...otherFilters };
+      
+      // Convert boolean to string for API
+      if (in_stock !== undefined) {
+        filters.in_stock = in_stock ? 1 : 0;
+      }
+      
+      return await ProductModel.fetchProducts(page, filters);
+    } catch (error) {
+      ToastService.error("Failed to load products");
+      throw error;
+    }
+  }
+
+  /**
+   * Get a single product by ID
+   */
+  static async getProduct(id: number): Promise<ProductModel> {
+    try {
+      return await ProductModel.fetchProductById(id);
+    } catch (error) {
+      ToastService.error("Product not found");
+      throw error;
+    }
+  }
+
+  /**
+   * Get products by category
+   */
+  static async getProductsByCategory(
+    categoryId: number,
+    page = 1,
+    additionalParams: Record<string, any> = {}
+  ): Promise<PaginatedResponse<ProductModel>> {
+    try {
+      return await ProductModel.fetchProductsByCategory(categoryId, page, additionalParams);
+    } catch (error) {
+      ToastService.error("Failed to load category products");
+      throw error;
+    }
+  }
+
+  /**
+   * Search products
+   */
+  static async searchProducts(
+    searchTerm: string,
+    page = 1,
+    additionalParams: Record<string, any> = {}
+  ): Promise<PaginatedResponse<ProductModel>> {
+    try {
+      return await ProductModel.searchProducts(searchTerm, page, additionalParams);
+    } catch (error) {
+      ToastService.error("Search failed");
+      throw error;
+    }
+  }
+
+  // ===== CATEGORIES =====
+  
+  /**
+   * Get all categories
+   */
+  static async getCategories(): Promise<CategoryModel[]> {
+    try {
+      return await CategoryModel.fetchCategories();
+    } catch (error: any) {
+      // Use offline fallback for network errors
+      if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
+        console.warn("🔧 API server not reachable, using offline categories");
+        const { OfflineService } = await import('./OfflineService');
+        const offlineCategories = OfflineService.getDefaultCategories();
+        return offlineCategories.map((item: any) => CategoryModel.fromJson(item));
+      } else {
+        ToastService.error("Failed to load categories");
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Get categories for banner display
+   */
+  static async getBannerCategories(): Promise<CategoryModel[]> {
+    try {
+      const categories = await CategoryModel.fetchCategories();
+      return categories.filter(cat => cat.isShownInBanner());
+    } catch (error) {
+      ToastService.error("Failed to load banner categories");
+      throw error;
+    }
+  }
+
+  /**
+   * Get categories for navigation/listing
+   */
+  static async getNavigationCategories(): Promise<CategoryModel[]> {
+    try {
+      const categories = await CategoryModel.fetchCategories();
+      return categories.filter(cat => cat.isShownInCategories() && !cat.isParentCategory());
+    } catch (error) {
+      ToastService.error("Failed to load navigation categories");
+      throw error;
+    }
+  }
+
+  /**
+   * Get a single category by ID
+   */
+  static async getCategory(id: number): Promise<CategoryModel> {
+    try {
+      return await CategoryModel.fetchCategoryById(id);
+    } catch (error) {
+      ToastService.error("Category not found");
+      throw error;
+    }
+  }
+
+  // ===== VENDORS =====
+  
+  /**
+   * Get all vendors
+   * Currently disabled - endpoint not available in streaming platform API
+   */
+  static async getVendors(): Promise<VendorModel[]> {
+    console.warn('Vendors endpoint is not available in streaming platform API');
+    return []; // Return empty array instead of making API call
+  }
+
+  /**
+   * Get active vendors only
+   */
+  static async getActiveVendors(): Promise<VendorModel[]> {
+    try {
+      const vendors = await VendorModel.fetchVendors();
+      return vendors.filter(vendor => vendor.isActive() && vendor.isApproved());
+    } catch (error) {
+      ToastService.error("Failed to load active vendors");
+      throw error;
+    }
+  }
+
+  /**
+   * Get a single vendor by ID
+   */
+  static async getVendor(id: number): Promise<VendorModel> {
+    try {
+      return await VendorModel.fetchVendorById(id);
+    } catch (error) {
+      ToastService.error("Vendor not found");
+      throw error;
+    }
+  }
+
+  // ===== ORDERS =====
+  
+  /**
+   * Get user orders (requires authentication)
+   */
+  static async getUserOrders(page = 1): Promise<any> {
+    try {
+      const response = await http_get(`orders?page=${page}`);
+      return response;
+    } catch (error) {
+      ToastService.error("Failed to load orders");
+      throw error;
+    }
+  }
+
+  /**
+   * Get single order by ID
+   */
+  static async getOrder(id: number): Promise<any> {
+    try {
+      const response = await http_get(`orders/${id}`);
+      return response;
+    } catch (error) {
+      ToastService.error("Order not found");
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new order
+   */
+  static async createOrder(orderData: {
+    products: Array<{
+      product_id: number;
+      quantity: number;
+      variant?: Record<string, string>;
+    }>;
+    shipping_address: any;
+    payment_method: string;
+    notes?: string;
+  }): Promise<any> {
+    try {
+      const response = await http_post("orders", orderData);
+      ToastService.success("Order placed successfully!");
+      return response;
+    } catch (error) {
+      ToastService.error("Failed to place order");
+      throw error;
+    }
+  }
+
+  /**
+   * Update order status
+   */
+  static async updateOrderStatus(orderId: number, status: string): Promise<any> {
+    try {
+      const response = await http_post(`orders/${orderId}/status`, { status });
+      ToastService.success("Order status updated");
+      return response;
+    } catch (error) {
+      ToastService.error("Failed to update order status");
+      throw error;
+    }
+  }
+
+  // ===== CART & WISHLIST =====
+  
+  /**
+   * Add to cart (server-side if needed, or localStorage)
+   */
+  static async addToCart(productId: number, quantity = 1, variant?: Record<string, string>): Promise<boolean> {
+    try {
+      // For now, we'll handle cart in localStorage, but this could sync with server
+      const cartItems = JSON.parse(localStorage.getItem('CART_ITEMS') || '[]');
+      const existingItemIndex = cartItems.findIndex((item: any) => 
+        item.product_id === productId && JSON.stringify(item.variant || {}) === JSON.stringify(variant || {})
+      );
+
+      if (existingItemIndex >= 0) {
+        cartItems[existingItemIndex].quantity += quantity;
+      } else {
+        cartItems.push({
+          product_id: productId,
+          quantity,
+          variant: variant || {},
+          added_at: new Date().toISOString()
+        });
+      }
+
+      localStorage.setItem('CART_ITEMS', JSON.stringify(cartItems));
+      ToastService.success("Added to cart");
+      return true;
+    } catch (error) {
+      ToastService.error("Failed to add to cart");
+      throw error;
+    }
+  }
+
+  /**
+   * Get cart items with product details
+   */
+  static async getCartItems(): Promise<Array<{
+    product: ProductModel;
+    quantity: number;
+    variant: Record<string, string>;
+  }>> {
+    try {
+      const cartItems = JSON.parse(localStorage.getItem('CART_ITEMS') || '[]');
+      const detailedItems = [];
+
+      for (const item of cartItems) {
+        try {
+          const product = await ProductModel.fetchProductById(item.product_id);
+          detailedItems.push({
+            product,
+            quantity: item.quantity,
+            variant: item.variant || {}
+          });
+        } catch (error) {
+          console.warn(`Product ${item.product_id} not found in cart`);
+        }
+      }
+
+      return detailedItems;
+    } catch (error) {
+      ToastService.error("Failed to load cart");
+      throw error;
+    }
+  }
+
+  /**
+   * Update cart item quantity
+   */
+  static async updateCartItem(productId: number, quantity: number, variant?: Record<string, string>): Promise<boolean> {
+    try {
+      const cartItems = JSON.parse(localStorage.getItem('CART_ITEMS') || '[]');
+      const itemIndex = cartItems.findIndex((item: any) => 
+        item.product_id === productId && JSON.stringify(item.variant || {}) === JSON.stringify(variant || {})
+      );
+
+      if (itemIndex >= 0) {
+        if (quantity <= 0) {
+          cartItems.splice(itemIndex, 1);
+        } else {
+          cartItems[itemIndex].quantity = quantity;
+        }
+        localStorage.setItem('CART_ITEMS', JSON.stringify(cartItems));
+        ToastService.success("Cart updated");
+        return true;
+      }
+      return false;
+    } catch (error) {
+      ToastService.error("Failed to update cart");
+      throw error;
+    }
+  }
+
+  /**
+   * Remove item from cart
+   */
+  static async removeFromCart(productId: number, variant?: Record<string, string>): Promise<boolean> {
+    return this.updateCartItem(productId, 0, variant);
+  }
+
+  /**
+   * Clear entire cart
+   */
+  static async clearCart(): Promise<boolean> {
+    try {
+      localStorage.removeItem('CART_ITEMS');
+      ToastService.success("Cart cleared");
+      return true;
+    } catch (error) {
+      ToastService.error("Failed to clear cart");
+      throw error;
+    }
+  }
+
+  // ===== WISHLIST =====
+
+  /**
+   * Add to wishlist
+   */
+  static async addToWishlist(productId: number): Promise<boolean> {
+    try {
+      const response = await http_post("wishlist_add", { product_id: productId });
+      ToastService.success("Added to wishlist");
+      return true;
+    } catch (error) {
+      ToastService.error("Failed to add to wishlist");
+      throw error;
+    }
+  }
+
+  /**
+   * Remove from wishlist
+   */
+  static async removeFromWishlist(productId: number): Promise<boolean> {
+    try {
+      const response = await http_post("wishlist_remove", { product_id: productId });
+      ToastService.success("Removed from wishlist");
+      return true;
+    } catch (error) {
+      ToastService.error("Failed to remove from wishlist");
+      throw error;
+    }
+  }
+
+  /**
+   * Get user wishlist
+   */
+  static async getWishlist(): Promise<any[]> {
+    try {
+      const response = await http_get("wishlist_get");
+      if (response?.data && Array.isArray(response.data)) {
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      ToastService.error("Failed to load wishlist");
+      throw error;
+    }
+  }
+
+  /**
+   * Check if product is in wishlist
+   */
+  static async checkWishlist(productId: number): Promise<boolean> {
+    try {
+      const response = await http_post("wishlist_check", { product_id: productId });
+      return response?.data?.in_wishlist || false;
+    } catch (error) {
+      console.warn("Failed to check wishlist status:", error);
+      return false;
+    }
+  }
+
+  // ===== MANIFEST =====
+
+  private static lastManifestRequest = 0;
+  private static manifestRequestInProgress = false;
+  private static cachedManifest: any = null;
+  private static readonly MANIFEST_THROTTLE_MS = 10000; // 10 seconds
+
+  /**
+   * Get application manifest with essential data and counts
+   */
+  static async getManifest(): Promise<any> {
+    // Prevent concurrent requests
+    if (this.manifestRequestInProgress) {
+      console.log('🔄 Manifest request in progress, returning cached data');
+      if (this.cachedManifest) {
+        return this.cachedManifest;
+      }
+      // Wait briefly for ongoing request
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (this.cachedManifest) {
+        return this.cachedManifest;
+      }
+    }
+
+    // Throttle requests
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastManifestRequest;
+    if (timeSinceLastRequest < this.MANIFEST_THROTTLE_MS) {
+      console.log(`🚦 Throttling manifest request - ${Math.ceil((this.MANIFEST_THROTTLE_MS - timeSinceLastRequest) / 1000)}s remaining`);
+      if (this.cachedManifest) {
+        return this.cachedManifest;
+      }
+    }
+
+    this.manifestRequestInProgress = true;
+    this.lastManifestRequest = now;
+
+    try {
+      const response = await http_get("manifest");
+      
+      if (!response?.data) {
+        throw new Error("No manifest data received");
+      }
+
+      // Cache successful response
+      this.cachedManifest = response.data;
+      return response.data;
+    } catch (error: any) {
+      // Use offline fallback for network errors
+      if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
+        console.warn("🔧 API server not reachable, using offline manifest");
+        const { OfflineService } = await import('./OfflineService');
+        return OfflineService.getDefaultManifest();
+      } else {
+        console.error("Failed to load manifest:", error);
+        
+        // If we have cached data and it's a rate limit error, use cache
+        if (this.cachedManifest && (error.response?.status === 429 || error.message?.includes('429'))) {
+          console.log('🔄 Using cached manifest due to rate limiting');
+          return this.cachedManifest;
+        }
+      }
+      throw error;
+    } finally {
+      this.manifestRequestInProgress = false;
+    }
+  }
+
+  // ===== MOVIES =====
+
+  /**
+   * Get single movie by ID with related movies
+   * Used for video watch page with smart related movies algorithm
+   */
+  static async getMovieById(movieId: string): Promise<any> {
+    try {
+      const response = await http_get(`movie/${movieId}`);
+      
+      if (!response || response.code !== 1) {
+        throw new Error(response?.message || 'Failed to load movie');
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching movie by ID:', error);
+      throw error;
+    }
+  }
+
+  // ===== VIDEO PROGRESS & WATCH HISTORY =====
+
+  /**
+   * Save or update video playback progress
+   */
+  static async saveVideoProgress(data: {
+    movie_id: number;
+    progress: number;
+    duration: number;
+    device?: string;
+    platform?: string;
+    browser?: string;
+  }): Promise<any> {
+    try {
+      const progressData = {
+        movie_model_id: data.movie_id,
+        progress: data.progress,
+        max_progress: Math.max(data.progress, 0),
+        duration: data.duration,
+        percentage: Math.round((data.progress / data.duration) * 100),
+        device: data.device || 'Unknown',
+        platform: data.platform || 'Web',
+        browser: data.browser || 'Unknown',
+        status: data.progress / data.duration >= 0.9 ? 'Completed' : 'Active',
+        last_watched_at: new Date().toISOString()
+      };
+
+      const response = await http_post('video-progress', progressData);
+      
+      if (response && response.code === 1) {
+        console.log('📺 Video progress saved:', progressData);
+        return response.data;
+      } else {
+        throw new Error(response?.message || 'Failed to save video progress');
+      }
+    } catch (error) {
+      console.error('Error saving video progress:', error);
+      // Don't throw error for progress saving to avoid interrupting playback
+      return null;
+    }
+  }
+
+  /**
+   * Get video progress for a specific movie
+   */
+  static async getVideoProgress(movieId: number): Promise<any> {
+    try {
+      const response = await http_get(`video-progress/${movieId}`);
+      
+      if (response && response.code === 1) {
+        return response.data;
+      }
+      
+      return null; // No progress found
+    } catch (error) {
+      console.error('Error fetching video progress:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get user's watch history
+   */
+  static async getWatchHistory(page = 1, limit = 20): Promise<any> {
+    try {
+      const response = await http_get(`watch-history?page=${page}&limit=${limit}`);
+      
+      if (response && response.code === 1) {
+        return response.data;
+      }
+      
+      return { items: [], total: 0 };
+    } catch (error) {
+      console.error('Error fetching watch history:', error);
+      return { items: [], total: 0 };
+    }
+  }
+
+  /**
+   * Delete video progress (reset progress)
+   */
+  static async deleteVideoProgress(movieId: number): Promise<boolean> {
+    try {
+      const response = await http_post(`video-progress/${movieId}/delete`, {});
+      return response && response.code === 1;
+    } catch (error) {
+      console.error('Error deleting video progress:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Mark video as completed
+   */
+  static async markVideoCompleted(movieId: number, duration: number): Promise<any> {
+    return this.saveVideoProgress({
+      movie_id: movieId,
+      progress: duration * 0.95, // Mark as 95% to ensure completion
+      duration: duration
+    });
+  }
+
+  // ===== SEARCH & FILTERS =====
+
+  /**
+   * Live search for real-time movie/content search with suggestions
+   */
+  static async liveSearch(query: string, limit = 10): Promise<{
+    products: ProductModel[];
+    suggestions: string[];
+    total: number;
+    search_term: string;
+  }> {
+    try {
+      // Use the movies endpoint with comprehensive search parameter
+      const response = await http_get(`movies?search=${encodeURIComponent(query)}&per_page=${limit}`);
+      
+      if (!response || response.code !== 1) {
+        throw new Error('API request failed');
+      }
+      
+      const responseData = response.data || {};
+      
+      // Handle the nested structure from Laravel response
+      const movies = responseData.items || responseData.data || [];
+      const pagination = responseData.pagination || {};
+      
+      // Transform movie data to match expected ProductModel structure
+      const products = movies.map((movie: any) => {
+        return ProductModel.fromJson({
+          id: movie.id,
+          name: movie.title || "",
+          description: movie.description || null,
+          feature_photo: movie.thumbnail_url || "", // Store complete thumbnail URL
+          url: movie.url || null,
+          summary: `${movie.type || "Movie"} • ${movie.year || "N/A"} • ${movie.vj || "Unknown VJ"}`,
+          price_1: "0.00",
+          price_2: "0.00",
+          rating: movie.rating || 0,
+          category_text: movie.category || "",
+          // Store movie-specific data in fields that won't conflict
+          tags: JSON.stringify({
+            genre: movie.genre,
+            year: movie.year,
+            type: movie.type,
+            vj: movie.vj,
+            actor: movie.actor,
+            is_premium: movie.is_premium,
+            category: movie.category,
+            thumbnail_url: movie.thumbnail_url // Store original thumbnail URL for direct access
+          }),
+          status: movie.is_premium === "Yes" ? 2 : 1 // 1 for free, 2 for premium, check for "Yes" string
+        });
+      });
+      
+      // Generate search suggestions based on movie titles and other fields
+      const suggestions = movies
+        .map((movie: any) => movie.title)
+        .filter((title: string) => title && title.toLowerCase().includes(query.toLowerCase()))
+        .slice(0, 5);
+      
+      return {
+        products,
+        suggestions,
+        total: pagination.total || movies.length,
+        search_term: query
+      };
+    } catch (error) {
+      console.warn("Live search failed:", error);
+      return {
+        products: [],
+        suggestions: [],
+        total: 0,
+        search_term: query
+      };
+    }
+  }
+
+  /**
+   * Get user's search history
+   */
+  static async getSearchHistory(limit = 10): Promise<string[]> {
+    try {
+      const sessionId = this.getOrCreateSessionId();
+      const response = await http_get(`search-history?limit=${limit}&session_id=${sessionId}`);
+      return response?.data?.recent_searches || [];
+    } catch (error) {
+      console.warn("Failed to get search history:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Clear user's search history
+   */
+  static async clearSearchHistory(): Promise<boolean> {
+    try {
+      const sessionId = this.getOrCreateSessionId();
+      await http_post("search-history/clear", { session_id: sessionId });
+      return true;
+    } catch (error) {
+      console.warn("Failed to clear search history:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Get or create a session ID for guest users
+   */
+  private static getOrCreateSessionId(): string {
+    let sessionId = localStorage.getItem('blitxpress_session_id');
+    if (!sessionId) {
+      sessionId = 'guest_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('blitxpress_session_id', sessionId);
+    }
+    return sessionId;
+  }
+
+  /**
+   * Get search suggestions
+   */
+  static async getSearchSuggestions(query: string): Promise<string[]> {
+    try {
+      const response = await http_get(`search/suggestions?q=${encodeURIComponent(query)}`);
+      return Array.isArray(response) ? response : [];
+    } catch (error) {
+      console.warn("Failed to get search suggestions:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Get filter options (price ranges, brands, etc.)
+   */
+  static async getFilterOptions(categoryId?: number): Promise<{
+    priceRanges: Array<{ min: number; max: number; label: string }>;
+    brands: string[];
+    colors: string[];
+    sizes: string[];
+  }> {
+    try {
+      const params: Record<string, string> = {};
+      if (categoryId) {
+        params.category = String(categoryId);
+      }
+      const response = await http_get(`filters?${new URLSearchParams(params).toString()}`);
+      return response?.data || {
+        priceRanges: [],
+        brands: [],
+        colors: [],
+        sizes: []
+      };
+    } catch (error) {
+      console.warn("Failed to get filter options:", error);
+      return {
+        priceRanges: [],
+        brands: [],
+        colors: [],
+        sizes: []
+      };
+    }
+  }
+
+  // ===== REVIEWS =====
+
+  /**
+   * Add product review
+   */
+  static async addReview(productId: number, reviewData: {
+    rating: number;
+    comment: string;
+    title?: string;
+  }): Promise<any> {
+    try {
+      const response = await http_post(`products/${productId}/reviews`, reviewData);
+      ToastService.success("Review submitted successfully");
+      return response;
+    } catch (error) {
+      ToastService.error("Failed to submit review");
+      throw error;
+    }
+  }
+
+  /**
+   * Get product reviews
+   */
+  static async getProductReviews(productId: number, page = 1): Promise<any> {
+    try {
+      const response = await http_get(`products/${productId}/reviews?page=${page}`);
+      return response;
+    } catch (error) {
+      console.warn("Failed to load reviews:", error);
+      return { data: [], total: 0 };
+    }
+  }
+
+  // ===== USER PROFILE =====
+
+  /**
+   * Update user profile
+   */
+  static async updateProfile(profileData: {
+    first_name: string;
+    last_name: string;
+    email?: string;
+    phone_number: string;
+    dob?: string;
+    sex?: string;
+    intro?: string;
+    address?: string;
+  }): Promise<any> {
+    try {
+      // Prepare the data object, mapping frontend fields to backend expected fields
+      const requestData: any = {
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        phone_number_1: profileData.phone_number, // Backend still expects phone_number_1
+      };
+
+      if (profileData.email) {
+        requestData.email = profileData.email;
+      }
+      
+      if (profileData.dob) {
+        requestData.date_of_birth = profileData.dob; // Backend expects date_of_birth
+      }
+      
+      if (profileData.sex) {
+        requestData.gender = profileData.sex; // Backend expects 'gender'
+      }
+      
+      if (profileData.intro) {
+        requestData.bio = profileData.intro; // Backend expects 'bio'
+      }
+      
+      if (profileData.address) {
+        requestData.address = profileData.address;
+      }
+
+      console.log('Sending to backend:', requestData); // Debug log
+
+      const response = await http_post("update-profile", requestData);
+      
+      if (response?.code === 1) {
+        ToastService.success(response.message || "Profile updated successfully!");
+        
+        // Transform the response data to match frontend field names
+        const transformedData = response.data ? {
+          ...response.data,
+          phone_number_1: response.data.phone_number || response.data.phone_number_1,
+          date_of_birth: response.data.dob || response.data.date_of_birth
+        } : response.data;
+        
+        return transformedData;
+      } else {
+        throw new Error(response?.message || "Failed to update profile");
+      }
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to update profile";
+      ToastService.error(errorMessage);
+      throw error;
+    }
+  }
+}
+
+export default ApiService;

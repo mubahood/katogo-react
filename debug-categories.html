@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Categories</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .category { margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .parent { background: #e8f5e8; }
+        .child { background: #f0f8ff; margin-left: 20px; }
+        .details { font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>Category Structure Debug</h1>
+    <button onclick="loadCategories()">Load Categories from API</button>
+    <div id="output"></div>
+
+    <script>
+        async function loadCategories() {
+            try {
+                const response = await fetch('http://192.168.1.192:8000/api/manifest');
+                const data = await response.json();
+                
+                console.log('Full API Response:', data);
+                
+                const categories = data.categories || [];
+                console.log('Categories array:', categories);
+                
+                displayCategories(categories);
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                document.getElementById('output').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        function displayCategories(categories) {
+            const output = document.getElementById('output');
+            
+            if (!categories || categories.length === 0) {
+                output.innerHTML = '<p>No categories found</p>';
+                return;
+            }
+            
+            // Group categories
+            const parents = categories.filter(cat => cat.is_parent === 'Yes');
+            const children = categories.filter(cat => cat.is_parent === 'No');
+            
+            let html = `
+                <h2>Summary</h2>
+                <p>Total categories: ${categories.length}</p>
+                <p>Parent categories: ${parents.length}</p>
+                <p>Child categories: ${children.length}</p>
+                <p>Categories with show_in_categories='Yes': ${categories.filter(c => c.show_in_categories === 'Yes').length}</p>
+                
+                <h2>Category Structure</h2>
+            `;
+            
+            parents.forEach(parent => {
+                const subcategories = children.filter(child => child.parent_id === parent.id);
+                
+                html += `
+                    <div class="category parent">
+                        <strong>${parent.category}</strong>
+                        <div class="details">
+                            ID: ${parent.id} | is_parent: ${parent.is_parent} | parent_id: ${parent.parent_id} | 
+                            show_in_categories: ${parent.show_in_categories}
+                        </div>
+                        <div>Subcategories: ${subcategories.length}</div>
+                `;
+                
+                subcategories.forEach(sub => {
+                    html += `
+                        <div class="category child">
+                            ${sub.category}
+                            <div class="details">
+                                ID: ${sub.id} | is_parent: ${sub.is_parent} | parent_id: ${sub.parent_id} | 
+                                show_in_categories: ${sub.show_in_categories}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+            
+            // Show orphaned children (children without parents)
+            const orphanedChildren = children.filter(child => 
+                !parents.find(parent => parent.id === child.parent_id)
+            );
+            
+            if (orphanedChildren.length > 0) {
+                html += `
+                    <h3>Orphaned Categories (no parent found)</h3>
+                `;
+                orphanedChildren.forEach(orphan => {
+                    html += `
+                        <div class="category child">
+                            ${orphan.category}
+                            <div class="details">
+                                ID: ${orphan.id} | is_parent: ${orphan.is_parent} | parent_id: ${orphan.parent_id} | 
+                                show_in_categories: ${orphan.show_in_categories}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            output.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

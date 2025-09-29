@@ -1,0 +1,3 @@
+# UgFlix Web App
+## Description
+This is the UgFlix streaming web application that allows users to stream movies and TV shows. The application is built using React.js with TypeScript and powered by a Laravel backend API. UgFlix provides users with access to a vast library of movies and series with features like user authentication, video streaming, progress tracking, and content management. The application uses modern web technologies for optimal performance and user experience across all devices.

@@ -1,0 +1,124 @@
+/* src/app/components/HomePage/TopProductsSection.css */
+
+/*
+ * Note: This CSS relies on variables defined in blitxpress-theme.css.
+ * Ensure blitxpress-theme.css is loaded BEFORE this file in main.tsx.
+ */
+
+.top-products-section-wrapper {
+  background-color: var(--white); /* White background for the section */
+  border-radius: var(--border-radius); /* Apply global minimal radius (2px) */
+  box-shadow: var(--shadow-md); /* Stronger shadow for the section container, looks more distinct */
+  border: 1px solid var(--border-color); /* Subtle border for the section */
+  padding: 25px; /* Reduced internal padding for the section content for density */
+  overflow: hidden; /* Ensures content stays within bounds */
+}
+
+.top-products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px; /* Reduced space below header for density */
+  padding-bottom: 10px; /* Visual separation for the title area */ 
+}
+
+.top-products-title {
+  font-size: 2rem; /* Clearer, more dominant title */
+  font-weight: 700;
+  color: var(--text-color-dark);
+  margin-bottom: 0;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.view-all-top-products-link {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-color) !important;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+}
+.view-all-top-products-link:hover {
+  text-decoration: none;
+  color: var(--primary-color-dark) !important;
+  border-color: var(--primary-color);
+  background-color: var(--background-light);
+}
+
+/* --- Product Grid Layout (CSS Grid) --- */
+.top-products-grid {
+  display: grid;
+  /* Auto-fit based on desired item width for initial responsiveness */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Optimized for new design */
+  gap: 16px; /* Perfect spacing for clean look */
+}
+
+/* --- Responsive Adjustments for Grid Columns (5 per row on web, 2 on mobile) --- */
+@media (min-width: 1400px) { /* Extra Extra Large screens (e.g., 1400px+) */
+    .top-products-grid {
+        grid-template-columns: repeat(5, 1fr); /* CRUCIAL: 5 columns */
+        gap: 20px; /* Good gap for 5 columns */
+    }
+}
+@media (max-width: 1399.98px) and (min-width: 1200px) { /* Standard desktop screens */
+    .top-products-grid {
+        grid-template-columns: repeat(4, 1fr); /* 4 columns */
+        gap: 18px;
+    }
+}
+@media (max-width: 1199.98px) and (min-width: 992px) { /* Large laptops / smaller desktops */
+    .top-products-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 columns */
+        gap: 16px;
+    }
+}
+@media (max-width: 991.98px) and (min-width: 768px) { /* Medium screens (tablets) */
+    .top-products-grid {
+        grid-template-columns: repeat(3, 1fr); /* Still 3 columns */
+        gap: 16px;
+    }
+    .top-products-title {
+        font-size: 1.8rem;
+    }
+}
+@media (max-width: 767.98px) { /* Small screens (mobile) */
+    .top-products-grid {
+        grid-template-columns: repeat(2, 1fr); /* CRUCIAL: 2 columns on mobile */
+        gap: 12px;
+    }
+    .top-products-header {
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .top-products-title {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+    .view-all-top-products-link {
+        font-size: 0.95rem;
+    }
+    .top-products-section-wrapper {
+        padding: 20px; /* Reduced padding on small screens */
+    }
+}
+@media (max-width: 575.98px) { /* Extra small screens (smaller mobile) */
+    .top-products-grid {
+        grid-template-columns: repeat(2, 1fr); /* Still 2 columns */
+        gap: 8px; /* Tighter gap on smallest screens */
+    }
+    .top-products-title {
+        font-size: 1.3rem;
+    }
+    .view-all-top-products-link {
+        font-size: 0.9rem;
+    }
+    .top-products-section-wrapper {
+        padding: 15px; /* Minimal padding on very small screens */
+    }
+}

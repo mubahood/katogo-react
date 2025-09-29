@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required Meta Tags -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f33d02" /> <!-- Matches brand color -->
+  <meta name="description"
+    content="Blitxpress is your one-stop electronics shop offering top-brand gadgets, devices, and accessories at unbeatable prices. Discover great deals on laptops, smartphones, and more." />
+  <meta name="keywords"
+    content="Blitxpress, electronics, online store, e-commerce, gadgets, devices, laptops, smartphones, accessories, tech, deals" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="Blitxpress" />
+
+  <!-- Title -->
+  <title>Blitxpress - Your One-Stop Electronics Shop</title>
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://www.blitxpress.com/" />
+
+  <!-- Open Graph Tags -->
+  <meta property="og:title" content="Blitxpress - Your One-Stop Electronics Shop" />
+  <meta property="og:description"
+    content="Browse and buy the latest electronics and gadgets from Blitxpress. Shop now and get fast shipping on laptops, smartphones, accessories, and more." />
+  <meta property="og:image" content="/media/logos/logo.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.blitxpress.com/" />
+
+  <!-- Google Font (Inter) -->
+
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="/media/logos/logo.ico" />
+
+  <!-- Additional Custom CSS (Optional) -->
+  <link rel="stylesheet" id="layout-styles-anchor" href="/splash-screen.css" />
+
+  <!-- Global Font & Base Size -->
+  <style>
+    html {
+      font-size: 14px;
+      /* Adjust if you want slightly bigger or smaller text */
+    }
+
+    body,
+    p,
+    a,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    span,
+    div,
+    input,
+    button,
+    label {
+      font-family: "Inter", sans-serif;
+      line-height: 1.4;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body id="kt_body" class="page-loading">
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+
+  <!-- Theme Mode Setup - DISABLED DARK MODE -->
+  <script>
+    // Force light mode always - dark mode disabled
+    document.documentElement.setAttribute('data-bs-theme', 'light');
+  </script>
+
+  <!-- App Root -->
+  <div id="root"></div>
+
+  <!-- Splash Screen (Optional) -->
+  <!--   <div id="splash-screen" class="splash-screen">
+    <style>
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+      .spinning {
+        animation: fadeIn 1s ease-in-out infinite alternate;
+      }
+    </style>
+    <img src="/media/logos/loader.svg" class="dark-logo spinning" alt="Blitxpress dark loader" />
+    <img src="/media/logos/loader.svg" class="light-logo spinning" width="320px" alt="Blitxpress light loader" />
+    <div class="loader-wrapper">
+      <span class="loader"></span>
+      <span class="loading-text">Loading...</span>
+    </div>
+  </div>
+ -->
+  <!-- Modal Root (Optional) -->
+  <div id="root-modals"></div>
+
+  <!-- Main Entry Script -->
+  <script type="module" src="/src/main.tsx"></script>
+  <!-- Temporarily using test app to debug freeze issue -->
+  <!-- <script type="module" src="/src/test-main.tsx"></script> -->
+</body>
+
+</html>
