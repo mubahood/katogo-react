@@ -7,36 +7,53 @@
 /* === GLOBAL CSS VARIABLES === */
 :root {
   /* === CORE BRAND COLORS === */
-  --ugflix-primary: #ff6b35;           /* Main accent color (orange) */
-  --ugflix-primary-dark: #e55a2e;      /* Darker shade for hover states */
-  --ugflix-secondary: #f7931e;         /* Secondary accent (yellow-orange) */
-  --ugflix-accent: #ffd700;            /* Tertiary accent (gold) */
+  --ugflix-primary: #B71C1C;           /* Primary red from new brand guidelines */
+  --ugflix-primary-dark: #8B0000;      /* Darker red for hover states */
+  --ugflix-primary-light: #E53935;     /* Lighter red for backgrounds */
+  --ugflix-primary-rgb: 183, 28, 28;   /* RGB values for transparency */
+  --ugflix-secondary: #F9A825;         /* Secondary amber/yellow accent */
+  --ugflix-accent: #F9A825;            /* Main accent color (amber/yellow) */
+  --ugflix-accent-dark: #F57C00;       /* Darker amber for hover states */
+  --ugflix-accent-light: #FFD54F;      /* Lighter amber for backgrounds */
+  --ugflix-accent-rgb: 249, 168, 37;   /* RGB values for transparency */
   
   /* === BACKGROUND COLORS === */
-  --ugflix-bg-primary: #0a0a0a;        /* Deepest dark background */
+  --ugflix-bg-primary: #0f0f0f;        /* Deepest dark background */
   --ugflix-bg-secondary: #1a1a1a;      /* Main dark background */
   --ugflix-bg-tertiary: #2a2a2a;       /* Lighter dark for cards/sections */
   --ugflix-bg-card: #1e1e1e;           /* Card/modal backgrounds */
-  --ugflix-bg-hover: #333333;          /* Hover state backgrounds */
+  --ugflix-bg-hover: #262626;          /* Hover state backgrounds */
   
   /* === TEXT COLORS === */
-  --ugflix-text-primary: #ffffff;      /* Main text color */
-  --ugflix-text-secondary: #cccccc;    /* Secondary text */
-  --ugflix-text-muted: #888888;        /* Muted/disabled text */
-  --ugflix-text-accent: #ff6b35;       /* Accent text color */
-  --ugflix-text-error: #dc3545;        /* Error messages */
-  --ugflix-text-success: #28a745;      /* Success messages */
+  --ugflix-text-primary: #ffffff;      /* Main text color - pure white */
+  --ugflix-text-secondary: #e0e0e0;    /* Secondary text - light gray */
+  --ugflix-text-muted: #a0a0a0;        /* Muted/disabled text - medium gray */
+  --ugflix-text-accent: #B71C1C;       /* Accent text color - brand red */
+  --ugflix-text-error: #F44336;        /* Error messages - material red */
+  --ugflix-text-success: #4CAF50;      /* Success messages - material green */
+  --ugflix-text-warning: #F9A825;      /* Warning messages - brand amber */
+  
+  /* Enhanced Text Clarity Variables */
+  --ugflix-text-high-contrast: #ffffff;    /* Highest contrast for important text */
+  --ugflix-text-medium-contrast: #f5f5f5;  /* Medium contrast for body text */
+  --ugflix-text-low-contrast: #cccccc;     /* Lower contrast for less important text */
+  --ugflix-text-disabled: #666666;         /* Disabled state text */
   
   /* === BORDER COLORS === */
   --ugflix-border: #333333;            /* Main border color */
   --ugflix-border-light: #444444;      /* Lighter borders */
-  --ugflix-border-focus: #ff6b35;      /* Focus state borders */
-  --ugflix-border-hover: #ff6b35;      /* Hover state borders */
+  --ugflix-border-focus: #B71C1C;      /* Focus state borders - brand red */
+  --ugflix-border-hover: #F9A825;      /* Hover state borders - brand amber */
   
-  /* === EFFECTS & SHADOWS === */
-  --ugflix-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --ugflix-shadow-hover: 0 8px 24px rgba(255, 107, 53, 0.3);
-  --ugflix-shadow-focus: 0 0 0 3px rgba(255, 107, 53, 0.2);
+  /* Enhanced Interaction States */
+  --ugflix-border-subtle: #2a2a2a;     /* Very subtle borders */
+  --ugflix-border-strong: #555555;     /* Stronger borders for emphasis */
+  --ugflix-hover-bg-subtle: rgba(183, 28, 28, 0.1);  /* Subtle hover background */
+  --ugflix-hover-bg-medium: rgba(183, 28, 28, 0.2);  /* Medium hover background */
+  --ugflix-active-bg: rgba(183, 28, 28, 0.3);        /* Active state background */
+  --ugflix-accent-hover-bg: rgba(249, 168, 37, 0.1); /* Accent hover background */
+  
+  /* === EFFECTS & SHADOWS === */\n  --ugflix-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);\n  --ugflix-shadow-hover: 0 8px 24px rgba(183, 28, 28, 0.25);\n  --ugflix-shadow-focus: 0 0 0 3px rgba(183, 28, 28, 0.2);\n  --ugflix-shadow-accent: 0 4px 16px rgba(249, 168, 37, 0.3);\n  --ugflix-shadow-accent-hover: 0 8px 32px rgba(249, 168, 37, 0.4);
   
   /* === TRANSITIONS === */
   --ugflix-transition: all 0.3s ease;
@@ -72,7 +89,7 @@ body {
 
 /* Main content spacing to account for fixed header */
 .main-content {
-  padding-top: calc(var(--ugflix-header-height) + var(--ugflix-topbar-height));
+  padding-top: 10px;
   min-height: calc(100vh - calc(var(--ugflix-header-height) + var(--ugflix-topbar-height)));
 }
 

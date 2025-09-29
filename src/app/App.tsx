@@ -13,6 +13,9 @@ import PerformanceService from "./services/PerformanceService";
 import "react-toastify/dist/ReactToastify.css";
 import "./styles/toast.css";
 
+// Import auth debugger for development
+import "./utils/authDebugger";
+
 const App: React.FC = () => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -20,12 +23,15 @@ const App: React.FC = () => {
 
   // Restore authentication state on app startup
   useEffect(() => {
-    // Small delay to ensure localStorage is available
-    const timer = setTimeout(() => {
+    // Ensure we're in browser environment and localStorage is available
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      console.log('🚀 App started, restoring auth state immediately...');
+      
+      // Restore auth state immediately - no delay needed
       dispatch(restoreAuthState());
-    }, 100);
-
-    return () => clearTimeout(timer);
+    } else {
+      console.log('🚫 Not in browser environment, skipping auth restore');
+    }
   }, [dispatch]);
 
   // Initialize analytics and performance monitoring in production

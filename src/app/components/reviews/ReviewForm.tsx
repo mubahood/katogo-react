@@ -6,7 +6,7 @@ import { useAddProductReviewMutation, useGetUserReviewQuery, useUpdateProductRev
 import { showNotification } from '../../store/slices/notificationSlice';
 import StarRating from './StarRating';
 import Utils from '../../services/Utils';
-import { DB_LOGGED_IN_PROFILE } from '../../../Constants';
+import { ugflix_user } from '../../../Constants';
 
 interface ReviewFormProps {
   productId: number;
@@ -29,7 +29,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   const [success, setSuccess] = useState('');
 
   const dispatch = useDispatch();
-  const currentUser = Utils.loadFromDatabase(DB_LOGGED_IN_PROFILE);
+  const currentUser = Utils.loadFromDatabase(ugflix_user);
 
   // Check if user already has a review
   const {

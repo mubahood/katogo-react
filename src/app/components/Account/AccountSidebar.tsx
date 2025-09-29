@@ -12,6 +12,7 @@ interface MenuItem {
   label: string;
   icon: string;
   path: string;
+  section: string;
 }
 
 const AccountSidebar: React.FC = () => {
@@ -20,32 +21,95 @@ const AccountSidebar: React.FC = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
 
-  // Simplified menu items - only essential ones
+  // Comprehensive menu items organized by sections
   const menuItems: MenuItem[] = [
+    // Account Overview
     {
       id: 'dashboard',
       label: 'Dashboard',
-      icon: 'bi-house',
+      icon: 'bi-speedometer2',
       path: '/account',
-    },
-    {
-      id: 'orders',
-      label: 'My Orders',
-      icon: 'bi-bag-check',
-      path: '/account/orders',
-    },
-    {
-      id: 'wishlist',
-      label: 'Wishlist',
-      icon: 'bi-heart',
-      path: '/account/wishlist',
+      section: 'overview'
     },
     {
       id: 'profile',
-      label: 'Profile',
+      label: 'My Profile',
       icon: 'bi-person',
       path: '/account/profile',
+      section: 'overview'
     },
+    
+    // Entertainment
+    {
+      id: 'subscriptions',
+      label: 'Subscriptions',
+      icon: 'bi-collection-play',
+      path: '/account/subscriptions',
+      section: 'entertainment'
+    },
+    {
+      id: 'watchlist',
+      label: 'My Watchlist',
+      icon: 'bi-bookmark-heart',
+      path: '/account/watchlist',
+      section: 'entertainment'
+    },
+    {
+      id: 'history',
+      label: 'Watch History',
+      icon: 'bi-clock-history',
+      path: '/account/history',
+      section: 'entertainment'
+    },
+    {
+      id: 'likes',
+      label: 'My Likes',
+      icon: 'bi-heart-fill',
+      path: '/account/likes',
+      section: 'entertainment'
+    },
+    
+    // Marketplace
+    {
+      id: 'products',
+      label: 'My Products',
+      icon: 'bi-bag',
+      path: '/account/products',
+      section: 'marketplace'
+    },
+    {
+      id: 'orders',
+      label: 'Orders',
+      icon: 'bi-box-seam',
+      path: '/account/orders',
+      section: 'marketplace'
+    },
+    
+    // Communication
+    {
+      id: 'chats',
+      label: 'My Chats',
+      icon: 'bi-chat-dots',
+      path: '/account/chats',
+      section: 'communication'
+    },
+    
+    // Settings
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: 'bi-gear',
+      path: '/account/settings',
+      section: 'settings'
+    }
+  ];
+
+  const sections = [
+    { id: 'overview', title: 'Account Overview' },
+    { id: 'entertainment', title: 'Entertainment' },
+    { id: 'marketplace', title: 'Marketplace' },
+    { id: 'communication', title: 'Communication' },
+    { id: 'settings', title: 'Account' }
   ];
 
   const isActive = (path: string) => {
@@ -61,53 +125,56 @@ const AccountSidebar: React.FC = () => {
     navigate('/');
   };
 
+  const getItemsBySection = (sectionId: string) => {
+    return menuItems.filter(item => item.section === sectionId);
+  };
+
   return (
     <div className="acc-sidebar-container">
-      {/* User Profile Header */}
-      <div className="acc-sidebar-header">
-        <div className="acc-user-avatar">
-          <i className="bi bi-person-circle"></i>
-        </div>
-        <div className="acc-user-info">
-          <h5 className="acc-user-name">
-            {user?.first_name && user?.last_name 
-              ? `${user.first_name} ${user.last_name}`
-              : user?.email?.split('@')[0] || 'My Account'
-            }
-          </h5>
-          <p className="acc-user-email">{user?.email}</p>
-        </div>
-      </div>
+  
 
       {/* Navigation Menu */}
-        <Nav className="acc-sidebar-nav">
-          {/* Main Menu Items */}
-          {menuItems.map((item) => (
-            <Nav.Item key={item.id} className="acc-nav-item">
-              <Nav.Link
-                as={Link}
-                to={item.path}
-                className={`acc-nav-link ${isActive(item.path) ? 'active' : ''}`}
-              >
-                <i className={`${item.icon} acc-nav-icon`}></i>
-                <span className="acc-nav-text">{item.label}</span>
-              </Nav.Link>
-            </Nav.Item>
-          ))}
+      <Nav className="acc-sidebar-nav">
+        {sections.map((section) => {
+          const sectionItems = getItemsBySection(section.id);
+          if (sectionItems.length === 0) return null;
+          
+          return (
+            <div key={section.id} className="nav-section mb-3">
+              <h6 className="nav-section-title text-muted small text-uppercase fw-bold mb-2 px-3">
+                {section.title}
+              </h6>
+              {sectionItems.map((item) => (
+                <Nav.Item key={item.id} className="acc-nav-item mb-1">
+                  <Nav.Link
+                    as={Link}
+                    to={item.path}
+                    className={`acc-nav-link ${isActive(item.path) ? 'active' : ''}`}
+                  >
+                    <i className={`${item.icon} acc-nav-icon me-2`}></i>
+                    <span className="acc-nav-text">{item.label}</span>
+                  </Nav.Link>
+                </Nav.Item>
+              ))}
+            </div>
+          );
+        })}
 
-          {/* Logout */}
+        {/* Logout */}
+        <div className="nav-section border-top pt-3 mt-3">
           <Nav.Item className="acc-nav-item">
             <Nav.Link
               onClick={handleLogout}
-              className="acc-nav-link acc-logout-link"
+              className="acc-nav-link acc-logout-link text-danger"
               role="button"
             >
-              <i className="bi-box-arrow-right acc-nav-icon"></i>
+              <i className="bi-box-arrow-right acc-nav-icon me-2"></i>
               <span className="acc-nav-text">Logout</span>
             </Nav.Link>
           </Nav.Item>
-        </Nav>
-      </div>
+        </div>
+      </Nav>
+    </div>
   );
 };
 

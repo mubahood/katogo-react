@@ -6,11 +6,7 @@
 
 /* === ROOT VARIABLES === */
 :root {
-  /* UgFlix Brand Colors */
-  --ugflix-primary: #ff6b35;
-  --ugflix-primary-dark: #e55a2e;
-  --ugflix-secondary: #f7931e;
-  --ugflix-accent: #ffd700;
+  /* UgFlix Brand Colors */\n  --ugflix-primary: #B71C1C;       /* Brand red */\n  --ugflix-primary-dark: #8B0000;  /* Darker red */\n  --ugflix-secondary: #F9A825;     /* Brand amber */\n  --ugflix-accent: #F9A825;        /* Brand amber accent */
   
   /* Dark Theme Colors */
   --ugflix-bg-primary: #0a0a0a;

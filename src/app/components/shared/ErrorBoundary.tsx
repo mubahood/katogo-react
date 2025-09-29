@@ -82,7 +82,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   private getUserId = (): string | null => {
     try {
-      const user = localStorage.getItem('DB_LOGGED_IN_PROFILE');
+      const user = localStorage.getItem('ugflix_user');
       return user ? JSON.parse(user)?.id?.toString() : null;
     } catch {
       return null;

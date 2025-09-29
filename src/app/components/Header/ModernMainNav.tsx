@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
-import { selectIsAuthenticated } from "../../store/slices/authSlice";
+import { selectIsAuthenticated, restoreAuthState } from "../../store/slices/authSlice";
 import { loadWishlistFromAPI } from "../../store/slices/wishlistSlice";
 import { useCart } from "../../hooks/useCart";
 import { useAppCounts, useMegaMenuCategories } from "../../hooks/useManifest";
@@ -59,21 +59,56 @@ const ModernMainNav: React.FC = () => {
     ['Vj Jimmy', 'Vj Baros', 'Vj Kimuli', 'Vj Fredy', 'Vj Jumpers', 'Vj Ashim', 'Vj Pauleta', 'Vj Martin K', 'Vj Henrico', 'Vj Uncle T', 'Vj Soul', 'Vj Nelly']
   ];
   
-  // Auth selectors
+  // Auth selectors with more robust state tracking
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const authState = useSelector((state: RootState) => state.auth);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const token = useSelector((state: RootState) => state.auth.token);
   
-  // Debug authentication state
+  // Force re-render when auth state changes
+  const [, forceUpdate] = useState({});
+  
+  // Debug authentication state with more detail
   useEffect(() => {
-    console.log('🔐 Auth State Debug:', {
+    const localToken = localStorage.getItem('ugflix_auth_token');
+    const localUser = localStorage.getItem('ugflix_user');
+    
+    console.log('🔐 DETAILED Auth State Debug:', {
+      // Redux state
       isAuthenticated,
       hasUser: !!authState.user,
       hasToken: !!authState.token,
       isLoading: authState.isLoading,
-      localStorage_token: localStorage.getItem('DB_TOKEN'),
-      localStorage_user: localStorage.getItem('DB_LOGGED_IN_PROFILE')
+      userEmail: authState.user?.email,
+      reduxTokenPreview: authState.token ? authState.token.substring(0, 20) + '...' : 'null',
+      
+      // localStorage state
+      localStorage_hasToken: !!localToken,
+      localStorage_hasUser: !!localUser,
+      localStorage_tokenPreview: localToken ? localToken.substring(0, 20) + '...' : 'null',
+      localStorage_userExists: localUser ? 'exists' : 'missing',
+      
+      // Critical checks
+      bothTokensMatch: authState.token === localToken,
+      shouldBeAuthenticated: !!(localToken && localUser),
+      actuallyAuthenticated: isAuthenticated,
+      
+      // Detailed Redux state
+      reduxAuthState: authState
     });
-  }, [isAuthenticated, authState]);
+    
+    // Show what the header will display
+    console.log('🔄 Header will show:', isAuthenticated ? 'My Account' : 'Login');
+    
+    // If localStorage has auth data but Redux doesn't, dispatch restore
+    if (localToken && localUser && !isAuthenticated && !authState.isLoading) {
+      console.log('🔧 Auth mismatch detected! Forcing auth restore...');
+      dispatch(restoreAuthState());
+    }
+    
+    // Force re-render after state changes
+    forceUpdate({});
+  }, [isAuthenticated, authState, dispatch, user, token]);
   
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [isMegaMenuOpen, setMegaMenuOpen] = useState(false);
@@ -187,7 +222,7 @@ const ModernMainNav: React.FC = () => {
                     <Film size={18} />
                   </div>
                 </Link>
-                {isAuthenticated ? (
+                {(isAuthenticated || (authState.user && authState.token)) ? (
                   <Link to="/account" className="mobile-action-link">
                     <div className="mobile-action-icon-wrapper">
                       <User size={18} />
@@ -201,7 +236,7 @@ const ModernMainNav: React.FC = () => {
                     </div>
                   </Link>
                 )}
-                <Link to="/watchlist" className="mobile-action-link">
+                <Link to="/account/watchlist" className="mobile-action-link">
                   <div className="mobile-action-icon-wrapper">
                     <Heart size={18} />
                     {wishlistCount > 0 && (
@@ -339,6 +374,20 @@ const ModernMainNav: React.FC = () => {
               <div className="action-text">Series</div>
             </Link>
 
+            <Link to="/music" className="action-link">
+              <div className="action-icon-wrapper">
+                <Mic size={18} className="action-icon" />
+              </div>
+              <div className="action-text">Music</div>
+            </Link>
+
+            <Link to="/live-tv" className="action-link">
+              <div className="action-icon-wrapper">
+                <PlayCircle size={18} className="action-icon" />
+              </div>
+              <div className="action-text">Live TV</div>
+            </Link>
+
             <Link to="/shop" className="action-link">
               <div className="action-icon-wrapper">
                 <ShoppingCart size={18} className="action-icon" />
@@ -346,7 +395,18 @@ const ModernMainNav: React.FC = () => {
               <div className="action-text">Shop</div>
             </Link>
             
-            {isAuthenticated ? (
+            {authState.isLoading ? (
+              // Show loading state while authentication is being restored
+              <div className="action-link">
+                <div className="action-icon-wrapper">
+                  <div className="spinner-border spinner-border-sm" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+                <div className="action-text">Loading...</div>
+              </div>
+            ) : (isAuthenticated || (authState.user && authState.token)) ? (
+              // Show My Account if authenticated OR if user and token exist in state
               <Link to="/account" className="action-link">
                 <div className="action-icon-wrapper">
                   <User size={18} className="action-icon" />
@@ -355,6 +415,7 @@ const ModernMainNav: React.FC = () => {
                 <div className="action-text">My Account</div>
               </Link>
             ) : (
+              // Show Login if not authenticated
               <Link to="/auth/login" className="action-link">
                 <div className="action-icon-wrapper">
                   <LogIn size={18} className="action-icon" />
@@ -414,6 +475,20 @@ const ModernMainNav: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/music" onClick={toggleMenu}>
+                  <Mic size={18} />
+                  <span>Music</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/live-tv" onClick={toggleMenu}>
+                  <PlayCircle size={18} />
+                  <span>Live TV</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
+              <li>
                 <Link to="/shop" onClick={toggleMenu}>
                   <ShoppingCart size={18} />
                   <span>Shop</span>
@@ -439,7 +514,16 @@ const ModernMainNav: React.FC = () => {
           </div>
 
           {/* Mobile Account Actions */}
-          {isAuthenticated ? (
+          {authState.isLoading ? (
+            <div className="mobile-nav-section">
+              <h6 className="mobile-nav-heading">Loading...</h6>
+              <div className="d-flex justify-content-center py-3">
+                <div className="spinner-border spinner-border-sm" role="status">
+                  <span className="visually-hidden">Loading authentication...</span>
+                </div>
+              </div>
+            </div>
+          ) : (isAuthenticated || (authState.user && authState.token)) ? (
             <div className="mobile-nav-section">
               <h6 className="mobile-nav-heading">
                 Welcome back!
@@ -459,7 +543,7 @@ const ModernMainNav: React.FC = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/watchlist"  onClick={toggleMenu}>
+                  <Link to="/account/watchlist"  onClick={toggleMenu}>
                     <Heart size={18} />
                     <span>My Watchlist</span>
                     {wishlistCount > 0 && (
@@ -492,7 +576,7 @@ const ModernMainNav: React.FC = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/watchlist"  onClick={toggleMenu}>
+                  <Link to="/account/watchlist"  onClick={toggleMenu}>
                     <Heart size={18} />
                     <span>My Watchlist</span>
                     {wishlistCount > 0 && (
@@ -524,6 +608,24 @@ const ModernMainNav: React.FC = () => {
                 <Link to="/movies?filter=new" onClick={toggleMenu}>
                   <i className="bi bi-star text-info"></i>
                   <span>New Releases</span>
+                </Link>
+              </li>
+              <li>
+                <Link to="/music?filter=trending" onClick={toggleMenu}>
+                  <i className="bi bi-music-note text-success"></i>
+                  <span>Trending Music</span>
+                </Link>
+              </li>
+              <li>
+                <Link to="/live-tv" onClick={toggleMenu}>
+                  <i className="bi bi-broadcast text-danger"></i>
+                  <span>Live TV Channels</span>
+                </Link>
+              </li>
+              <li>
+                <Link to="/premium" onClick={toggleMenu}>
+                  <i className="bi bi-gem text-warning"></i>
+                  <span>Premium Content</span>
                 </Link>
               </li>
               <li>

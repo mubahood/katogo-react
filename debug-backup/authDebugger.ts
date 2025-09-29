@@ -1,6 +1,6 @@
 // src/app/utils/authDebugger.ts
 import { http_post } from '../services/Api';
-import { DB_TOKEN, DB_LOGGED_IN_PROFILE } from '../../Constants';
+import { ugflix_auth_token, ugflix_user } from '../../Constants';
 import Utils from '../services/Utils';
 
 /**
@@ -52,8 +52,8 @@ export async function manualAuth(email: string, password: string) {
   }
   
   try {
-    Utils.saveToDatabase(DB_TOKEN, token);
-    Utils.saveToDatabase(DB_LOGGED_IN_PROFILE, userData);
+    Utils.saveToDatabase(ugflix_auth_token, token);
+    Utils.saveToDatabase(ugflix_user, userData);
     
     
     return true;

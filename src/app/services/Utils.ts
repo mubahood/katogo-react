@@ -1,4 +1,4 @@
-import { API_CONFIG, DB_LOGGED_IN_PROFILE, DB_TOKEN } from "../constants";
+import { API_CONFIG, ugflix_user, ugflix_auth_token } from "../constants";
 import { ProfileModel } from "../models/ProfileModel";
 import { http_get } from "./Api";
 
@@ -190,7 +190,7 @@ class Utils {
   static saveProfile(profile: ProfileModel) {
     try {
       const lsValue = JSON.stringify(profile);
-      localStorage.setItem(DB_LOGGED_IN_PROFILE, lsValue);
+      localStorage.setItem(ugflix_user, lsValue);
     } catch (error) {
       alert("" + error);
     }

@@ -450,7 +450,7 @@
   border-radius: 8px;
   padding: 0.75rem;
   margin: 0 0 2rem 0;
-  color: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-primary, #B71C1C);
   font-weight: 500;
 }
 
@@ -483,12 +483,12 @@
 }
 
 .resume-btn-primary {
-  background: var(--ugflix-primary, #ff6b35);
+  background: var(--ugflix-primary, #B71C1C);
   color: white;
 }
 
 .resume-btn-primary:hover {
-  background: var(--ugflix-primary-dark, #e55a2e);
+  background: var(--ugflix-primary-dark, #8B0000);
   transform: translateY(-1px);
 }
 

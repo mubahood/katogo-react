@@ -46,13 +46,13 @@ export const STORAGE_KEYS = {
   USER_PREFERENCES: "USER_PREFERENCES",
   THEME: "THEME",
   // Auth-related storage keys
-  DB_TOKEN: "DB_TOKEN",
-  DB_LOGGED_IN_PROFILE: "DB_LOGGED_IN_PROFILE",
+  ugflix_auth_token: "ugflix_auth_token",
+  ugflix_user: "ugflix_user",
 } as const;
 
 // Legacy exports for backward compatibility
-export const DB_TOKEN = STORAGE_KEYS.DB_TOKEN;
-export const DB_LOGGED_IN_PROFILE = STORAGE_KEYS.DB_LOGGED_IN_PROFILE;
+export const ugflix_auth_token = STORAGE_KEYS.ugflix_auth_token;
+export const ugflix_user = STORAGE_KEYS.ugflix_user;
 export const LOCAL_MANIFEST = STORAGE_KEYS.LOCAL_MANIFEST;
 export const LOCAL_DISTRICTS = STORAGE_KEYS.LOCAL_DISTRICTS;
 export const LOCAL_JOBSEEKER_MANIFEST = STORAGE_KEYS.LOCAL_JOBSEEKER_MANIFEST;

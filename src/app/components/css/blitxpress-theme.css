@@ -8,15 +8,15 @@
    =================================================================== */
 :root {
   /* --- Primary Color System (Square Design) --- */
-  --primary-color: #05179F; /* Main primary blue */
-  --primary-color-dark: #041266; /* Darker blue for hover/active */
-  --primary-color-light: #0620B8; /* Lighter blue for backgrounds */
-  --primary-color-rgb: 5, 23, 159; /* RGB values for transparency */
+  --primary-color: #B71C1C; /* Main primary red */
+  --primary-color-dark: #8B0000; /* Darker red for hover/active */
+  --primary-color-light: #E53935; /* Lighter red for backgrounds */
+  --primary-color-rgb: 183, 28, 28; /* RGB values for transparency */
   
-  --accent-color: #d71529; /* Complementary red for highlights */
-  --accent-color-dark: #b81222; /* Darker red for hover */
-  --accent-color-light: #ff3a4c; /* Lighter red for backgrounds */
-  --accent-color-rgb: 215, 21, 41; /* RGB values for transparency */
+  --accent-color: #F9A825; /* Main amber accent */
+  --accent-color-dark: #F57C00; /* Darker amber for hover */
+  --accent-color-light: #FFD54F; /* Lighter amber for backgrounds */
+  --accent-color-rgb: 249, 168, 37; /* RGB values for transparency */
 
   /* --- Neutral Colors --- */
   --text-color-dark: #212529;
@@ -44,9 +44,9 @@
 
   /* --- Success/Error Colors --- */
   --success-color: #198754;
-  --warning-color: #fd7e14;
+  --warning-color: #F9A825; /* Using brand amber for warnings */
   --danger-color: #dc3545;
-  --info-color: #0dcaf0;
+  --info-color: #B71C1C; /* Using brand red for info messages */
 
   /* --- SQUARE DESIGN SYSTEM - NO ROUNDED CORNERS --- */
   --border-radius-sm: 0px;
@@ -372,10 +372,17 @@ a, button, .btn, .form-control, .card, .product-card,
    7. Card System (Square, Consistent)
    =================================================================== */
 .card {
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  background-color: var(--white);
-  box-shadow: var(--shadow-sm);
+  border-radius: 0;
+  border: 1px solid var(--ugflix-border);
+  background-color: var(--ugflix-bg-secondary);
+  box-shadow: var(--ugflix-shadow);
+  color: var(--ugflix-text-primary);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--ugflix-shadow-hover);
+  border-color: var(--ugflix-border-hover);
 }
 
 .card-header {
@@ -434,32 +441,37 @@ a, button, .btn, .form-control, .card, .product-card,
    9. Table System (Square, Consistent)
    =================================================================== */
 .table {
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
+  border-radius: 0;
+  border: 1px solid var(--ugflix-border);
   margin-bottom: 0;
+  background: var(--ugflix-bg-secondary);
+  color: var(--ugflix-text-primary);
+  overflow: hidden;
 }
 
 .table thead th {
-  background-color: var(--background-light);
-  border-bottom: 1px solid var(--border-color);
+  background: var(--ugflix-bg-tertiary);
+  border-bottom: 2px solid var(--ugflix-primary);
   padding: var(--spacing-md);
   font-weight: 600;
-  color: var(--text-color-dark);
+  color: var(--ugflix-text-primary);
   font-size: 14px;
 }
 
 .table tbody td {
   padding: var(--spacing-md);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--ugflix-border);
   font-size: 14px;
+  color: var(--ugflix-text-secondary);
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-  background-color: var(--background-muted);
+  background-color: var(--ugflix-bg-primary);
 }
 
 .table-hover tbody tr:hover {
-  background-color: var(--background-light);
+  background-color: var(--ugflix-bg-hover);
+  color: var(--ugflix-text-primary);
 }
 
 /* ===================================================================
@@ -618,6 +630,48 @@ a, button, .btn, .form-control, .card, .product-card,
   box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1) !important;
 }
 
+/* Extra Small Device Optimizations */
+@media (max-width: 575.98px) {
+  .account-sidebar-wrapper {
+    min-height: auto;
+  }
+  
+  .acc-sidebar-nav {
+    padding: var(--spacing-1) 0;
+  }
+  
+  .nav-section {
+    margin-bottom: var(--spacing-2) !important;
+  }
+  
+  .nav-section-title {
+    display: none; /* Hide section titles on very small screens */
+  }
+  
+  .acc-nav-link {
+    padding: var(--spacing-2) !important;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .acc-nav-icon {
+    margin-right: 0 !important;
+    margin-bottom: var(--spacing-1) !important;
+    font-size: 1.25rem;
+  }
+  
+  .acc-nav-text {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+  
+  .acc-stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-2);
+  }
+}
+
 /* Responsive utilities */
 @media (max-width: 575.98px) {
   .container { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
@@ -747,7 +801,7 @@ a.text-primary:hover {
 }
 
 .utility-link:hover {
-  color: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-primary, #B71C1C);
   background: var(--ugflix-bg-tertiary, #2a2a2a);
   text-decoration: none;
 }
@@ -1095,7 +1149,7 @@ a.text-primary:hover {
     transition: all 0.3s ease;
 }
 .offcanvas-close-btn:hover {
-    color: var(--ugflix-primary, #ff6b35);
+    color: var(--ugflix-primary, #B71C1C);
     background: var(--ugflix-bg-tertiary, #2a2a2a);
 }
 
@@ -1122,23 +1176,30 @@ a.text-primary:hover {
 
 /* Account Layout Container */
 .account-layout-container {
+  min-height: calc(100vh - var(--header-height));
+  background: var(--ugflix-bg-primary);
+}
+
+.account-layout-wrapper {
   display: flex;
-  min-height: calc(100vh - 120px);
   gap: 0;
-  background: var(--background-light);
+  min-height: calc(100vh - var(--header-height));
+  background-color: var(--ugflix-bg-secondary);
 }
 
 .account-sidebar-wrapper {
   width: var(--account-sidebar-width);
-  background: var(--white);
-  border-right: var(--account-border-width) solid var(--border-color);
+  background: var(--ugflix-bg-card);
+  border-right: 2px solid var(--ugflix-border);
+  border-radius: 0;
   flex-shrink: 0;
+  box-shadow: var(--ugflix-shadow);
 }
 
 .account-content-wrapper {
   flex: 1;
   padding: var(--spacing-6);
-  background: var(--background-light);
+  background: var(--ugflix-bg-secondary);
   overflow-y: auto;
 }
 
@@ -1147,34 +1208,53 @@ a.text-primary:hover {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--ugflix-bg-secondary, #1a1a1a);
+  background: var(--ugflix-bg-secondary);
 }
 
 .acc-sidebar-header {
   padding: var(--spacing-6) var(--spacing-4);
-  border-bottom: 1px solid var(--ugflix-border, #333333);
+  border-bottom: 1px solid var(--ugflix-border);
   text-align: center;
-  background: var(--ugflix-bg-secondary, #1a1a1a);
+  background: var(--ugflix-bg-secondary);
 }
 
 .acc-user-avatar {
   width: 70px;
   height: 70px;
-  background: var(--ugflix-bg-tertiary, #2a2a2a);
-  border: 1px solid var(--ugflix-border, #333333);
+  background: linear-gradient(135deg, #1a1d2e, #2a2d3a);
+  border: 2px solid #2a2d3a;
   border-radius: var(--border-radius);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto var(--spacing-3);
   transition: all 0.3s ease;
-  color: var(--ugflix-text-primary, #ffffff);
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.acc-user-avatar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent, rgba(5, 23, 159, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .acc-user-avatar:hover {
-  background: var(--ugflix-primary, #ff6b35);
-  color: var(--ugflix-text-primary, #ffffff);
-  border-color: var(--ugflix-primary, #ff6b35);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+  color: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(5, 23, 159, 0.3);
+}
+
+.acc-user-avatar:hover::before {
+  opacity: 1;
 }
 
 .acc-user-avatar i {
@@ -1186,14 +1266,14 @@ a.text-primary:hover {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   margin-bottom: var(--spacing-1);
-  color: var(--ugflix-text-primary, #ffffff);
+  color: #ffffff;
   line-height: var(--line-height-tight);
 }
 
 .acc-user-email {
   font-size: var(--font-size-sm);
   margin: 0;
-  color: var(--ugflix-text-secondary, #cccccc);
+  color: #94a3b8;
   line-height: var(--line-height-normal);
 }
 
@@ -1212,64 +1292,69 @@ a.text-primary:hover {
 .acc-nav-link {
   display: flex;
   align-items: center;
-  padding: var(--spacing-4) var(--spacing-4);
-  color: var(--ugflix-text-primary, #ffffff);
+  padding: 12px 16px;
+  color: var(--ugflix-text-secondary);
   text-decoration: none;
   border: none;
   background: transparent;
-  border-radius: 6px;
-  margin: 2px 8px;
-  transition: all 0.3s ease;
+  border-radius: 0;
+  margin: 0;
+  transition: all 0.2s ease;
   position: relative;
   font-weight: var(--font-weight-medium);
+  font-size: 14px;
+  border-left: 3px solid transparent;
 }
 
 .acc-nav-link:hover {
-  background: var(--ugflix-bg-tertiary, #2a2a2a);
-  color: var(--ugflix-text-primary, #ffffff);
+  background: var(--ugflix-bg-hover);
+  color: var(--ugflix-text-primary);
   text-decoration: none;
-  transform: translateX(4px);
+  border-left-color: var(--ugflix-accent);
 }
 
 .acc-nav-link.active {
-  background: var(--ugflix-primary, #ff6b35);
-  color: var(--ugflix-text-primary, #ffffff);
+  background: var(--ugflix-bg-hover);
+  color: var(--ugflix-text-primary);
+  border-left-color: var(--ugflix-primary);
+  font-weight: var(--font-weight-semibold);
 }
 
 .acc-nav-link.active:hover {
-  background: var(--ugflix-primary-dark, #e55a2e);
-  color: var(--ugflix-text-primary, #ffffff);
-  transform: none;
+  background: var(--ugflix-bg-hover);
+  color: var(--ugflix-text-primary);
 }
 
 .acc-nav-icon {
-  font-size: var(--font-size-base);
+  font-size: 16px;
   width: 20px;
   margin-right: var(--spacing-3);
   text-align: center;
   flex-shrink: 0;
+  color: inherit;
 }
 
 .acc-nav-text {
-  font-size: var(--font-size-sm);
+  font-size: 14px;
   font-weight: inherit;
   line-height: var(--line-height-tight);
 }
 
 .acc-logout-link {
-  color: var(--ugflix-primary, #ff6b35);
-  border-top: 1px solid var(--ugflix-border, #333333);
+  color: var(--ugflix-accent);
+  border-top: 1px solid var(--ugflix-border);
   border-bottom: none;
   margin-top: auto;
   font-weight: var(--font-weight-medium);
   padding-top: var(--spacing-4);
-  margin-left: 8px;
-  margin-right: 8px;
+  margin-left: 0;
+  margin-right: 0;
+  transition: all 0.2s ease;
 }
 
 .acc-logout-link:hover {
-  background: var(--accent-color);
-  color: var(--white);
+  background: var(--ugflix-accent);
+  color: var(--ugflix-text-primary);
   transform: none;
 }
 
@@ -1280,40 +1365,46 @@ a.text-primary:hover {
   align-items: flex-start;
   margin-bottom: var(--spacing-6);
   padding: var(--spacing-6);
-  background: var(--white);
-  border: var(--account-border-width) solid var(--border-color);
-  border-radius: var(--border-radius);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: var(--ugflix-bg-secondary);
+  border: 1px solid var(--ugflix-border);
+  border-radius: 0;
+  box-shadow: var(--ugflix-shadow);
 }
 
 .acc-page-title {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  color: var(--text-color-dark);
+  color: var(--ugflix-text-primary);
   margin: 0 0 var(--spacing-1);
   line-height: var(--line-height-tight);
 }
 
 .acc-page-subtitle {
   font-size: var(--font-size-base);
-  color: var(--text-color-medium);
+  color: var(--ugflix-text-muted);
   margin: 0;
   line-height: var(--line-height-normal);
 }
 
 /* Account Cards */
 .acc-card {
-  background: var(--white);
-  border: var(--account-border-width) solid var(--border-color);
+  background: #111218;
+  border: var(--account-border-width) solid #2a2d3a;
   border-radius: var(--border-radius);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   margin-bottom: var(--spacing-4);
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.acc-card:hover {
+  box-shadow: 0 6px 20px rgba(5, 23, 159, 0.15);
+  border-color: rgba(5, 23, 159, 0.3);
 }
 
 .acc-card-header {
-  background: var(--white);
-  border-bottom: var(--account-border-width) solid var(--border-color);
+  background: linear-gradient(135deg, #1a1d2e, #111218);
+  border-bottom: var(--account-border-width) solid #2a2d3a;
   padding: var(--spacing-4) var(--spacing-6);
   display: flex;
   align-items: center;
@@ -1324,7 +1415,7 @@ a.text-primary:hover {
 .acc-card-title {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-color-dark);
+  color: #ffffff;
   margin: 0;
   display: flex;
   align-items: center;
@@ -1343,7 +1434,7 @@ a.text-primary:hover {
 .acc-form-label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: var(--text-color-dark);
+  color: var(--ugflix-text-primary);
   margin-bottom: var(--spacing-2);
   display: block;
 }
@@ -1353,22 +1444,23 @@ a.text-primary:hover {
   height: var(--input-height);
   padding: var(--input-padding-y) var(--input-padding-x);
   font-size: var(--font-size-base);
-  color: var(--text-color-dark);
-  background: var(--input-bg);
-  border: var(--input-border-width) solid var(--border-color);
-  border-radius: var(--border-radius);
+  color: var(--ugflix-text-primary);
+  background: var(--ugflix-bg-primary);
+  border: 1px solid var(--ugflix-border);
+  border-radius: 0;
   transition: all 0.2s ease;
 }
 
 .acc-form-control:focus {
   outline: none;
-  border-color: var(--input-focus-border-color);
-  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+  border-color: var(--ugflix-primary);
+  box-shadow: var(--ugflix-shadow-focus);
+  background: var(--ugflix-bg-secondary);
 }
 
 .acc-form-control:disabled {
-  background: var(--input-disabled-bg);
-  color: var(--text-color-muted);
+  background: var(--ugflix-bg-tertiary);
+  color: var(--ugflix-text-muted);
   cursor: not-allowed;
 }
 
@@ -1391,26 +1483,29 @@ a.text-primary:hover {
 }
 
 .acc-btn-primary {
-  background: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-color);
+  background: var(--ugflix-primary);
+  color: var(--ugflix-text-primary);
+  border-color: var(--ugflix-primary);
+  box-shadow: none;
 }
 
 .acc-btn-primary:hover {
-  background: var(--primary-color-dark);
-  border-color: var(--primary-color-dark);
-  color: var(--white);
+  background: var(--ugflix-primary-dark);
+  border-color: var(--ugflix-primary-dark);
+  color: var(--ugflix-text-primary);
+  box-shadow: var(--ugflix-shadow-hover);
 }
 
 .acc-btn-outline {
   background: transparent;
-  color: var(--primary-color);
-  border-color: var(--primary-color);
+  color: var(--ugflix-primary);
+  border-color: var(--ugflix-primary);
 }
 
 .acc-btn-outline:hover {
-  background: var(--primary-color);
-  color: var(--white);
+  background: var(--ugflix-primary);
+  color: var(--ugflix-text-primary);
+  box-shadow: none;
 }
 
 .acc-btn-sm {
@@ -1434,38 +1529,49 @@ a.text-primary:hover {
 }
 
 .acc-stat-card {
-  background: var(--white);
-  border: var(--account-border-width) solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-4);
+  background: var(--ugflix-bg-card);
+  border: 1px solid var(--ugflix-border);
+  border-radius: 0;
+  padding: var(--spacing-5);
   text-align: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+  box-shadow: var(--ugflix-shadow);
+  transition: var(--ugflix-transition-fast);
+  border-top: 3px solid var(--ugflix-primary);
+  position: relative;
+  overflow: hidden;
 }
 
 .acc-stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--ugflix-shadow-hover);
+  border-top-color: var(--ugflix-accent);
+  background: var(--ugflix-bg-tertiary);
 }
 
 .acc-stat-icon {
-  font-size: 2.5rem;
-  margin-bottom: var(--spacing-2);
-  color: var(--primary-color);
+  font-size: 2.8rem;
+  margin-bottom: var(--spacing-3);
+  color: var(--ugflix-primary);
+  display: block;
+  line-height: 1;
 }
 
 .acc-stat-value {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-color-dark);
-  margin-bottom: var(--spacing-1);
-  line-height: var(--line-height-tight);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--ugflix-text-high-contrast);
+  margin-bottom: var(--spacing-2);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
 }
 
 .acc-stat-label {
   font-size: var(--font-size-sm);
-  color: var(--text-color-medium);
+  color: var(--ugflix-text-muted);
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 /* Account Actions Grid */
@@ -1477,29 +1583,31 @@ a.text-primary:hover {
 }
 
 .acc-action-card {
-  background: var(--white);
-  border: var(--account-border-width) solid var(--border-color);
-  border-radius: var(--border-radius);
+  background: var(--ugflix-bg-secondary);
+  border: 1px solid var(--ugflix-border);
+  border-radius: 0;
   padding: var(--spacing-5);
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+  box-shadow: var(--ugflix-shadow);
+  transition: all 0.3s ease;
   display: flex;
   align-items: flex-start;
   gap: var(--spacing-3);
+  border-left: 3px solid var(--ugflix-primary);
 }
 
 .acc-action-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--ugflix-shadow-hover);
   text-decoration: none;
   color: inherit;
+  border-left-color: var(--ugflix-accent);
 }
 
 .acc-action-icon {
   font-size: 1.5rem;
-  color: var(--primary-color);
+  color: var(--ugflix-primary);
   flex-shrink: 0;
   margin-top: var(--spacing-1);
 }
@@ -1507,13 +1615,13 @@ a.text-primary:hover {
 .acc-action-content h4 {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-color-dark);
+  color: var(--ugflix-text-primary);
   margin: 0 0 var(--spacing-1);
 }
 
 .acc-action-content p {
   font-size: var(--font-size-sm);
-  color: var(--text-color-medium);
+  color: var(--ugflix-text-muted);
   margin: 0;
   line-height: var(--line-height-normal);
 }
@@ -1706,7 +1814,7 @@ a.text-primary:hover {
   text-decoration: none;
 }
 
-/* Responsive Account Styles */
+/* Enhanced Responsive Account Styles - Clean Square Design */
 @media (max-width: 991.98px) {
   .account-layout-container {
     flex-direction: column;
@@ -1716,37 +1824,35 @@ a.text-primary:hover {
     width: 100%;
     position: relative;
     border-right: none;
-    border-bottom: var(--account-border-width) solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
+    border-radius: 0; /* Square corners */
   }
   
-  .acc-sidebar-header {
-    padding: var(--spacing-4);
+  .acc-sidebar-nav {
+    padding: var(--spacing-2) 0;
   }
   
-  .acc-user-avatar {
-    width: 60px;
-    height: 60px;
-    margin-bottom: var(--spacing-2);
+  .nav-section {
+    margin-bottom: var(--spacing-3) !important;
   }
   
-  .acc-user-avatar i {
-    font-size: 1.75rem;
-  }
-  
-  .acc-user-name {
-    font-size: var(--font-size-sm);
-  }
-  
-  .acc-user-email {
-    font-size: var(--font-size-xs);
+  .nav-section-title {
+    font-size: 0.7rem !important;
+    padding: 0 var(--spacing-3) var(--spacing-1) var(--spacing-3) !important;
   }
   
   .acc-nav-link {
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: var(--spacing-2) var(--spacing-3) !important;
+    font-size: var(--font-size-sm);
   }
   
   .acc-nav-text {
-    font-size: var(--font-size-xs);
+    font-size: var(--font-size-sm);
+  }
+  
+  .acc-nav-icon {
+    font-size: 1rem;
+    margin-right: var(--spacing-2) !important;
   }
   
   .account-content-wrapper {
@@ -1772,16 +1878,54 @@ a.text-primary:hover {
 }
 
 @media (max-width: 767.98px) {
+  /* Mobile sidebar improvements */
+  .account-sidebar-wrapper {
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .acc-sidebar-nav {
+    padding: var(--spacing-2) 0;
+  }
+  
+  .nav-section {
+    margin-bottom: var(--spacing-2) !important;
+  }
+  
+  .nav-section-title {
+    font-size: 0.65rem !important;
+    padding: 0 var(--spacing-3) var(--spacing-1) var(--spacing-3) !important;
+    color: var(--text-muted) !important;
+    font-weight: 700 !important;
+  }
+  
+  .acc-nav-link {
+    padding: var(--spacing-2) var(--spacing-3) !important;
+  }
+  
+  .acc-nav-text {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+  }
+  
+  .acc-nav-icon {
+    font-size: 1rem;
+    margin-right: var(--spacing-2) !important;
+  }
+  
+  /* Content area improvements */
   .acc-stats-grid {
     grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-2);
   }
   
   .acc-page-title {
     font-size: var(--font-size-xl);
+    color: var(--text-color);
+    font-weight: 600;
   }
   
   .acc-card-body {
-    padding: var(--spacing-4);
+    padding: var(--spacing-3);
   }
   
   .acc-card-header {
@@ -2643,4 +2787,397 @@ a.text-primary:hover {
 /* Text Color Utilities */
 .text-accent {
   color: var(--accent-color) !important;
+}
+
+/* ===================================================================
+   ENHANCED ACCOUNT SECTION - FINAL UX IMPROVEMENTS
+   Clean square design with enhanced text clarity and responsiveness
+   =================================================================== */
+
+/* Enhanced Text Clarity Overrides */
+.account-layout-wrapper .text-muted {
+  color: var(--ugflix-text-muted) !important;
+}
+
+.account-layout-wrapper strong,
+.account-layout-wrapper .fw-bold {
+  color: var(--ugflix-text-high-contrast) !important;
+  font-weight: 600;
+}
+
+/* Clean Square Button Design */
+.account-layout-wrapper .btn {
+  border-radius: 0 !important;
+  font-weight: 500;
+  transition: var(--ugflix-transition-fast);
+  letter-spacing: 0.3px;
+}
+
+.account-layout-wrapper .btn-primary {
+  background-color: var(--ugflix-primary) !important;
+  border-color: var(--ugflix-primary) !important;
+  color: white !important;
+}
+
+.account-layout-wrapper .btn-primary:hover {
+  background-color: var(--ugflix-primary-dark) !important;
+  border-color: var(--ugflix-primary-dark) !important;
+  transform: translateY(-1px);
+}
+
+/* Enhanced Form Controls with Better Contrast */
+.account-layout-wrapper .form-control {
+  background-color: var(--ugflix-bg-secondary) !important;
+  border: 1px solid var(--ugflix-border) !important;
+  border-radius: 0 !important;
+  color: var(--ugflix-text-medium-contrast) !important;
+}
+
+.account-layout-wrapper .form-control:focus {
+  border-color: var(--ugflix-primary) !important;
+  box-shadow: var(--ugflix-shadow-focus) !important;
+  color: var(--ugflix-text-high-contrast) !important;
+}
+
+.account-layout-wrapper .form-label {
+  color: var(--ugflix-text-medium-contrast) !important;
+  font-weight: 500;
+  margin-bottom: var(--spacing-2);
+}
+
+/* Enhanced Card Content Readability */
+.account-layout-wrapper .acc-card-body {
+  color: var(--ugflix-text-medium-contrast) !important;
+  line-height: 1.6;
+}
+
+.account-layout-wrapper .acc-card-body p {
+  color: var(--ugflix-text-medium-contrast) !important;
+  margin-bottom: var(--spacing-3);
+  line-height: 1.6;
+}
+
+/* Mobile-First Responsive Enhancements */
+@media (max-width: 480px) {
+  .account-sidebar-wrapper {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--ugflix-border) !important;
+  }
+  
+  .acc-nav-link {
+    padding: var(--spacing-2) !important;
+    text-align: center;
+  }
+  
+  .acc-nav-text {
+    font-size: 0.8rem !important;
+  }
+  
+  .account-content-wrapper {
+    padding: var(--spacing-4) !important;
+  }
+}
+
+
+/* ===================================================================
+   ENHANCED DASHBOARD CONTENT STYLING
+   Improved text clarity, visual hierarchy, and readability
+   =================================================================== */
+
+/* Dashboard Welcome Section Enhancement */
+.account-content-wrapper h1,
+.account-content-wrapper .acc-welcome-title {
+  color: var(--ugflix-text-high-contrast) !important;
+  font-size: 2.2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: var(--spacing-3) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.5px;
+}
+
+.account-content-wrapper .acc-welcome-subtitle,
+.account-content-wrapper p {
+  color: var(--ugflix-text-medium-contrast) !important;
+  font-size: 1.1rem !important;
+  line-height: 1.6 !important;
+  margin-bottom: var(--spacing-4) !important;
+  font-weight: 400;
+}
+
+/* Enhanced Stats Grid Visual Appeal */
+.acc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-8);
+  padding: var(--spacing-2) 0;
+}
+
+/* Enhanced Action Cards Section */
+.acc-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-6);
+}
+
+.acc-action-card {
+  background: var(--ugflix-bg-card) !important;
+  border: 1px solid var(--ugflix-border) !important;
+  border-radius: 0 !important;
+  padding: var(--spacing-5) !important;
+  transition: var(--ugflix-transition-fast) !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+.acc-action-card:hover {
+  background: var(--ugflix-bg-tertiary) !important;
+  border-color: var(--ugflix-primary) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--ugflix-shadow-hover) !important;
+  text-decoration: none !important;
+}
+
+.acc-action-card h5,
+.acc-action-card .acc-action-title {
+  color: var(--ugflix-text-high-contrast) !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  margin-bottom: var(--spacing-2) !important;
+  line-height: 1.3 !important;
+}
+
+.acc-action-card p,
+.acc-action-card .acc-action-description {
+  color: var(--ugflix-text-medium-contrast) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+  opacity: 0.9;
+}
+
+.acc-action-card:hover .acc-action-description {
+  opacity: 1;
+  color: var(--ugflix-text-high-contrast) !important;
+}
+
+/* Enhanced Content Section Headers */
+.account-content-wrapper h2,
+.account-content-wrapper h3,
+.account-content-wrapper h4 {
+  color: var(--ugflix-text-high-contrast) !important;
+  font-weight: 600 !important;
+  margin-bottom: var(--spacing-3) !important;
+  line-height: 1.3 !important;
+}
+
+.account-content-wrapper h2 {
+  font-size: 1.8rem !important;
+  border-bottom: 2px solid var(--ugflix-border) !important;
+  padding-bottom: var(--spacing-2) !important;
+  margin-bottom: var(--spacing-4) !important;
+}
+
+.account-content-wrapper h3 {
+  font-size: 1.4rem !important;
+}
+
+.account-content-wrapper h4 {
+  font-size: 1.2rem !important;
+}
+
+/* Enhanced List and Content Styling */
+.account-content-wrapper ul,
+.account-content-wrapper ol {
+  color: var(--ugflix-text-medium-contrast) !important;
+  line-height: 1.6 !important;
+  margin-bottom: var(--spacing-4) !important;
+}
+
+.account-content-wrapper li {
+  margin-bottom: var(--spacing-1) !important;
+  color: var(--ugflix-text-medium-contrast) !important;
+}
+
+/* Enhanced Link Styling */
+.account-content-wrapper a {
+  color: var(--ugflix-primary) !important;
+  text-decoration: none !important;
+  font-weight: 500;
+  transition: var(--ugflix-transition-fast);
+}
+
+.account-content-wrapper a:hover {
+  color: var(--ugflix-accent) !important;
+  text-decoration: underline !important;
+}
+
+/* Enhanced Badge and Tag Styling */
+.account-content-wrapper .badge,
+.account-content-wrapper .tag {
+  background-color: var(--ugflix-primary) !important;
+  color: var(--ugflix-text-high-contrast) !important;
+  border-radius: 0 !important;
+  padding: var(--spacing-1) var(--spacing-2) !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.3px;
+}
+
+/* Enhanced Empty State Styling */
+.account-content-wrapper .empty-state,
+.account-content-wrapper .no-content {
+  text-align: center;
+  padding: var(--spacing-8) var(--spacing-4);
+  color: var(--ugflix-text-muted) !important;
+}
+
+.account-content-wrapper .empty-state h3 {
+  color: var(--ugflix-text-muted) !important;
+  font-size: 1.3rem !important;
+  margin-bottom: var(--spacing-2) !important;
+}
+
+.account-content-wrapper .empty-state p {
+  color: var(--ugflix-text-muted) !important;
+  font-size: 1rem !important;
+  opacity: 0.8;
+}
+
+
+/* ===================================================================
+   DASHBOARD TYPOGRAPHY AND LAYOUT ENHANCEMENTS
+   Specific improvements for content readability and visual appeal
+   =================================================================== */
+
+/* Dashboard Welcome Message Enhancement */
+.account-content-wrapper .welcome-message,
+.account-content-wrapper [data-testid="welcome"] {
+  margin-bottom: var(--spacing-6) !important;
+  padding-bottom: var(--spacing-4) !important;
+  border-bottom: 1px solid var(--ugflix-border-subtle) !important;
+}
+
+/* Enhanced Typography for All Dashboard Text */
+.account-content-wrapper * {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dashboard Stats Cards Content Enhancement */
+.acc-stat-card * {
+  text-align: center;
+}
+
+.acc-stat-card .card-body,
+.acc-stat-card .stat-content {
+  padding: 0 !important;
+}
+
+/* Enhanced Dashboard Grid Layout */
+.account-content-wrapper .row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.account-content-wrapper .col,
+.account-content-wrapper [class*="col-"] {
+  padding-left: var(--spacing-2) !important;
+  padding-right: var(--spacing-2) !important;
+}
+
+/* Dashboard Action Cards Enhanced Styling */
+.account-content-wrapper .card {
+  background: var(--ugflix-bg-card) !important;
+  border: 1px solid var(--ugflix-border) !important;
+  border-radius: 0 !important;
+  transition: var(--ugflix-transition-fast) !important;
+}
+
+.account-content-wrapper .card:hover {
+  border-color: var(--ugflix-primary) !important;
+  box-shadow: var(--ugflix-shadow-hover) !important;
+  transform: translateY(-1px);
+}
+
+.account-content-wrapper .card-header {
+  background: var(--ugflix-bg-tertiary) !important;
+  border-bottom: 1px solid var(--ugflix-border) !important;
+  color: var(--ugflix-text-high-contrast) !important;
+  font-weight: 600 !important;
+  padding: var(--spacing-4) !important;
+}
+
+.account-content-wrapper .card-body {
+  background: var(--ugflix-bg-card) !important;
+  color: var(--ugflix-text-medium-contrast) !important;
+  padding: var(--spacing-4) !important;
+  line-height: 1.6 !important;
+}
+
+.account-content-wrapper .card-title {
+  color: var(--ugflix-text-high-contrast) !important;
+  font-weight: 600 !important;
+  font-size: 1.2rem !important;
+  margin-bottom: var(--spacing-2) !important;
+}
+
+.account-content-wrapper .card-text {
+  color: var(--ugflix-text-medium-contrast) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: var(--spacing-2) !important;
+}
+
+/* Enhanced Icon Styling in Dashboard */
+.account-content-wrapper i,
+.account-content-wrapper .icon {
+  color: var(--ugflix-primary) !important;
+}
+
+.account-content-wrapper .card i,
+.account-content-wrapper .acc-action-card i {
+  font-size: 1.5rem !important;
+  margin-bottom: var(--spacing-2) !important;
+  display: block;
+}
+
+/* Dashboard Responsive Text Scaling */
+@media (max-width: 768px) {
+  .account-content-wrapper h1 {
+    font-size: 1.8rem !important;
+  }
+  
+  .account-content-wrapper .acc-welcome-subtitle,
+  .account-content-wrapper p {
+    font-size: 1rem !important;
+  }
+  
+  .acc-stat-value {
+    font-size: 1.8rem !important;
+  }
+  
+  .acc-stat-label {
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-content-wrapper h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  .acc-stat-value {
+    font-size: 1.5rem !important;
+  }
+  
+  .acc-stat-card {
+    padding: var(--spacing-3) !important;
+  }
 }

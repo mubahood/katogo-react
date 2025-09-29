@@ -7,16 +7,16 @@
   /* === UGFLIX CORE COLOR SYSTEM === */
   
   /* Primary Colors (Red) */
-  --ugflix-primary: #FF0000;              /* Main red from mobile app */
-  --ugflix-primary-dark: #DC3545;         /* Darker red for hover states */
-  --ugflix-primary-light: #FF4444;        /* Lighter red for backgrounds */
-  --ugflix-primary-rgb: 255, 0, 0;        /* RGB for transparency */
+  --ugflix-primary: #B71C1C;              /* Main red from brand guidelines */
+  --ugflix-primary-dark: #8B0000;         /* Darker red for hover states */
+  --ugflix-primary-light: #E53935;        /* Lighter red for backgrounds */
+  --ugflix-primary-rgb: 183, 28, 28;      /* RGB for transparency */
   
-  /* Accent Colors (Yellow) */
-  --ugflix-accent: #FFFF00;               /* Main yellow from mobile app */
-  --ugflix-accent-dark: #FFC107;          /* Darker yellow for hover */
-  --ugflix-accent-light: #FFFF66;         /* Lighter yellow for highlights */
-  --ugflix-accent-rgb: 255, 255, 0;       /* RGB for transparency */
+  /* Accent Colors (Amber/Yellow) */
+  --ugflix-accent: #F9A825;               /* Main amber from brand guidelines */
+  --ugflix-accent-dark: #F57C00;          /* Darker amber for hover */
+  --ugflix-accent-light: #FFD54F;         /* Lighter amber for highlights */
+  --ugflix-accent-rgb: 249, 168, 37;      /* RGB for transparency */
   
   /* Background Colors (Dark System) */
   --ugflix-background: #000000;           /* Main black background */

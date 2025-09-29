@@ -1,13 +1,13 @@
 // src/app/utils/debugAuth.ts
-import { DB_TOKEN, DB_LOGGED_IN_PROFILE } from "../../Constants";
+import { ugflix_auth_token, ugflix_user } from "../../Constants";
 import Utils from "../services/Utils";
 
 /**
  * Debug utility to check authentication status
  */
 export function debugAuthStatus() {
-  const token = Utils.loadFromDatabase(DB_TOKEN);
-  const user = Utils.loadFromDatabase(DB_LOGGED_IN_PROFILE);
+  const token = Utils.loadFromDatabase(ugflix_auth_token);
+  const user = Utils.loadFromDatabase(ugflix_user);
   
   console.log('Auth Debug:', {
     hasToken: !!token,

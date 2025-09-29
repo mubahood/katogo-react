@@ -5,7 +5,7 @@ import { useDeleteProductReviewMutation, useUpdateProductReviewMutation } from '
 import { ReviewModel } from '../../models/ReviewModel';
 import StarRating from './StarRating';
 import Utils from '../../services/Utils';
-import { DB_LOGGED_IN_PROFILE } from '../../../Constants';
+import { ugflix_user } from '../../../Constants';
 
 interface ReviewItemProps {
   review: ReviewModel;
@@ -23,7 +23,7 @@ const ReviewItem: React.FC<ReviewItemProps> = ({
   const [editRating, setEditRating] = useState(review.rating);
   const [editComment, setEditComment] = useState(review.comment);
 
-  const currentUser = Utils.loadFromDatabase(DB_LOGGED_IN_PROFILE);
+  const currentUser = Utils.loadFromDatabase(ugflix_user);
   const isOwner = currentUser && currentUser.id === review.user_id;
 
   const [updateReview, { isLoading: isUpdating }] = useUpdateProductReviewMutation();

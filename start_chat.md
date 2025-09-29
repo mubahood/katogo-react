@@ -228,8 +228,8 @@ export const EMPLOYMENT_STATUS_OPTIONS = [
   { value: "Internship", label: "Internship" },
 ];
 
-export const DB_TOKEN = "DB_TOKEN";
-export const DB_LOGGED_IN_PROFILE = "DB_LOGGED_IN_PROFILE";
+export const ugflix_auth_token = "ugflix_auth_token";
+export const ugflix_user = "ugflix_user";
 export const COUNTRIES = [
   { value: "UG", label: "Uganda" },
   { value: "AF", label: "Afghanistan" },
@@ -448,7 +448,7 @@ and
 F75E1EFF
 */
 
-import { BASE_URL, DB_LOGGED_IN_PROFILE, DB_TOKEN } from "../constants";
+import { BASE_URL, ugflix_user, ugflix_auth_token } from "../constants";
 import { ProfileModel } from "../models/ProfileModel";
 import { http_get } from "./Api";
 
@@ -612,7 +612,7 @@ class Utils {
   static saveProfile(profile: ProfileModel) {
     try {
       const lsValue = JSON.stringify(profile);
-      localStorage.setItem(DB_LOGGED_IN_PROFILE, lsValue);
+      localStorage.setItem(ugflix_user, lsValue);
     } catch (error) {
       alert("" + error);
     }

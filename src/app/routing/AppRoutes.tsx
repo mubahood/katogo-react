@@ -58,14 +58,19 @@ const ForgotPassword = React.lazy(() => import("../pages/auth/ForgotPassword"));
 const ForgotPasswordPage = React.lazy(() => import("../pages/auth/ForgotPasswordPage"));
 const LandingPage = React.lazy(() => import("../pages/auth/LandingPage"));
 
-// Account Pages
-const AccountDashboard = React.lazy(() => import("../pages/account/AccountDashboard"));
-const AccountProfile = React.lazy(() => import("../pages/account/AccountProfile"));
-const AccountOrdersPage = React.lazy(() => import("../pages/account/AccountOrdersPage"));
-const AccountSettings = React.lazy(() => import("../pages/account/AccountSettings"));
-const AccountWishlist = React.lazy(() => import("../pages/account/AccountWishlist"));
-const OrderDetailsPage = React.lazy(() => import("../pages/account/OrderDetailsPage"));
-const Account = React.lazy(() => import("../pages/account/Account"));
+// Account Pages - Direct imports to fix dynamic import issues
+import AccountDashboard from "../pages/account/AccountDashboard";
+import AccountProfile from "../pages/account/AccountProfile";
+import AccountOrdersPage from "../pages/account/AccountOrdersPage";
+import AccountSettings from "../pages/account/AccountSettings";
+import AccountWishlist from "../pages/account/AccountWishlist";
+import AccountSubscriptions from "../pages/account/AccountSubscriptions";
+import AccountWatchHistory from "../pages/account/AccountWatchHistory";
+import AccountLikes from "../pages/account/AccountLikes";
+import AccountProducts from "../pages/account/AccountProducts";
+import AccountChats from "../pages/account/AccountChats";
+import OrderDetailsPage from "../pages/account/OrderDetailsPage";
+import Account from "../pages/account/Account";
 
 // Error Pages
 const NotFoundPage = React.lazy(() => import("../pages/errors/NotFoundPage"));
@@ -97,14 +102,10 @@ const AppRoutes: React.FC = () => {
           <Route path="movies/:id" element={<WatchPage />} />
           <Route path="watch/:id" element={<WatchPage />} />
           
-          {/* Movie-related features - using existing components for now */}
+          {/* Movie-related features - redirect watchlist to account */}
           <Route 
             path="watchlist" 
-            element={
-              <ProtectedRoute>
-                <WishlistPage />
-              </ProtectedRoute>
-            } 
+            element={<Navigate to="/account/watchlist" replace />}
           />
           <Route path="downloads" element={<MoviesPage />} />
           <Route path="premium" element={<MoviesPage />} />
@@ -173,9 +174,14 @@ const AppRoutes: React.FC = () => {
           >
             <Route index element={<AccountDashboard />} />
             <Route path="profile" element={<AccountProfile />} />
+            <Route path="subscriptions" element={<AccountSubscriptions />} />
+            <Route path="watchlist" element={<AccountWishlist />} />
+            <Route path="history" element={<AccountWatchHistory />} />
+            <Route path="likes" element={<AccountLikes />} />
+            <Route path="products" element={<AccountProducts />} />
+            <Route path="chats" element={<AccountChats />} />
             <Route path="orders" element={<AccountOrdersPage />} />
             <Route path="orders/:orderId" element={<OrderDetailsPage />} />
-            <Route path="wishlist" element={<AccountWishlist />} />
             <Route path="settings" element={<AccountSettings />} />
           </Route>
           

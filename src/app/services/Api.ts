@@ -1,5 +1,5 @@
 import axios from "axios";
-import { DB_TOKEN, DB_LOGGED_IN_PROFILE, DEBUG_CONFIG } from "../../Constants";
+import { ugflix_auth_token, ugflix_user, DEBUG_CONFIG } from "../../Constants";
 import { API_CONFIG } from "../constants";
 import Utils from "./Utils";
 import ToastService from "./ToastService";
@@ -136,8 +136,8 @@ function saveUserData(resp: AuthResponseData) {
   
   try {
     // Store data in the same format as mobile app expects
-    Utils.saveToDatabase(DB_TOKEN, token);
-    Utils.saveToDatabase(DB_LOGGED_IN_PROFILE, user); // Store user object directly
+    Utils.saveToDatabase(ugflix_auth_token, token);
+    Utils.saveToDatabase(ugflix_user, user); // Store user object directly
     
     // Also store company data separately if provided
     if (resp.company) {
@@ -163,8 +163,8 @@ api.interceptors.request.use(
       dataType: config.data?.constructor?.name
     });
     
-    const token = Utils.loadFromDatabase(DB_TOKEN);
-    const u = Utils.loadFromDatabase(DB_LOGGED_IN_PROFILE);
+    const token = Utils.loadFromDatabase(ugflix_auth_token);
+    const u = Utils.loadFromDatabase(ugflix_user);
     
     // Follow exact mobile app authentication pattern
     if (token) {
@@ -258,7 +258,7 @@ api.interceptors.response.use(
 // Function to make a POST request
 export const http_post = async (path: string, params: Record<string, any>) => {
   try {
-    const u = Utils.loadFromDatabase(DB_LOGGED_IN_PROFILE);
+    const u = Utils.loadFromDatabase(ugflix_user);
     
     console.log(`📡 POST ${path}:`, { 
       hasUser: !!u, 
@@ -319,7 +319,7 @@ export const http_post = async (path: string, params: Record<string, any>) => {
 // Function to make a GET request
 export const http_get = async (path: string, params?: Record<string, any>) => {
   try {
-    const u = Utils.loadFromDatabase(DB_LOGGED_IN_PROFILE);
+    const u = Utils.loadFromDatabase(ugflix_user);
     
     if (!params) params = {};
     

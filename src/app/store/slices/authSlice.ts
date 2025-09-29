@@ -36,8 +36,8 @@ const authSlice = createSlice({
       
       // Save to localStorage after successful login
       try {
-        localStorage.setItem('DB_TOKEN', action.payload.token);
-        localStorage.setItem('DB_LOGGED_IN_PROFILE', JSON.stringify(action.payload.user));
+        localStorage.setItem('ugflix_auth_token', action.payload.token);
+        localStorage.setItem('ugflix_user', JSON.stringify(action.payload.user));
       } catch (error) {
         console.error('Failed to save auth data to localStorage:', error);
       }
@@ -58,8 +58,8 @@ const authSlice = createSlice({
       
       // Clear localStorage
       try {
-        localStorage.removeItem('DB_TOKEN');
-        localStorage.removeItem('DB_LOGGED_IN_PROFILE');
+        localStorage.removeItem('ugflix_auth_token');
+        localStorage.removeItem('ugflix_user');
       } catch (error) {
         console.error('Failed to clear auth data from localStorage:', error);
       }
@@ -70,7 +70,7 @@ const authSlice = createSlice({
         state.user = { ...state.user, ...action.payload };
         // Update localStorage with new user data
         try {
-          localStorage.setItem('DB_LOGGED_IN_PROFILE', JSON.stringify(state.user));
+          localStorage.setItem('ugflix_user', JSON.stringify(state.user));
         } catch (error) {
           console.error('Failed to update user data in localStorage:', error);
         }
@@ -79,8 +79,15 @@ const authSlice = createSlice({
         // Action to restore auth state from localStorage (call this after app initialization)
     restoreAuthState: (state) => {
       try {
-        const token = localStorage.getItem('DB_TOKEN');
-        const userDataStr = localStorage.getItem('DB_LOGGED_IN_PROFILE');
+        // Check if we're in a browser environment
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+          console.log('🚫 Not in browser environment, skipping auth restore');
+          state.isLoading = false;
+          return;
+        }
+        
+        const token = localStorage.getItem('ugflix_auth_token');
+        const userDataStr = localStorage.getItem('ugflix_user');
         
         console.log('🔄 Restoring auth state:', { 
           hasToken: !!token, 
@@ -90,15 +97,31 @@ const authSlice = createSlice({
         });
         
         if (token && userDataStr) {
-          const userData = JSON.parse(userDataStr);
-          
-          state.isAuthenticated = true;
-          state.user = userData;
-          state.token = token;
-          state.isLoading = false;
-          state.error = null;
-          
-          console.log('✅ Auth state restored successfully');
+          try {
+            const userData = JSON.parse(userDataStr);
+            
+            // Validate that the user data is valid
+            if (!userData || typeof userData !== 'object') {
+              throw new Error('Invalid user data format');
+            }
+            
+            state.isAuthenticated = true;
+            state.user = userData;
+            state.token = token;
+            state.isLoading = false;
+            state.error = null;
+            
+            console.log('✅ Auth state restored successfully', {
+              userEmail: userData.email,
+              userName: userData.first_name || userData.name
+            });
+          } catch (parseError) {
+            console.error('❌ Failed to parse user data:', parseError);
+            // Clear corrupted data
+            localStorage.removeItem('ugflix_auth_token');
+            localStorage.removeItem('ugflix_user');
+            throw parseError;
+          }
         } else {
           state.isAuthenticated = false;
           state.user = null;
@@ -111,8 +134,12 @@ const authSlice = createSlice({
       } catch (error) {
         console.error('❌ Failed to restore auth state:', error);
         // Clear potentially corrupted data
-        localStorage.removeItem('DB_TOKEN');
-        localStorage.removeItem('DB_LOGGED_IN_PROFILE');
+        try {
+          localStorage.removeItem('ugflix_auth_token');
+          localStorage.removeItem('ugflix_user');
+        } catch (storageError) {
+          console.error('Failed to clear localStorage:', storageError);
+        }
         
         // Reset state to initial values
         state.isAuthenticated = false;

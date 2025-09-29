@@ -140,7 +140,7 @@
 .genre-tag {
   background: rgba(255, 107, 53, 0.2);
   border: 1px solid rgba(255, 107, 53, 0.3);
-  color: #ff6b35;
+  color: #B71C1C;
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 13px;
@@ -351,7 +351,7 @@
 
 .mobile-episode {
   background: rgba(255, 107, 53, 0.2);
-  color: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-primary, #B71C1C);
 }
 
 /* Related Videos Section */
@@ -407,7 +407,7 @@
 }
 
 .related-movies-horizontal::-webkit-scrollbar-thumb {
-  background: var(--ugflix-primary, #ff6b35);
+  background: var(--ugflix-primary, #B71C1C);
   border-radius: 2px;
 }
 
@@ -466,7 +466,7 @@
 }
 
 .play-icon-small {
-  color: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-primary, #B71C1C);
   font-size: 0.7rem;
   margin-left: 2px;
 }
@@ -522,7 +522,7 @@
 .related-movie-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-  border-color: var(--ugflix-primary, #ff6b35);
+  border-color: var(--ugflix-primary, #B71C1C);
 }
 
 .related-movie-thumbnail {
@@ -564,7 +564,7 @@
 }
 
 .play-icon {
-  color: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-primary, #B71C1C);
   font-size: 1.2rem;
   margin-left: 3px;
 }
@@ -604,11 +604,11 @@
   padding: 1rem;
   background: rgba(255, 107, 53, 0.1);
   border-radius: 8px;
-  border-left: 4px solid var(--ugflix-primary, #ff6b35);
+  border-left: 4px solid var(--ugflix-primary, #B71C1C);
 }
 
 .episode-info h6 {
-  color: var(--ugflix-primary, #ff6b35);
+  color: var(--ugflix-primary, #B71C1C);
   font-size: 0.9rem;
   font-weight: 600;
   margin: 0 0 0.25rem 0;
@@ -639,7 +639,7 @@
 
 /* Like button states */
 .like-btn.liked {
-  background: var(--ugflix-primary, #ff6b35);
+  background: var(--ugflix-primary, #B71C1C);
   color: white;
 }
 
@@ -677,7 +677,7 @@
 .watch-page-error h2 {
   font-size: 2rem;
   margin-bottom: 16px;
-  color: #ff6b35;
+  color: #B71C1C;
 }
 
 .watch-page-error p {
@@ -688,7 +688,7 @@
 }
 
 .back-btn {
-  background: linear-gradient(135deg, #ff6b35 0%, #ff8f65 100%);
+  background: linear-gradient(135deg, #B71C1C 0%, #ff8f65 100%);
   border: none;
   color: white;
   padding: 14px 28px;

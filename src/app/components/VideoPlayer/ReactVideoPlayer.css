@@ -39,7 +39,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top: 3px solid var(--primary-color, #ff6b35);
+  border-top: 3px solid var(--primary-color, #B71C1C);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -151,7 +151,7 @@
 }
 
 .progress-played {
-  background: var(--primary-color, #ff6b35);
+  background: var(--primary-color, #B71C1C);
 }
 
 .progress-bar {
@@ -170,7 +170,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: var(--primary-color, #ff6b35);
+  background: var(--primary-color, #B71C1C);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -224,7 +224,7 @@
 }
 
 .control-btn-play {
-  background: var(--primary-color, #ff6b35);
+  background: var(--primary-color, #B71C1C);
 }
 
 .control-btn-play:hover {
@@ -330,14 +330,14 @@
 
 /* Focus styles for keyboard navigation */
 .control-btn:focus-visible {
-  outline: 2px solid var(--primary-color, #ff6b35);
+  outline: 2px solid var(--primary-color, #B71C1C);
   outline-offset: 2px;
 }
 
 .progress-bar:focus-visible {
-  outline: 2px solid var(--primary-color, #ff6b35);
+  outline: 2px solid var(--primary-color, #B71C1C);
 }
 
 .volume-slider:focus-visible {
-  outline: 2px solid var(--primary-color, #ff6b35);
+  outline: 2px solid var(--primary-color, #B71C1C);
 }

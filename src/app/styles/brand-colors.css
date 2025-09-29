@@ -1,0 +1,172 @@
+/* ===================================================================
+   UGFLIX CENTRALIZED BRAND COLOR SYSTEM
+   Master color variables for consistent theming across the entire app
+   Based on user specifications: Primary #B71C1C (red), Accent #F9A825 (amber)
+   =================================================================== */
+
+:root {
+  /* === CORE BRAND COLORS === */
+  /* Primary Brand Color - Red */
+  --brand-primary: #B71C1C;
+  --brand-primary-dark: #8B0000;
+  --brand-primary-light: #E53935;
+  --brand-primary-rgb: 183, 28, 28;
+  
+  /* Accent Brand Color - Amber */
+  --brand-accent: #F9A825;
+  --brand-accent-dark: #F57C00;
+  --brand-accent-light: #FFD54F;
+  --brand-accent-rgb: 249, 168, 37;
+  
+  /* === LEGACY VARIABLE MAPPINGS === */
+  /* Map all legacy variables to new brand colors */
+  --primary-color: var(--brand-primary);
+  --primary-color-dark: var(--brand-primary-dark);
+  --primary-color-light: var(--brand-primary-light);
+  --primary-color-rgb: var(--brand-primary-rgb);
+  
+  --accent-color: var(--brand-accent);
+  --accent-color-dark: var(--brand-accent-dark);
+  --accent-color-light: var(--brand-accent-light);
+  --accent-color-rgb: var(--brand-accent-rgb);
+  
+  /* UgFlix namespace mapping */
+  --ugflix-primary: var(--brand-primary);
+  --ugflix-primary-dark: var(--brand-primary-dark);
+  --ugflix-primary-light: var(--brand-primary-light);
+  --ugflix-primary-rgb: var(--brand-primary-rgb);
+  
+  --ugflix-accent: var(--brand-accent);
+  --ugflix-accent-dark: var(--brand-accent-dark);
+  --ugflix-accent-light: var(--brand-accent-light);
+  --ugflix-accent-rgb: var(--brand-accent-rgb);
+  
+  --ugflix-secondary: var(--brand-accent);
+  
+  /* === SEMANTIC COLOR MAPPING === */
+  /* Use brand colors for semantic purposes */
+  --info-color: var(--brand-primary);
+  --warning-color: var(--brand-accent);
+  
+  /* Text colors using brand colors */
+  --ugflix-text-accent: var(--brand-primary);
+  --ugflix-text-warning: var(--brand-accent);
+  
+  /* Border colors using brand colors */
+  --ugflix-border-focus: var(--brand-primary);
+  --ugflix-border-hover: var(--brand-accent);
+  
+  /* Interaction states */
+  --ugflix-hover-bg-subtle: rgba(var(--brand-primary-rgb), 0.1);
+  --ugflix-hover-bg-medium: rgba(var(--brand-primary-rgb), 0.2);
+  --ugflix-active-bg: rgba(var(--brand-primary-rgb), 0.3);
+  --ugflix-accent-hover-bg: rgba(var(--brand-accent-rgb), 0.1);
+  
+  /* Shadow effects */
+  --ugflix-shadow-hover: 0 8px 24px rgba(var(--brand-primary-rgb), 0.25);
+  --ugflix-shadow-focus: 0 0 0 3px rgba(var(--brand-primary-rgb), 0.2);
+  --ugflix-shadow-accent: 0 4px 16px rgba(var(--brand-accent-rgb), 0.3);
+  --ugflix-shadow-accent-hover: 0 8px 32px rgba(var(--brand-accent-rgb), 0.4);
+}
+
+/* === COMPONENT-SPECIFIC OVERRIDES === */
+/* Ensure all components use brand colors */
+
+/* Button overrides */
+.btn-primary {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-primary-dark) !important;
+  border-color: var(--brand-primary-dark) !important;
+}
+
+.btn-warning {
+  background-color: var(--brand-accent) !important;
+  border-color: var(--brand-accent) !important;
+  color: #000 !important;
+}
+
+.btn-warning:hover {
+  background-color: var(--brand-accent-dark) !important;
+  border-color: var(--brand-accent-dark) !important;
+}
+
+/* Link overrides */
+a {
+  color: var(--brand-primary);
+}
+
+a:hover {
+  color: var(--brand-primary-dark);
+}
+
+/* Form control focus states */
+.form-control:focus {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--brand-primary-rgb), 0.25) !important;
+}
+
+/* Badge overrides */
+.badge-primary {
+  background-color: var(--brand-primary) !important;
+}
+
+.badge-warning {
+  background-color: var(--brand-accent) !important;
+  color: #000 !important;
+}
+
+/* Alert overrides */
+.alert-info {
+  background-color: rgba(var(--brand-primary-rgb), 0.1) !important;
+  border-color: var(--brand-primary) !important;
+  color: var(--brand-primary) !important;
+}
+
+.alert-warning {
+  background-color: rgba(var(--brand-accent-rgb), 0.1) !important;
+  border-color: var(--brand-accent) !important;
+  color: var(--brand-accent-dark) !important;
+}
+
+/* Text color utilities */
+.text-primary {
+  color: var(--brand-primary) !important;
+}
+
+.text-warning {
+  color: var(--brand-accent) !important;
+}
+
+.text-info {
+  color: var(--brand-primary) !important;
+}
+
+/* Background color utilities */
+.bg-primary {
+  background-color: var(--brand-primary) !important;
+}
+
+.bg-warning {
+  background-color: var(--brand-accent) !important;
+}
+
+.bg-info {
+  background-color: var(--brand-primary) !important;
+}
+
+/* Border color utilities */
+.border-primary {
+  border-color: var(--brand-primary) !important;
+}
+
+.border-warning {
+  border-color: var(--brand-accent) !important;
+}
+
+.border-info {
+  border-color: var(--brand-primary) !important;
+}

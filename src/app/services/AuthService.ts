@@ -9,8 +9,8 @@ import { http_post } from './Api';
 import { ProfileModel } from '../models/ProfileModel';
 
 // Define constants directly to avoid circular dependencies
-const DB_TOKEN = "DB_TOKEN";
-const DB_LOGGED_IN_PROFILE = "DB_LOGGED_IN_PROFILE";
+const ugflix_auth_token = "ugflix_auth_token";
+const ugflix_user = "ugflix_user";
 
 export interface LoginCredentials {
   username: string;
@@ -70,8 +70,8 @@ export const loginUser = async (credentials: LoginCredentials): Promise<ProfileM
     }
 
     // Save user and token using localStorage
-    localStorage.setItem(DB_LOGGED_IN_PROFILE, JSON.stringify(responseData));
-    localStorage.setItem(DB_TOKEN, token);
+    localStorage.setItem(ugflix_user, JSON.stringify(responseData));
+    localStorage.setItem(ugflix_auth_token, token);
 
     console.log('✅ AuthService: Login successful, data saved');
     return userProfile;
@@ -127,8 +127,8 @@ export const registerUser = async (userData: RegisterData): Promise<ProfileModel
     }
 
     // Save user and token using localStorage
-    localStorage.setItem(DB_LOGGED_IN_PROFILE, JSON.stringify(responseData));
-    localStorage.setItem(DB_TOKEN, token);
+    localStorage.setItem(ugflix_user, JSON.stringify(responseData));
+    localStorage.setItem(ugflix_auth_token, token);
 
     console.log('✅ AuthService: Registration successful');
     return userProfile;
@@ -142,16 +142,16 @@ export const registerUser = async (userData: RegisterData): Promise<ProfileModel
  * Logout user - clear local storage
  */
 export const logoutUser = (): void => {
-  localStorage.removeItem(DB_LOGGED_IN_PROFILE);
-  localStorage.removeItem(DB_TOKEN);
+  localStorage.removeItem(ugflix_user);
+  localStorage.removeItem(ugflix_auth_token);
 };
 
 /**
  * Check if user is currently logged in
  */
 export const isUserLoggedIn = (): boolean => {
-  const user = localStorage.getItem(DB_LOGGED_IN_PROFILE);
-  const token = localStorage.getItem(DB_TOKEN);
+  const user = localStorage.getItem(ugflix_user);
+  const token = localStorage.getItem(ugflix_auth_token);
   return !!(user && token);
 };
 
@@ -159,7 +159,7 @@ export const isUserLoggedIn = (): boolean => {
  * Get current logged in user
  */
 export const getCurrentUser = (): ProfileModel | null => {
-  const userData = localStorage.getItem(DB_LOGGED_IN_PROFILE);
+  const userData = localStorage.getItem(ugflix_user);
   if (userData) {
     return ProfileModel.fromJson(userData);
   }
@@ -170,5 +170,5 @@ export const getCurrentUser = (): ProfileModel | null => {
  * Get current authentication token
  */
 export const getCurrentToken = (): string | null => {
-  return localStorage.getItem(DB_TOKEN);
+  return localStorage.getItem(ugflix_auth_token);
 };

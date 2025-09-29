@@ -83,8 +83,8 @@ export const EMPLOYMENT_STATUS_OPTIONS = [
   { value: "Internship", label: "Internship" },
 ];
 
-export const DB_TOKEN = "DB_TOKEN";
-export const DB_LOGGED_IN_PROFILE = "DB_LOGGED_IN_PROFILE";
+export const ugflix_auth_token = "ugflix_auth_token";
+export const ugflix_user = "ugflix_user";
 export const COUNTRIES = [
   { value: "UG", label: "Uganda" },
   { value: "AF", label: "Afghanistan" },

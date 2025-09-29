@@ -5,7 +5,7 @@ import ProductModel, { PaginatedResponse } from '../models/ProductModel';
 import CategoryModel from '../models/CategoryModel';
 import { API_CONFIG } from '../constants';
 import Utils from './Utils';
-import { DB_TOKEN, DB_LOGGED_IN_PROFILE } from '../constants';
+import { ugflix_auth_token, ugflix_user } from '../constants';
 import { CacheApiService } from './CacheApiService';
 import ApiService from './ApiService';
 
@@ -15,8 +15,8 @@ export const realProductsApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: API_CONFIG.API_URL,
     prepareHeaders: (headers) => {
-      const token = Utils.loadFromDatabase(DB_TOKEN);
-      const user = Utils.loadFromDatabase(DB_LOGGED_IN_PROFILE);
+      const token = Utils.loadFromDatabase(ugflix_auth_token);
+      const user = Utils.loadFromDatabase(ugflix_user);
       
       headers.set('Content-Type', 'application/json');
       headers.set('Accept', 'application/json');

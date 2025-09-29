@@ -44,7 +44,7 @@
   width: 50px;
   height: 50px;
   border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top: 3px solid #ff6b35;
+  border-top: 3px solid #B71C1C;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -226,7 +226,7 @@
   appearance: none;
   width: 16px;
   height: 16px;
-  background: #ff6b35;
+  background: #B71C1C;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -240,7 +240,7 @@
 .progress-bar::-moz-range-thumb {
   width: 16px;
   height: 16px;
-  background: #ff6b35;
+  background: #B71C1C;
   border-radius: 50%;
   cursor: pointer;
   border: none;
@@ -316,7 +316,7 @@
   margin: 0 0 20px 0;
   font-size: 18px;
   font-weight: 600;
-  color: #ff6b35;
+  color: #B71C1C;
 }
 
 .settings-section {
@@ -353,14 +353,14 @@
 }
 
 .settings-option.active {
-  background: #ff6b35;
-  border-color: #ff6b35;
+  background: #B71C1C;
+  border-color: #B71C1C;
   color: white;
 }
 
 .settings-close {
   width: 100%;
-  background: #ff6b35;
+  background: #B71C1C;
   border: none;
   color: white;
   padding: 12px;
