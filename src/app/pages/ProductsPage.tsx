@@ -132,9 +132,7 @@ const productsPageStyles = `
 
   .filters-sidebar {
     padding: 0;
-    background-color: var(--ugflix-bg-secondary);
-    border: 1px solid var(--ugflix-border);
-    border-radius: 0px;
+    background: transparent;
   }
 
   .filters-header {
@@ -142,9 +140,9 @@ const productsPageStyles = `
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
-    padding: 16px;
+    padding: 16px 0;
     border-bottom: 1px solid var(--ugflix-border);
-    background-color: var(--ugflix-bg-card);
+    background: transparent;
   }
 
   .filters-title {
@@ -182,16 +180,16 @@ const productsPageStyles = `
   }
 
   .filters-content {
-    padding: 0 16px 16px 16px;
+    padding: 0 0 16px 0;
     transition: max-height 0.3s ease, opacity 0.3s ease;
     overflow: hidden;
-    background-color: var(--ugflix-bg-secondary);
+    background: transparent;
   }
 
   .filters-content.collapsed {
     max-height: 0;
     opacity: 0;
-    padding: 0 16px;
+    padding: 0;
   }
 
   .products-content {
@@ -398,7 +396,7 @@ const productsPageStyles = `
     align-items: center;
     margin-top: 24px;
     padding: 20px 0;
-    background: var(--ugflix-bg-primary);
+    background: transparent;
     border-top: 1px solid var(--ugflix-border);
   }
 
@@ -452,11 +450,10 @@ const productsPageStyles = `
 
   /* Enhanced pagination styles */
   .pagination-section {
-    background: var(--ugflix-bg-secondary);
-    border-radius: 8px;
-    padding: 20px;
+    background: transparent;
+    padding: 20px 0;
     margin-top: 25px;
-    border: 1px solid var(--ugflix-border);
+    border-top: 1px solid var(--ugflix-border);
   }
 
   .pagination-controls {
