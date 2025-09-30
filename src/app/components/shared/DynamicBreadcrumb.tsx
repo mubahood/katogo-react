@@ -336,7 +336,7 @@ const DynamicBreadcrumb: React.FC<DynamicBreadcrumbProps> = ({
 
   return (
     <div className={`dynamic-breadcrumb  ${!showBackground ? 'no-background' : ''} ${className}`}>
-      <Container className="">
+      <Container className="mx-2">
         <nav className="breadcrumb-nav" aria-label="breadcrumb">
           <div className="breadcrumb-list">
             {breadcrumbItems.map((item, index) => (

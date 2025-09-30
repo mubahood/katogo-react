@@ -1,11 +1,12 @@
 // src/app/components/Layout/Footer.tsx
 import React from 'react';
 import { COMPANY_INFO, APP_LINKS, APP_NAME } from '../../constants';
+import { Container } from 'react-bootstrap';
 
 const Footer: React.FC = () => {
   return (
     <footer className="ugflix-footer">
-      <div className="container">
+      <Container className="mx-2">
         <div className="footer-content">
           <div className="footer-copyright">
             <p>&copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.</p>
@@ -17,7 +18,7 @@ const Footer: React.FC = () => {
             </a>
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 };

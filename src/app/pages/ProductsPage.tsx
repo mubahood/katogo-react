@@ -26,7 +26,7 @@ const productsPageStyles = `
   .breadcrumb-wrapper {
     background: var(--ugflix-bg-primary);
     border-bottom: 1px solid var(--ugflix-border);
-    padding: 8px 0;
+    padding: 0px 0;
   }
 
   .products-page {
@@ -538,8 +538,8 @@ const ProductsPage: React.FC = () => {
     };
 
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Initialize state from URL params
@@ -658,12 +658,12 @@ const ProductsPage: React.FC = () => {
   // Generate SEO meta tags based on page type
   const generateSEOConfig = () => {
     const searchTerm = searchParams.get("search");
-    
+
     if (searchTerm) {
       // Search results page SEO
       return generateSearchMetaTags(searchTerm, productsData?.total || 0);
     }
-    
+
     if (selectedCategory && categories) {
       // Category page SEO
       const category = categories.find((c) => c.id === selectedCategory);
@@ -671,7 +671,7 @@ const ProductsPage: React.FC = () => {
         return generateCategoryMetaTags({
           name: category.category,
           description: `Shop ${category.category} products online in Uganda. Best prices and fast delivery at UgFlix.`,
-          productCount: productsData?.total || 0
+          productCount: productsData?.total || 0,
         });
       }
     }
@@ -679,8 +679,9 @@ const ProductsPage: React.FC = () => {
     // Default products page SEO
     return generateCategoryMetaTags({
       name: "All Products",
-      description: "Shop all products online in Uganda. Electronics, fashion, home & garden, and more with fast delivery and secure checkout.",
-      productCount: productsData?.total || 0
+      description:
+        "Shop all products online in Uganda. Electronics, fashion, home & garden, and more with fast delivery and secure checkout.",
+      productCount: productsData?.total || 0,
     });
   };
 
@@ -693,16 +694,17 @@ const ProductsPage: React.FC = () => {
           name: category.category,
           description: `Shop ${category.category} products online in Uganda. Best prices and fast delivery at UgFlix.`,
           productCount: productsData?.total || 0,
-          url: window.location.href
+          url: window.location.href,
         };
       }
     }
-    
+
     return {
       name: "All Products",
-      description: "Shop all products online in Uganda. Electronics, fashion, home & garden, and more with fast delivery and secure checkout.",
+      description:
+        "Shop all products online in Uganda. Electronics, fashion, home & garden, and more with fast delivery and secure checkout.",
       productCount: productsData?.total || 0,
-      url: window.location.href
+      url: window.location.href,
     };
   };
 
@@ -710,181 +712,152 @@ const ProductsPage: React.FC = () => {
     <React.Fragment>
       <SEOHead config={generateSEOConfig()} />
       <CategorySchema category={getCategorySchemaData()} />
-      <div className="breadcrumb-wrapper">
-        <Container fluid>
-          <DynamicBreadcrumb
-            context={{
-              categories,
-              selectedCategory,
-              searchTerm: searchParams.get("search") || undefined,
-            }}
-            showBackground={true}
-            showIcons={true}
-          />
-        </Container>
+      <div className="breadcrumb-wrapper ">
+        <DynamicBreadcrumb
+          context={{
+            categories,
+            selectedCategory,
+            searchTerm: searchParams.get("search") || undefined,
+          }}
+          showBackground={true}
+          showIcons={true}
+        />
       </div>
 
       <div className="products-page">
         <Container fluid>
           <Row>
-          {/* Filters Sidebar */}
-          <Col md={3} className="my-0">
-            <div className="filters-sidebar">
-              <div className="filters-header">
-                    <h6 className="filters-title">
-                      Product Filters
-                    </h6>
-                    <div className="d-flex align-items-center gap-2">
-                      {(selectedCategory || priceRange.min || priceRange.max) && (
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="clear-filters-btn p-0"
-                          onClick={clearFilters}
-                        >
-                          Clear All
-                        </Button>
-                      )}
-                      {isMobile && (
-                        <button
-                          className="filters-toggle-btn"
-                          onClick={() => setShowFilters(!showFilters)}
-                        >
-                          <span>{showFilters ? 'Hide' : 'Show'}</span>
-                          <span style={{ fontSize: '10px', marginLeft: '2px' }}>
-                            {showFilters ? '▲' : '▼'}
-                          </span>
-                        </button>
-                      )}
-                    </div>
+            {/* Filters Sidebar */}
+            <Col md={3} className="my-0">
+              <div className="filters-sidebar">
+                <div
+                  className={`filters-content ${
+                    !showFilters ? "collapsed" : ""
+                  }`}
+                >
+                  {/* Category Filter */}
+                  <div className="filter-group mt-3">
+                    <label className="filter-label">Filter By Category</label>
+                    <Form.Select
+                      size="sm"
+                      className="filter-select"
+                      value={selectedCategory || ""}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
+                    >
+                      <option value="">All Categories</option>
+                      {categories?.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.category}
+                        </option>
+                      ))}
+                    </Form.Select>
                   </div>
 
-                  <div className={`filters-content ${!showFilters ? 'collapsed' : ''}`}>
-                    {/* Category Filter */}
-                    <div className="filter-group">
-                      <label className="filter-label">Category</label>
-                      <Form.Select
+                  {/* Price Range Filter */}
+                  <div className="filter-group">
+                    <label className="filter-label">Price Range</label>
+                    <div className="price-inputs">
+                      <Form.Control
+                        type="number"
                         size="sm"
-                        className="filter-select"
-                        value={selectedCategory || ""}
-                        onChange={(e) => handleCategoryChange(e.target.value)}
-                      >
-                        <option value="">All Categories</option>
-                        {categories?.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.category}
-                          </option>
-                        ))}
-                      </Form.Select>
+                        placeholder="Min"
+                        className="price-input"
+                        value={priceRange.min}
+                        onChange={(e) =>
+                          setPriceRange((prev) => ({
+                            ...prev,
+                            min: e.target.value,
+                          }))
+                        }
+                      />
+                      <span className="price-separator">-</span>
+                      <Form.Control
+                        type="number"
+                        size="sm"
+                        placeholder="Max"
+                        className="price-input"
+                        value={priceRange.max}
+                        onChange={(e) =>
+                          setPriceRange((prev) => ({
+                            ...prev,
+                            max: e.target.value,
+                          }))
+                        }
+                      />
                     </div>
-
-                    {/* Price Range Filter */}
-                    <div className="filter-group">
-                      <label className="filter-label">Price Range</label>
-                      <div className="price-inputs">
-                        <Form.Control
-                          type="number"
-                          size="sm"
-                          placeholder="Min"
-                          className="price-input"
-                          value={priceRange.min}
-                          onChange={(e) =>
-                            setPriceRange((prev) => ({
-                              ...prev,
-                              min: e.target.value,
-                            }))
-                          }
-                        />
-                        <span className="price-separator">-</span>
-                        <Form.Control
-                          type="number"
-                          size="sm"
-                          placeholder="Max"
-                          className="price-input"
-                          value={priceRange.max}
-                          onChange={(e) =>
-                            setPriceRange((prev) => ({
-                              ...prev,
-                              max: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <Button
-                        className="apply-price-btn mt-2"
-                        onClick={handlePriceFilter}
-                      >
-                        Apply Filters
-                      </Button>
-                    </div>
-
-                    {/* Active Filters */}
-                    {(selectedCategory || priceRange.min || priceRange.max) && (
-                      <div className="active-filters">
-                        <label className="filter-label">Active Filters</label>
-                        <div className="filter-tags">
-                          {selectedCategory && categories && (
-                            <Badge
-                              bg="primary"
-                              className="filter-tag"
-                              onClick={() => handleCategoryChange("")}
-                              role="button"
-                            >
-                              {
-                                categories.find((c) => c.id === selectedCategory)
-                                  ?.category
-                              }
-                              <span className="filter-tag-remove">×</span>
-                            </Badge>
-                          )}
-                          {(priceRange.min || priceRange.max) && (
-                            <Badge
-                              bg="primary"
-                              className="filter-tag"
-                              onClick={() => {
-                                setPriceRange({ min: "", max: "" });
-                                updateSearchParams({
-                                  min_price: undefined,
-                                  max_price: undefined,
-                                });
-                              }}
-                              role="button"
-                            >
-                              {priceRange.min && priceRange.max
-                                ? `${priceRange.min} - ${priceRange.max}`
-                                : priceRange.min
-                                ? `From ${priceRange.min}`
-                                : `Up to ${priceRange.max}`}
-                              <span className="filter-tag-remove">×</span>
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                    <Button
+                      className="apply-price-btn mt-2"
+                      onClick={handlePriceFilter}
+                    >
+                      Apply Filters
+                    </Button>
                   </div>
-                </div>
-          </Col>
 
-          {/* Products Grid */}
-          <Col md={9} className="my-0">
-            <div className="products-content">
-              {/* Enhanced Products Header */}
-              <div className="products-header">
-                <Row className="align-items-center">
-                  <Col md={8}>
-                    <div className="page-title-section text-start">
-                      <h1 className="page-title">
-                        {getPageTitle()}
-                      </h1>
-                      {productsData && (
-                        <p className="products-count">
-                          <i className="bi bi-grid-3x3-gap me-2"></i>
-                          {productsData.total.toLocaleString()} product
-                          {productsData.total !== 1 ? "s" : ""} found
-                        </p>
-                      )}
+                  {/* Active Filters */}
+                  {(selectedCategory || priceRange.min || priceRange.max) && (
+                    <div className="active-filters">
+                      <label className="filter-label">Active Filters</label>
+                      <div className="filter-tags">
+                        {selectedCategory && categories && (
+                          <Badge
+                            bg="primary"
+                            className="filter-tag"
+                            onClick={() => handleCategoryChange("")}
+                            role="button"
+                          >
+                            {
+                              categories.find((c) => c.id === selectedCategory)
+                                ?.category
+                            }
+                            <span className="filter-tag-remove">×</span>
+                          </Badge>
+                        )}
+                        {(priceRange.min || priceRange.max) && (
+                          <Badge
+                            bg="primary"
+                            className="filter-tag"
+                            onClick={() => {
+                              setPriceRange({ min: "", max: "" });
+                              updateSearchParams({
+                                min_price: undefined,
+                                max_price: undefined,
+                              });
+                            }}
+                            role="button"
+                          >
+                            {priceRange.min && priceRange.max
+                              ? `${priceRange.min} - ${priceRange.max}`
+                              : priceRange.min
+                              ? `From ${priceRange.min}`
+                              : `Up to ${priceRange.max}`}
+                            <span className="filter-tag-remove">×</span>
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </Col>
+                  )}
+                </div>
+              </div>
+            </Col>
+
+            {/* Products Grid */}
+            <Col md={9} className="my-0">
+              <div className="products-content">
+                {/* Enhanced Products Header */}
+                <div className="products-header">
+                  <Row className="align-items-center">
+                    <Col md={8}>
+                      <div className="page-title-section text-start">
+                        <h1 className="page-title">{getPageTitle()}</h1>
+                        {productsData && (
+                          <p className="products-count">
+                            <i className="bi bi-grid-3x3-gap me-2"></i>
+                            {productsData.total.toLocaleString()} product
+                            {productsData.total !== 1 ? "s" : ""} found
+                          </p>
+                        )}
+                      </div>
+                    </Col>
                     <Col md={4}>
                       <div className="sort-controls text-end">
                         <Form.Select
@@ -992,7 +965,8 @@ const ProductsPage: React.FC = () => {
 
                               for (
                                 let i = Math.max(2, currentPage - delta);
-                                i <= Math.min(totalPages - 1, currentPage + delta);
+                                i <=
+                                Math.min(totalPages - 1, currentPage + delta);
                                 i++
                               ) {
                                 range.push(i);
@@ -1050,9 +1024,9 @@ const ProductsPage: React.FC = () => {
                   </>
                 )}
               </div>
-          </Col>
-        </Row>
-      </Container>
+            </Col>
+          </Row>
+        </Container>
       </div>
     </React.Fragment>
   );

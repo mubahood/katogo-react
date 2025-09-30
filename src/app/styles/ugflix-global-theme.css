@@ -94,7 +94,7 @@ body {
 
 /* Main content spacing to account for fixed header */
 .main-content {
-  padding-top: 10px;
+  padding-top: 5px;
   min-height: calc(100vh - calc(var(--ugflix-header-height) + var(--ugflix-topbar-height)));
 }
 
@@ -666,9 +666,10 @@ body {
 /* === FOOTER STYLES === */
 .ugflix-footer {
   background: var(--ugflix-bg-primary);
-  border-top: 2px solid;
+  border-top: 1px solid;
   border-image: linear-gradient(90deg, var(--ugflix-primary), var(--ugflix-secondary), var(--ugflix-accent)) 1;
-  padding: 20px 0;
+  padding-top: 5px;
+  padding-bottom: 1px;
   margin-top: auto;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
 }
@@ -683,7 +684,7 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 0px;
 }
 
 .footer-copyright p {

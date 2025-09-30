@@ -388,7 +388,7 @@ const ModernMainNav: React.FC = () => {
               <div className="action-text">Live TV</div>
             </Link>
 
-            <Link to="/shop" className="action-link">
+            <Link to="/products" className="action-link">
               <div className="action-icon-wrapper">
                 <ShoppingCart size={18} className="action-icon" />
               </div>
@@ -489,7 +489,7 @@ const ModernMainNav: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/shop" onClick={toggleMenu}>
+                <Link to="/products" onClick={toggleMenu}>
                   <ShoppingCart size={18} />
                   <span>Shop</span>
                   <ChevronRight size={16} />
