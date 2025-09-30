@@ -18,8 +18,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px; /* Reduced space below header for density */
-  padding-bottom: 10px; /* Visual separation for the title area */ 
+  margin-bottom: 0px; /* Reduced space below header for density */
+  padding-bottom: 0px; /* Visual separation for the title area */ 
 }
 
 .top-products-title {
@@ -93,8 +93,8 @@
     }
     .top-products-header {
         flex-direction: column;
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 0px;
+        margin-bottom: 0px;
     }
     .top-products-title {
         font-size: 1.5rem;
