@@ -1,25 +1,32 @@
 /* src/app/components/HomePage/FeaturedCategoriesSection.css */
+/* UgFlix Dark Theme Styling */
 
 .featured-categories-section {
-  background-color: #ffffff;
+  background-color: var(--ugflix-bg-primary);
 }
 
 .section-title {
-  color: #212529;
+  color: var(--ugflix-text-primary);
   font-size: 1.25rem;
   margin-bottom: 0;
 }
 
 .view-all-link {
-  transition: all 0.2s ease;
+  transition: var(--ugflix-transition-fast);
+  color: var(--ugflix-text-secondary);
 }
 
 .view-all-link:hover {
   transform: translateX(2px);
+  color: var(--ugflix-primary);
+}
+
+.view-all-link .text-primary {
+  color: var(--ugflix-accent) !important;
 }
 
 .category-card-link {
-  transition: transform 0.2s ease;
+  transition: var(--ugflix-transition);
 }
 
 .category-card-link:hover {
@@ -27,17 +34,19 @@
 }
 
 .category-card {
-  border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  border: 1px solid var(--ugflix-border);
+  background-color: var(--ugflix-bg-card);
+  box-shadow: var(--ugflix-shadow);
+  transition: var(--ugflix-transition);
   cursor: pointer;
   min-height: 140px;
-  border-radius: 0.5rem;
+  border-radius: var(--ugflix-border-radius);
 }
 
 .category-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  background-color: #f8f9fa;
+  box-shadow: var(--ugflix-shadow-hover);
+  background-color: var(--ugflix-bg-hover);
+  border-color: var(--ugflix-border-focus);
 }
 
 .category-image-container {
@@ -50,17 +59,17 @@
   width: 70px;
   height: 70px;
   object-fit: cover;
-  border: 3px solid #e9ecef;
-  transition: border-color 0.2s ease;
+  border: 3px solid var(--ugflix-border-light);
+  transition: var(--ugflix-transition-fast);
 }
 
 .category-card:hover .category-image {
-  border-color: #007bff;
+  border-color: var(--ugflix-primary);
 }
 
 .category-name {
   font-size: 0.75rem;
-  color: #212529;
+  color: var(--ugflix-text-primary);
   line-height: 1.2;
   max-width: 100%;
 }
@@ -68,9 +77,10 @@
 .category-card-skeleton {
   height: 140px;
   padding: 1rem;
-  background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--ugflix-bg-card);
+  border: 1px solid var(--ugflix-border);
+  border-radius: var(--ugflix-border-radius);
+  box-shadow: var(--ugflix-shadow);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -81,6 +91,15 @@
   width: 70px;
   height: 70px;
   margin: 0 auto;
+  background-color: var(--ugflix-bg-tertiary);
+}
+
+.placeholder {
+  background-color: var(--ugflix-bg-tertiary);
+}
+
+.text-muted {
+  color: var(--ugflix-text-muted) !important;
 }
 
 /* Mobile responsive */

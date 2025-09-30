@@ -24,8 +24,8 @@ import { selectManifest, selectIsAuthenticated } from "../../store/slices/manife
 // Inline CSS styles for ProductCard - Following ProductsPage design with 4px border-radius
 const productCardStyles = `
   .product-card {
-    background-color: var(--white, #ffffff);
-    border-radius: 4px;
+    background-color: var(--ugflix-bg-secondary);
+    border-radius: 0px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -33,14 +33,14 @@ const productCardStyles = `
     height: 100%;
     transition: all 0.3s ease;
     cursor: pointer;
-    border: 1px solid transparent;
+    border: 1px solid var(--ugflix-border);
     position: relative;
   }
 
   .product-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: var(--border-color-light, #f1f3f4);
+    box-shadow: var(--ugflix-shadow-hover);
+    border-color: var(--ugflix-primary);
   }
 
   .product-card-image-container {
@@ -48,7 +48,7 @@ const productCardStyles = `
     width: 100%;
     aspect-ratio: 1;
     overflow: hidden;
-    background: var(--background-light, #f8f9fa);
+    background: var(--ugflix-bg-card);
   }
 
   .product-card-image {
@@ -78,9 +78,9 @@ const productCardStyles = `
     height: 100%;
     background: linear-gradient(
       90deg,
-      var(--background-light, #f8f9fa) 0%,
-      var(--border-color-light, #f1f3f4) 50%,
-      var(--background-light, #f8f9fa) 100%
+      var(--ugflix-bg-card) 0%,
+      var(--ugflix-border) 50%,
+      var(--ugflix-bg-card) 100%
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
@@ -96,10 +96,10 @@ const productCardStyles = `
     position: absolute;
     top: 8px;
     left: 8px;
-    background-color: var(--accent-color, #dc3545);
-    color: var(--white, #ffffff);
+    background-color: var(--ugflix-accent);
+    color: var(--ugflix-text-primary);
     padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 0px;
     font-size: 10px;
     font-weight: 600;
     z-index: 3;
@@ -112,29 +112,29 @@ const productCardStyles = `
     right: 8px;
     width: 32px;
     height: 32px;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(15, 15, 15, 0.9);
     backdrop-filter: blur(4px);
     border: none;
-    border-radius: 4px;
+    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
     z-index: 3;
   }
 
   .product-card-wishlist-btn:hover {
-    background-color: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    background-color: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
     transform: scale(1.1);
   }
 
   .product-card-wishlist-btn.active {
-    background-color: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    background-color: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
   }
 
   .product-card-wishlist-btn.loading {
@@ -145,8 +145,8 @@ const productCardStyles = `
 
   .product-card-wishlist-btn.loading:hover {
     transform: none;
-    background-color: rgba(255, 255, 255, 0.9);
-    color: var(--text-color-medium, #6c757d);
+    background-color: rgba(15, 15, 15, 0.9);
+    color: var(--ugflix-text-secondary);
   }
 
   @keyframes pulse {
@@ -175,7 +175,7 @@ const productCardStyles = `
   .product-card-name {
     font-size: 13px;
     font-weight: 500;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
     margin: 0;
     line-height: 1.3;
     display: -webkit-box;
@@ -196,14 +196,14 @@ const productCardStyles = `
   .product-card-price-new {
     font-size: 15px;
     font-weight: 600;
-    color: var(--primary-color, #007bff);
+    color: var(--ugflix-primary);
     margin: 0;
     line-height: 1.2;
   }
 
   .product-card-price-old {
     font-size: 12px;
-    color: var(--text-color-light, #adb5bd);
+    color: var(--ugflix-text-muted);
     text-decoration: line-through;
     margin: 0;
     line-height: 1.2;
@@ -223,16 +223,16 @@ const productCardStyles = `
 
   .product-card-review-star {
     font-size: 12px;
-    color: var(--warning-color, #ffc107);
+    color: var(--ugflix-accent);
   }
 
   .product-card-review-star.empty {
-    color: var(--border-color, #dee2e6);
+    color: var(--ugflix-border);
   }
 
   .product-card-review-count {
     font-size: 11px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
   }
 
   /* Responsive Design */

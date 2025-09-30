@@ -4,12 +4,12 @@ import { Link } from "react-router-dom";
 import { Spinner, Alert } from "react-bootstrap";
 import { useManifestCategories, useManifest } from "../../hooks/useManifest";
 
-// Inline styles for CategoryList following the unified design system
+// Inline styles for CategoryList following UgFlix dark theme design system
 const categoryListStyles = `
   .category-list-wrapper {
-    background-color: var(--white);
-    border: 1px solid var(--border-color-light);
-    border-radius: var(--border-radius);
+    background-color: var(--ugflix-bg-card);
+    border: 1px solid var(--ugflix-border);
+    border-radius: var(--ugflix-border-radius);
     padding: 0;
     height: 100%;
     overflow: hidden;
@@ -28,10 +28,10 @@ const categoryListStyles = `
     padding: 0.875rem 1.25rem;
     font-size: 0.9rem;
     font-weight: 500;
-    color: var(--text-color-dark);
+    color: var(--ugflix-text-secondary);
     text-decoration: none;
-    border-bottom: 1px solid var(--border-color-light);
-    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--ugflix-border);
+    transition: var(--ugflix-transition-fast);
     position: relative;
   }
 
@@ -40,8 +40,8 @@ const categoryListStyles = `
   }
 
   .category-item:hover {
-    background-color: var(--background-light);
-    color: var(--primary-color);
+    background-color: var(--ugflix-bg-hover);
+    color: var(--ugflix-text-primary);
     text-decoration: none;
   }
 
@@ -52,19 +52,19 @@ const categoryListStyles = `
     top: 0;
     bottom: 0;
     width: 3px;
-    background-color: var(--primary-color);
+    background-color: var(--ugflix-primary);
   }
 
   .category-item i {
     font-size: 1rem;
     width: 18px;
     text-align: center;
-    color: var(--text-color-medium);
-    transition: color 0.2s ease;
+    color: var(--ugflix-text-muted);
+    transition: var(--ugflix-transition-fast);
   }
 
   .category-item:hover i {
-    color: var(--primary-color);
+    color: var(--ugflix-primary);
   }
 
   .category-loading {
@@ -73,10 +73,17 @@ const categoryListStyles = `
     align-items: center;
     padding: 2rem;
     height: 100%;
+    color: var(--ugflix-text-secondary);
   }
 
   .category-error {
     padding: 1rem;
+  }
+
+  .category-error .alert {
+    background-color: var(--ugflix-bg-tertiary);
+    border-color: var(--ugflix-border);
+    color: var(--ugflix-text-warning);
   }
 
   @media (max-width: 1199.98px) {

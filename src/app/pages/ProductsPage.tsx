@@ -5,7 +5,6 @@ import {
   Container,
   Row,
   Col,
-  Card,
   Form,
   Button,
   Spinner,
@@ -21,46 +20,121 @@ import { ProductModel } from "../models/ProductModel";
 import { SEOHead, CategorySchema } from "../components/seo";
 import { generateCategoryMetaTags, generateSearchMetaTags } from "../utils/seo";
 
-// Optimized minimalistic styles using theme colors
+// Optimized minimalistic styles using UgFlix theme colors
 const productsPageStyles = `
+  /* Breadcrumb Wrapper */
+  .breadcrumb-wrapper {
+    background: var(--ugflix-bg-primary);
+    border-bottom: 1px solid var(--ugflix-border);
+    padding: 8px 0;
+  }
+
   .products-page {
-    background: var(--background-light, #ffffff);
+    background: var(--ugflix-bg-primary);
+    color: var(--ugflix-text-primary);
+  }
+
+  /* Full width container override */
+  .container-fluid {
+    max-width: 100% !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+
+  .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Remove default column padding for full width effect */
+  .col-md-3,
+  .col-md-9 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Enhanced spacing between sidebar and content */
+  .col-md-3 {
+    padding-right: 1.5rem;
+  }
+
+  .col-md-9 {
+    padding-left: 1.5rem;
   }
 
   .products-header {
-    padding: 0;
-    margin-bottom: 12px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--ugflix-border);
+    background: transparent;
+    margin-bottom: 20px;
+    position: relative;
   }
 
-  .page-title {
-    font-size: 20px;
-    font-weight: 600;
+  .products-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--ugflix-primary), var(--ugflix-accent, #ff6b35));
+  }
+
+  .products-header .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--ugflix-text-primary), var(--ugflix-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin: 0;
-    color: var(--text-color-dark, #212529);
-    height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .products-header .page-title::before {
+    content: '🛍️';
+    font-size: 1.5rem;
+    -webkit-text-fill-color: initial;
   }
 
   .products-count {
-    font-size: 13px;
-    color: var(--text-color-medium, #6c757d);
-    margin: 0;
+    font-size: 14px;
+    color: var(--ugflix-text-secondary);
+    margin: 8px 0 0 0;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
   }
 
   .sort-dropdown {
     min-width: 180px;
-    font-size: 13px;
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
-    color: var(--text-color-dark, #212529);
+    font-size: 14px;
+    border: 1px solid var(--ugflix-border);
+    border-radius: 6px;
+    background-color: var(--ugflix-bg-card);
+    color: var(--ugflix-text-primary);
+    padding: 8px 12px;
+    transition: all 0.2s ease;
   }
 
   .sort-dropdown:focus {
-    border-color: var(--primary-color, #007bff);
-    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 0, 123, 255), 0.25);
+    border-color: var(--ugflix-primary);
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+    background-color: var(--ugflix-bg-card);
+    color: var(--ugflix-text-primary);
+  }
+
+  .sort-dropdown:hover {
+    border-color: var(--ugflix-primary);
   }
 
   .filters-sidebar {
     padding: 0;
+    background-color: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
   }
 
   .filters-header {
@@ -69,25 +143,26 @@ const productsPageStyles = `
     align-items: center;
     margin-bottom: 16px;
     padding: 16px;
-    border-bottom: 1px solid var(--border-color-light, #f1f3f4);
+    border-bottom: 1px solid var(--ugflix-border);
+    background-color: var(--ugflix-bg-card);
   }
 
   .filters-title {
     font-size: 16px;
     font-weight: 600;
     margin: 0;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
   }
 
   .filters-toggle-btn {
-    background: var(--white, #ffffff);
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
-    color: var(--text-color-dark, #212529);
+    background: var(--ugflix-bg-card);
+    border: 1px solid var(--ugflix-border);
+    border-radius: var(--ugflix-border-radius);
+    color: var(--ugflix-text-primary);
     padding: 8px 12px;
     font-size: 12px;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: var(--ugflix-transition-fast);
     display: none;
     align-items: center;
     gap: 6px;
@@ -96,26 +171,33 @@ const productsPageStyles = `
   }
 
   .filters-toggle-btn:hover {
-    background: var(--primary-color, #007bff);
-    border-color: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    background: var(--ugflix-primary);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
   }
 
   .filters-toggle-btn:focus {
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 0, 123, 255), 0.25);
+    box-shadow: var(--ugflix-shadow-focus);
   }
 
   .filters-content {
     padding: 0 16px 16px 16px;
     transition: max-height 0.3s ease, opacity 0.3s ease;
     overflow: hidden;
+    background-color: var(--ugflix-bg-secondary);
   }
 
   .filters-content.collapsed {
     max-height: 0;
     opacity: 0;
     padding: 0 16px;
+  }
+
+  .products-content {
+    background: transparent;
+    border: none;
+    padding: 0;
   }
 
   .filter-group {
@@ -126,21 +208,23 @@ const productsPageStyles = `
     font-size: 13px;
     font-weight: 500;
     margin: 0 0 6px 0;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
     display: block;
   }
 
   .filter-select {
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
+    border: 1px solid var(--ugflix-border);
+    border-radius: var(--ugflix-border-radius);
     font-size: 13px;
     padding: 8px;
-    color: var(--text-color-dark, #212529);
+    background-color: var(--ugflix-bg-card);
+    color: var(--ugflix-text-primary);
   }
 
   .filter-select:focus {
-    border-color: var(--primary-color, #007bff);
-    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 0, 123, 255), 0.25);
+    border-color: var(--ugflix-primary);
+    box-shadow: var(--ugflix-shadow-focus);
+    background-color: var(--ugflix-bg-card);
   }
 
   .price-inputs {
@@ -150,29 +234,30 @@ const productsPageStyles = `
   }
 
   .price-input {
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
     font-size: 13px;
     padding: 8px;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
+    background-color: var(--ugflix-bg-input);
   }
 
   .price-input:focus {
-    border-color: var(--primary-color, #007bff);
-    box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb, 0, 123, 255), 0.25);
+    border-color: var(--ugflix-primary);
+    box-shadow: var(--ugflix-shadow-focus);
   }
 
   .price-separator {
     align-self: center;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     font-size: 13px;
   }
 
   .apply-price-btn {
-    border: 1px solid var(--primary-color, #007bff);
-    border-radius: var(--border-radius, 4px);
-    background: var(--white, #ffffff);
-    color: var(--primary-color, #007bff);
+    border: 1px solid var(--ugflix-primary);
+    border-radius: 0px;
+    background: var(--ugflix-bg-secondary);
+    color: var(--ugflix-primary);
     font-size: 12px;
     padding: 12px;
     width: 100%;
@@ -181,14 +266,14 @@ const productsPageStyles = `
   }
 
   .apply-price-btn:hover {
-    background: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
-    border-color: var(--primary-color, #007bff);
+    background: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
+    border-color: var(--ugflix-primary);
   }
 
   .clear-filters-btn {
     font-size: 12px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     padding: 0;
     text-decoration: none;
     border: none;
@@ -196,14 +281,14 @@ const productsPageStyles = `
   }
 
   .clear-filters-btn:hover {
-    color: var(--primary-color, #007bff);
+    color: var(--ugflix-primary);
     text-decoration: underline;
   }
 
   .active-filters {
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid var(--border-color-light, #f1f3f4);
+    border-top: 1px solid var(--ugflix-border);
   }
 
   .filter-tags {
@@ -215,16 +300,16 @@ const productsPageStyles = `
   .filter-tag {
     cursor: pointer;
     font-size: 11px;
-    background: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    background: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
     border: none;
-    border-radius: var(--border-radius-sm, 2px);
+    border-radius: 0px;
     padding: 4px 8px;
     transition: all 0.2s ease;
   }
 
   .filter-tag:hover {
-    background: var(--primary-color-dark, #0056b3);
+    background: var(--ugflix-primary-dark);
   }
 
   .filter-tag-remove {
@@ -234,9 +319,34 @@ const productsPageStyles = `
 
   .products-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
     margin: 0;
+    padding: 20px 0;
+    max-width: 100%;
+  }
+
+  /* For ultra-wide screens (1600px+), maintain optimal spacing */
+  @media (min-width: 1600px) {
+    .products-grid {
+      gap: 24px;
+      padding: 25px 0;
+    }
+  }
+
+  .product-item {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .product-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .products-listing-container {
+    background: transparent;
+    padding: 0;
+    margin-top: 0;
   }
 
   .loading-state, .empty-state {
@@ -245,12 +355,12 @@ const productsPageStyles = `
     align-items: center;
     padding: 40px 16px;
     text-align: center;
-    background: var(--white, #ffffff);
+    background: var(--ugflix-bg-primary);
   }
 
   .empty-icon {
     font-size: 48px;
-    color: var(--text-color-light, #adb5bd);
+    color: var(--ugflix-text-muted);
     margin-bottom: 16px;
   }
 
@@ -258,28 +368,28 @@ const productsPageStyles = `
     font-size: 18px;
     font-weight: 500;
     margin: 0 0 8px 0;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
   }
 
   .empty-description {
     font-size: 14px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     margin: 0 0 16px 0;
   }
 
   .empty-action-btn {
-    border: 1px solid var(--primary-color, #007bff);
-    border-radius: var(--border-radius, 4px);
-    background: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    border: 1px solid var(--ugflix-primary);
+    border-radius: 0px;
+    background: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
     font-size: 13px;
     padding: 8px 16px;
     transition: all 0.2s ease;
   }
 
   .empty-action-btn:hover {
-    background: var(--primary-color-dark, #0056b3);
-    border-color: var(--primary-color-dark, #0056b3);
+    background: var(--ugflix-primary-dark);
+    border-color: var(--ugflix-primary-dark);
   }
 
   .pagination-section {
@@ -288,13 +398,13 @@ const productsPageStyles = `
     align-items: center;
     margin-top: 24px;
     padding: 20px 0;
-    background: var(--white, #ffffff);
-    border-top: 1px solid var(--border-color-light, #f1f3f4);
+    background: var(--ugflix-bg-primary);
+    border-top: 1px solid var(--ugflix-border);
   }
 
   .pagination-text {
     font-size: 13px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     font-weight: 500;
   }
 
@@ -303,10 +413,10 @@ const productsPageStyles = `
   }
 
   .custom-pagination .page-link {
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
-    color: var(--text-color-dark, #212529);
-    background: var(--white, #ffffff);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    color: var(--ugflix-text-primary);
+    background: var(--ugflix-bg-secondary);
     font-size: 13px;
     padding: 8px 12px;
     margin: 0 2px;
@@ -316,31 +426,39 @@ const productsPageStyles = `
   }
 
   .custom-pagination .page-link:hover {
-    background: var(--primary-color, #007bff);
-    border-color: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    background: var(--ugflix-primary);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
   }
 
   .custom-pagination .page-item.active .page-link {
-    background: var(--primary-color, #007bff);
-    border-color: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    background: var(--ugflix-primary);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
   }
 
   .custom-pagination .page-item.disabled .page-link {
-    color: var(--text-color-light, #adb5bd);
-    background: var(--background-light, #f8f9fa);
-    border-color: var(--border-color-light, #f1f3f4);
+    color: var(--ugflix-text-muted);
+    background: var(--ugflix-bg-disabled);
+    border-color: var(--ugflix-border);
     cursor: not-allowed;
   }
 
   .custom-pagination .page-item.disabled .page-link:hover {
-    background: var(--background-light, #f8f9fa);
-    border-color: var(--border-color-light, #f1f3f4);
-    color: var(--text-color-light, #adb5bd);
+    background: var(--ugflix-bg-disabled);
+    border-color: var(--ugflix-border);
+    color: var(--ugflix-text-muted);
   }
 
   /* Enhanced pagination styles */
+  .pagination-section {
+    background: var(--ugflix-bg-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 25px;
+    border: 1px solid var(--ugflix-border);
+  }
+
   .pagination-controls {
     display: flex;
     align-items: center;
@@ -352,10 +470,18 @@ const productsPageStyles = `
     align-items: center;
   }
 
-  @media (max-width: 991px) {
+  /* Responsive Grid Breakpoints - Maintain 6 columns on large screens */
+  @media (max-width: 1200px) {
     .products-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .products-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
     }
 
     .pagination-section {
@@ -365,7 +491,45 @@ const productsPageStyles = `
     }
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 768px) {
+    .products-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .products-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .products-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .products-page {
+      padding: 10px 5px;
+    }
+
+    .col-md-3,
+    .col-md-9 {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .products-header .page-title {
+      font-size: 1.5rem;
+    }
+
+    .products-listing-container {
+      padding: 15px;
+    }
     .products-grid {
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
@@ -608,28 +772,30 @@ const ProductsPage: React.FC = () => {
   };
 
   return (
-    <>
+    <React.Fragment>
       <SEOHead config={generateSEOConfig()} />
       <CategorySchema category={getCategorySchemaData()} />
-      {/* Dynamic Breadcrumb */}
-      <DynamicBreadcrumb
-        context={{
-          categories,
-          selectedCategory,
-          searchTerm: searchParams.get("search") || undefined,
-        }}
-        showBackground={true}
-        showIcons={true}
-      />
+      <div className="breadcrumb-wrapper">
+        <Container fluid>
+          <DynamicBreadcrumb
+            context={{
+              categories,
+              selectedCategory,
+              searchTerm: searchParams.get("search") || undefined,
+            }}
+            showBackground={true}
+            showIcons={true}
+          />
+        </Container>
+      </div>
 
-      <Container>
-        <Row>
+      <div className="products-page">
+        <Container fluid>
+          <Row>
           {/* Filters Sidebar */}
           <Col md={3} className="my-0">
-            <Card className="shadow-sm border-0">
-              <Card.Body>
-                <div className="filters-sidebar">
-                  <div className="filters-header">
+            <div className="filters-sidebar">
+              <div className="filters-header">
                     <h6 className="filters-title">
                       Product Filters
                     </h6>
@@ -762,29 +928,28 @@ const ProductsPage: React.FC = () => {
                     )}
                   </div>
                 </div>
-              </Card.Body>
-            </Card>
           </Col>
 
           {/* Products Grid */}
           <Col md={9} className="my-0">
-            <Card className="border-0 shadow-sm">
-              <Card.Body>
-                <div className="products-header mb-3">
-                  <Row className="align-items-center">
-                    <Col md={8}>
-                      <div className="page-title-section text-start">
-                        <h1 className="page-title">
-                          {getPageTitle()}
-                        </h1>
-                        {productsData && (
-                          <p className="products-count">
-                            {productsData.total.toLocaleString()} product
-                            {productsData.total !== 1 ? "s" : ""} found
-                          </p>
-                        )}
-                      </div>
-                    </Col>
+            <div className="products-content">
+              {/* Enhanced Products Header */}
+              <div className="products-header">
+                <Row className="align-items-center">
+                  <Col md={8}>
+                    <div className="page-title-section text-start">
+                      <h1 className="page-title">
+                        {getPageTitle()}
+                      </h1>
+                      {productsData && (
+                        <p className="products-count">
+                          <i className="bi bi-grid-3x3-gap me-2"></i>
+                          {productsData.total.toLocaleString()} product
+                          {productsData.total !== 1 ? "s" : ""} found
+                        </p>
+                      )}
+                    </div>
+                  </Col>
                     <Col md={4}>
                       <div className="sort-controls text-end">
                         <Form.Select
@@ -850,12 +1015,14 @@ const ProductsPage: React.FC = () => {
 
                 {!isLoading && !error && products.length > 0 && (
                   <>
-                    <div className="products-grid">
-                      {products.map((product: ProductModel) => (
-                        <div key={product.id} className="product-item">
-                          <ProductCard product={product} />
-                        </div>
-                      ))}
+                    <div className="products-listing-container">
+                      <div className="products-grid">
+                        {products.map((product: ProductModel) => (
+                          <div key={product.id} className="product-item">
+                            <ProductCard product={product} />
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Enhanced Pagination */}
@@ -947,12 +1114,12 @@ const ProductsPage: React.FC = () => {
                     )}
                   </>
                 )}
-              </Card.Body>
-            </Card>
+              </div>
           </Col>
         </Row>
       </Container>
-    </>
+      </div>
+    </React.Fragment>
   );
 };
 

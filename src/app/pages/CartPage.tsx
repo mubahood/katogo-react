@@ -1,6 +1,6 @@
 // src/app/pages/CartPage.tsx
 import React, { useState, useEffect, useCallback, memo } from "react";
-import { Container, Row, Col, Button, Image, Alert, Card } from "react-bootstrap";
+import { Container, Row, Col, Button, Image, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { CartItemModel } from "../models/CartItemModel";
@@ -14,7 +14,7 @@ import DynamicBreadcrumb from "../components/shared/DynamicBreadcrumb";
 // Inline styles following the same design patterns as ProductsPage and ProductDetailPage
 const cartPageStyles = `
   .cart-page {
-    background: var(--background-light, #ffffff);
+    background: var(--ugflix-bg-primary);
   }
 
   .cart-header {
@@ -26,19 +26,19 @@ const cartPageStyles = `
     font-size: 20px;
     font-weight: 600;
     margin: 0;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
     height: 20px;
   }
 
   .cart-items-count {
     font-size: 13px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     margin: 0;
   }
 
   .clear-cart-btn {
     font-size: 12px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     padding: 0;
     text-decoration: none;
     border: none;
@@ -46,7 +46,7 @@ const cartPageStyles = `
   }
 
   .clear-cart-btn:hover {
-    color: var(--accent-color, #dc3545);
+    color: var(--ugflix-primary);
     text-decoration: underline;
   }
 
@@ -56,55 +56,49 @@ const cartPageStyles = `
   }
 
   /* Empty Cart State */
-  .empty-cart-container {
-    min-height: 50vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: var(--white, #ffffff);
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
-    box-shadow: var(--shadow-sm);
-    padding: var(--spacing-3xl, 3rem);
+    .empty-cart-container {
     text-align: center;
+    padding: 60px 20px;
+    background-color: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
   }
 
   .empty-cart-icon {
     width: 80px;
     height: 80px;
-    background: var(--background-light, #f8f9fa);
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
+    background: var(--ugflix-bg-card);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: var(--spacing-lg, 1.5rem);
+    margin-bottom: var(--ugflix-spacing-lg, 1.5rem);
   }
 
   .empty-cart-icon i {
     font-size: 2rem;
-    color: var(--text-color-light, #6c757d);
+    color: var(--ugflix-text-muted);
   }
 
   .empty-cart-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--text-color-dark, #212529);
-    margin-bottom: var(--spacing-md, 1rem);
+    color: var(--ugflix-text-primary);
+    margin-bottom: var(--ugflix-spacing-md, 1rem);
   }
 
   .empty-cart-subtitle {
     font-size: 14px;
-    color: var(--text-color-medium, #6c757d);
-    margin-bottom: var(--spacing-lg, 1.5rem);
+    color: var(--ugflix-text-secondary);
+    margin-bottom: var(--ugflix-spacing-lg, 1.5rem);
   }
 
   .btn-start-shopping {
-    border: 1px solid var(--primary-color, #007bff);
-    border-radius: var(--border-radius, 4px);
-    background: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    border: 1px solid var(--ugflix-primary);
+    border-radius: 0px;
+    background: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
     font-size: 14px;
     padding: 12px 24px;
     font-weight: 500;
@@ -116,11 +110,18 @@ const cartPageStyles = `
   }
 
   .btn-start-shopping:hover {
-    background: var(--primary-color-dark, #0056b3);
-    border-color: var(--primary-color-dark, #0056b3);
-    color: var(--white, #ffffff);
+    background: var(--ugflix-primary-dark);
+    border-color: var(--ugflix-primary-dark);
+    color: var(--ugflix-text-primary);
     text-decoration: none;
     transform: translateY(-1px);
+  }
+
+  .cart-items-container {
+    background-color: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    padding: 16px;
   }
 
   /* Cart Items */
@@ -128,7 +129,7 @@ const cartPageStyles = `
     display: flex;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid var(--border-color-light, #f1f3f4);
+    border-bottom: 1px solid var(--ugflix-border);
     transition: background-color 0.2s ease;
   }
 
@@ -137,17 +138,17 @@ const cartPageStyles = `
   }
 
   .cart-item:hover {
-    background: var(--background-light, #f8f9fa);
+    background: var(--ugflix-bg-card);
   }
 
   .cart-item-image {
     width: 80px;
     height: 80px;
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
     object-fit: contain;
     margin-right: 16px;
-    background: var(--white, #ffffff);
+    background: var(--ugflix-bg-secondary);
   }
 
   .cart-item-details {
@@ -158,7 +159,7 @@ const cartPageStyles = `
   .cart-item-name {
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
     text-decoration: none;
     display: block;
     margin-bottom: 4px;
@@ -166,28 +167,28 @@ const cartPageStyles = `
   }
 
   .cart-item-name:hover {
-    color: var(--primary-color, #007bff);
+    color: var(--ugflix-primary);
     text-decoration: none;
   }
 
   .cart-item-variant {
     font-size: 12px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     margin-bottom: 4px;
   }
 
   .cart-item-price {
     font-size: 13px;
     font-weight: 500;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
   }
 
   /* Quantity Control */
   .quantity-control {
     display: flex;
     align-items: center;
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
     margin-right: 16px;
   }
 
@@ -199,15 +200,15 @@ const cartPageStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
   .quantity-btn:hover:not(:disabled) {
-    background: var(--background-light, #f8f9fa);
-    color: var(--primary-color, #007bff);
+    background: var(--ugflix-bg-card);
+    color: var(--ugflix-primary);
   }
 
   .quantity-btn:disabled {
@@ -220,9 +221,9 @@ const cartPageStyles = `
     text-align: center;
     font-size: 13px;
     font-weight: 500;
-    color: var(--text-color-dark, #212529);
-    border-left: 1px solid var(--border-color, #dee2e6);
-    border-right: 1px solid var(--border-color, #dee2e6);
+    color: var(--ugflix-text-primary);
+    border-left: 1px solid var(--ugflix-border);
+    border-right: 1px solid var(--ugflix-border);
     padding: 0 8px;
     line-height: 30px;
   }
@@ -238,23 +239,23 @@ const cartPageStyles = `
   .cart-item-total {
     font-size: 14px;
     font-weight: 600;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
   }
 
   .remove-item-btn {
     background: none;
     border: none;
-    color: var(--text-color-light, #6c757d);
+    color: var(--ugflix-text-muted);
     font-size: 16px;
     cursor: pointer;
     padding: 4px;
-    border-radius: var(--border-radius, 4px);
+    border-radius: 0px;
     transition: all 0.2s ease;
   }
 
   .remove-item-btn:hover:not(:disabled) {
-    color: var(--accent-color, #dc3545);
-    background: var(--background-light, #f8f9fa);
+    color: var(--ugflix-primary);
+    background: var(--ugflix-bg-card);
   }
 
   .remove-item-btn:disabled {
@@ -266,14 +267,14 @@ const cartPageStyles = `
   .continue-shopping {
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid var(--border-color-light, #f1f3f4);
+    border-top: 1px solid var(--ugflix-border);
   }
 
   .btn-continue-shopping {
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
-    background: var(--white, #ffffff);
-    color: var(--text-color-dark, #212529);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    background: var(--ugflix-bg-secondary);
+    color: var(--ugflix-text-primary);
     font-size: 13px;
     padding: 10px 16px;
     font-weight: 500;
@@ -285,13 +286,20 @@ const cartPageStyles = `
   }
 
   .btn-continue-shopping:hover {
-    background: var(--background-light, #f8f9fa);
-    border-color: var(--primary-color, #007bff);
-    color: var(--primary-color, #007bff);
+    background: var(--ugflix-bg-card);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-primary);
     text-decoration: none;
   }
 
   /* Order Summary */
+  .order-summary-container {
+    background-color: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    padding: 16px;
+  }
+
   .order-summary {
     position: sticky;
     top: 20px;
@@ -301,7 +309,7 @@ const cartPageStyles = `
     font-size: 16px;
     font-weight: 600;
     margin: 0 0 16px 0;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
   }
 
   .summary-line {
@@ -313,33 +321,33 @@ const cartPageStyles = `
   }
 
   .summary-line:not(:last-child) {
-    border-bottom: 1px solid var(--border-color-light, #f1f3f4);
+    border-bottom: 1px solid var(--ugflix-border);
   }
 
   .summary-line span:first-child {
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
   }
 
   .summary-line span:last-child {
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
     font-weight: 500;
   }
 
   .summary-total {
     padding: 12px 0;
     margin-top: 8px;
-    border-top: 2px solid var(--border-color, #dee2e6) !important;
+    border-top: 2px solid var(--ugflix-border) !important;
     font-size: 14px !important;
     font-weight: 600 !important;
   }
 
   .summary-total span {
-    color: var(--text-color-dark, #212529) !important;
+    color: var(--ugflix-text-primary) !important;
     font-weight: 600 !important;
   }
 
   .summary-free {
-    color: var(--success-color, #28a745) !important;
+    color: var(--ugflix-accent) !important;
     font-weight: 500 !important;
   }
 
@@ -347,9 +355,9 @@ const cartPageStyles = `
   .delivery-info {
     margin: 16px 0;
     padding: 12px;
-    background: var(--background-light, #f8f9fa);
-    border: 1px solid var(--border-color, #dee2e6);
-    border-radius: var(--border-radius, 4px);
+    background: var(--ugflix-bg-card);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -358,12 +366,12 @@ const cartPageStyles = `
   }
 
   .delivery-info:hover {
-    border-color: var(--primary-color, #007bff);
-    background: var(--white, #ffffff);
+    border-color: var(--ugflix-primary);
+    background: var(--ugflix-bg-secondary);
   }
 
   .delivery-info-icon {
-    color: var(--primary-color, #007bff);
+    color: var(--ugflix-primary);
     font-size: 16px;
   }
 
@@ -375,27 +383,27 @@ const cartPageStyles = `
     font-size: 13px;
     font-weight: 500;
     margin: 0 0 2px 0;
-    color: var(--text-color-dark, #212529);
+    color: var(--ugflix-text-primary);
   }
 
   .delivery-info-subtitle {
     font-size: 12px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
     margin: 0;
   }
 
   .delivery-info-arrow {
-    color: var(--text-color-light, #6c757d);
+    color: var(--ugflix-text-muted);
     font-size: 12px;
   }
 
   /* Checkout Button */
   .btn-checkout {
     width: 100%;
-    border: 1px solid var(--primary-color, #007bff);
-    border-radius: var(--border-radius, 4px);
-    background: var(--primary-color, #007bff);
-    color: var(--white, #ffffff);
+    border: 1px solid var(--ugflix-primary);
+    border-radius: 0px;
+    background: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
     font-size: 14px;
     padding: 14px;
     font-weight: 600;
@@ -409,9 +417,9 @@ const cartPageStyles = `
   }
 
   .btn-checkout:hover:not(:disabled) {
-    background: var(--primary-color-dark, #0056b3);
-    border-color: var(--primary-color-dark, #0056b3);
-    color: var(--white, #ffffff);
+    background: var(--ugflix-primary-dark);
+    border-color: var(--ugflix-primary-dark);
+    color: var(--ugflix-text-primary);
     text-decoration: none;
     transform: translateY(-1px);
   }
@@ -434,11 +442,11 @@ const cartPageStyles = `
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    color: var(--text-color-medium, #6c757d);
+    color: var(--ugflix-text-secondary);
   }
 
   .trust-item i {
-    color: var(--success-color, #28a745);
+    color: var(--ugflix-accent);
     font-size: 14px;
   }
 
@@ -612,25 +620,21 @@ const CartPage: React.FC = () => {
           showIcons={true}
         />
 
-        <Container>
+        <Container fluid>
           <div className="cart-page">
-            <Card className="border-0 shadow-sm">
-              <Card.Body>
-                <div className="empty-cart-container">
-                  <div className="empty-cart-icon">
-                    <i className="bi bi-cart-x"></i>
-                  </div>
-                  <h2 className="empty-cart-title">Your cart is empty</h2>
-                  <p className="empty-cart-subtitle">
-                    Discover amazing products and add them to your cart
-                  </p>
-                  <Link to="/products" className="btn-start-shopping">
-                    <i className="bi bi-shop"></i>
-                    Start Shopping
-                  </Link>
-                </div>
-              </Card.Body>
-            </Card>
+            <div className="empty-cart-container">
+              <div className="empty-cart-icon">
+                <i className="bi bi-cart-x"></i>
+              </div>
+              <h2 className="empty-cart-title">Your cart is empty</h2>
+              <p className="empty-cart-subtitle">
+                Discover amazing products and add them to your cart
+              </p>
+              <Link to="/products" className="btn-start-shopping">
+                <i className="bi bi-shop"></i>
+                Start Shopping
+              </Link>
+            </div>
           </div>
         </Container>
       </>
@@ -650,13 +654,12 @@ const CartPage: React.FC = () => {
         showIcons={true}
       />
 
-      <Container>
+      <Container fluid>
         <div className="cart-page">
           <Row>
             {/* Cart Items */}
             <Col lg={8} className="my-0">
-              <Card className="border-0 shadow-sm">
-                <Card.Body>
+              <div className="cart-items-container">
                   <div className="cart-header mb-3">
                     <Row className="align-items-center">
                       <Col md={8}>
@@ -761,14 +764,12 @@ const CartPage: React.FC = () => {
                       Continue Shopping
                     </Link>
                   </div>
-                </Card.Body>
-              </Card>
+                </div>
             </Col>
 
             {/* Order Summary Sidebar */}
             <Col lg={4} className="my-0">
-              <Card className="border-0 shadow-sm">
-                <Card.Body>
+              <div className="order-summary-container">
                   <div className="order-summary">
                     <h3 className="summary-title">Order Summary</h3>
                     
@@ -834,8 +835,7 @@ const CartPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                </Card.Body>
-              </Card>
+                </div>
             </Col>
           </Row>
         </div>

@@ -188,11 +188,12 @@ export class ApiService {
   // ===== ORDERS =====
   
   /**
-   * Get user orders (requires authentication)
+   * Get user orders (requires authentication) - uses mobile app compatible endpoint
    */
   static async getUserOrders(page = 1): Promise<any> {
     try {
-      const response = await http_get(`orders?page=${page}`);
+      // Mobile app uses /orders endpoint without pagination - API will use api/{model} route
+      const response = await http_get(`orders`);
       return response;
     } catch (error) {
       ToastService.error("Failed to load orders");
@@ -201,12 +202,19 @@ export class ApiService {
   }
 
   /**
-   * Get single order by ID
+   * Get single order by ID - uses mobile app compatible endpoint
    */
   static async getOrder(id: number): Promise<any> {
     try {
-      const response = await http_get(`orders/${id}`);
-      return response;
+      // For individual orders, we may need to filter client-side or use a different approach
+      const response = await http_get(`orders`);
+      // Filter to find the specific order
+      const orders = response.data || response;
+      const order = Array.isArray(orders) ? orders.find((o: any) => o.id == id) : null;
+      if (!order) {
+        throw new Error('Order not found');
+      }
+      return order;
     } catch (error) {
       ToastService.error("Order not found");
       throw error;
@@ -214,19 +222,21 @@ export class ApiService {
   }
 
   /**
-   * Create a new order
+   * Create a new order - uses mobile app compatible endpoint
    */
   static async createOrder(orderData: {
     products: Array<{
-      product_id: number;
+      id: number;
       quantity: number;
-      variant?: Record<string, string>;
+      price: number;
     }>;
-    shipping_address: any;
+    shipping_address: string;
     payment_method: string;
-    notes?: string;
+    total_amount: number;
   }): Promise<any> {
     try {
+      // Mobile app likely uses api/{model} route for creation, but we may need a specific endpoint
+      // For now, let's use the same pattern as products
       const response = await http_post("orders", orderData);
       ToastService.success("Order placed successfully!");
       return response;
@@ -237,15 +247,14 @@ export class ApiService {
   }
 
   /**
-   * Update order status
+   * Update order status - this may need a custom endpoint
    */
   static async updateOrderStatus(orderId: number, status: string): Promise<any> {
     try {
+      // This might need a custom endpoint since the mobile app doesn't seem to have this
       const response = await http_post(`orders/${orderId}/status`, { status });
-      ToastService.success("Order status updated");
       return response;
     } catch (error) {
-      ToastService.error("Failed to update order status");
       throw error;
     }
   }

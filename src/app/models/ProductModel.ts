@@ -301,19 +301,14 @@ export class ProductModel {
     return this.p_type === "Yes";
   }
 
-  /** Fetch a paginated list of products (GET /products). */
+  /** Fetch a paginated list of products (GET /products-1). */
   static async fetchProducts(
     page = 1,
     params: Record<string, string | number> = {}
   ): Promise<PaginatedResponse<ProductModel>> {
     try {
-      // Use standardized parameter cleaning utility
-      const queryParams = Utils.buildQueryParams({
-        page: page,
-        ...params
-      });
-      
-      const response = await http_get(`products?${queryParams.toString()}`);
+      // Mobile app uses /products-1 which returns up to 1000 products without pagination
+      const response = await http_get(`products-1`);
       
       // Validate response structure
       if (!response || typeof response !== 'object') {
@@ -321,48 +316,83 @@ export class ProductModel {
         throw new Error('Invalid API response structure');
       }
 
-      // Handle both direct data and nested data structure with validation
-      const paginatedData: PaginatedResponse<any> = response.data || response;
+      // Handle mobile app response format {code, message, data}
+      const productsArray = response.data || response;
       
-      // Validate pagination structure
-      if (!paginatedData || typeof paginatedData !== 'object') {
-        console.error('❌ ProductModel: Invalid pagination data:', paginatedData);
-        throw new Error('Invalid pagination data structure');
+      // Validate products array
+      if (!Array.isArray(productsArray)) {
+        console.error('❌ ProductModel: Invalid products data:', productsArray);
+        throw new Error('Invalid products data structure');
       }
 
-      // Ensure data array exists and is an array
-      if (!Array.isArray(paginatedData.data)) {
-        console.error('❌ ProductModel: Products data is not an array:', paginatedData.data);
-        // Return empty pagination structure instead of throwing
-        return {
-          current_page: 1,
-          data: [],
-          first_page_url: '',
-          from: null,
-          last_page: 1,
-          last_page_url: '',
-          links: [],
-          next_page_url: null,
-          path: '',
-          per_page: 20,
-          prev_page_url: null,
-          to: null,
-          total: 0
-        };
-      }
-
-      // Transform product data with error handling
-      paginatedData.data = paginatedData.data.map((item: any, index: number) => {
+      // Convert to ProductModel instances with validation
+      const products: ProductModel[] = [];
+      for (const item of productsArray) {
         try {
-          return ProductModel.fromJson(item);
+          const product = ProductModel.fromJson(item);
+          products.push(product);
         } catch (error) {
-          console.error(`❌ ProductModel: Failed to parse product at index ${index}:`, item, error);
-          // Skip invalid products instead of crashing
-          return null;
+          console.warn('⚠️ ProductModel: Skipping invalid product:', item, error);
         }
-      }).filter(Boolean); // Remove null entries from failed parsing
+      }
 
-      return paginatedData as PaginatedResponse<ProductModel>;
+      // Client-side filtering since the endpoint doesn't support it
+      let filteredProducts = products;
+
+      // Apply client-side filters
+      if (params.category) {
+        filteredProducts = filteredProducts.filter(p => p.category == params.category);
+      }
+      if (params.search) {
+        const searchTerm = String(params.search).toLowerCase();
+        filteredProducts = filteredProducts.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) ||
+          p.description?.toLowerCase().includes(searchTerm) ||
+          p.keywords.toLowerCase().includes(searchTerm)
+        );
+      }
+      if (params.price_min) {
+        const minPrice = Number(params.price_min);
+        filteredProducts = filteredProducts.filter(p => Number(p.price_1) >= minPrice);
+      }
+      if (params.price_max) {
+        const maxPrice = Number(params.price_max);
+        filteredProducts = filteredProducts.filter(p => Number(p.price_1) <= maxPrice);
+      }
+
+      // Client-side pagination
+      const perPage = 20;
+      const currentPage = Number(page) || 1;
+      const offset = (currentPage - 1) * perPage;
+      const paginatedProducts = filteredProducts.slice(offset, offset + perPage);
+      const totalPages = Math.ceil(filteredProducts.length / perPage);
+
+      // Create pagination response to match expected format
+      const paginatedResponse: PaginatedResponse<ProductModel> = {
+        current_page: currentPage,
+        data: paginatedProducts,
+        first_page_url: `products-1?page=1`,
+        from: offset + 1,
+        last_page: totalPages,
+        last_page_url: `products-1?page=${totalPages}`,
+        links: [],
+        next_page_url: currentPage < totalPages ? `products-1?page=${currentPage + 1}` : null,
+        path: 'products-1',
+        per_page: perPage,
+        prev_page_url: currentPage > 1 ? `products-1?page=${currentPage - 1}` : null,
+        to: Math.min(offset + perPage, filteredProducts.length),
+        total: filteredProducts.length
+      };
+
+      console.log('✅ ProductModel.fetchProducts: Success', {
+        requestedPage: page,
+        totalProducts: products.length,
+        filteredProducts: filteredProducts.length,
+        returnedProducts: paginatedProducts.length,
+        filters: params
+      });
+
+      return paginatedResponse;
     } catch (error) {
       console.error('❌ ProductModel.fetchProducts: API request failed:', error);
       
@@ -423,13 +453,16 @@ export class ProductModel {
     }
   }
 
-  /** Create a new product (POST /products). */
+  /** Create a new product (POST /product-create). */
   static async createProduct(
     productData: Partial<ProductModel>
   ): Promise<ProductModel> {
     try {
-      const response = await http_post("products", productData);
-      return ProductModel.fromJson(response);
+      // Mobile app uses /product-create endpoint
+      const response = await http_post("product-create", productData);
+      // Handle mobile app response format {code, message, data}
+      const productResponseData = response.data || response;
+      return ProductModel.fromJson(productResponseData);
     } catch (error) {
       throw error;
     }
@@ -451,10 +484,11 @@ export class ProductModel {
     }
   }
 
-  /** Delete product (DELETE /products/:id). */
+  /** Delete product (POST /products-delete). */
   static async deleteProduct(id: string | number): Promise<boolean> {
     try {
-      await http_post(`products/${id}?_method=DELETE`, {});
+      // Mobile app uses /products-delete with id in request body
+      await http_post("products-delete", { id: id });
       return true;
     } catch (error) {
       throw error;

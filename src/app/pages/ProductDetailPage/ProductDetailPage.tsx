@@ -10,7 +10,6 @@ import {
   ProgressBar,
   Spinner,
   Modal,
-  Card,
 } from "react-bootstrap";
 import {
   useGetProductByIdQuery,
@@ -46,31 +45,31 @@ const inlineStyles = `
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    padding: var(--spacing-3xl);
+    background: var(--ugflix-bg-primary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    box-shadow: var(--ugflix-shadow-sm);
+    padding: var(--ugflix-spacing-3xl);
   }
 
   .pdp-loading-container .spinner-border {
     width: 3rem;
     height: 3rem;
-    color: var(--primary-color);
-    margin-bottom: var(--spacing-lg);
+    color: var(--ugflix-primary);
+    margin-bottom: var(--ugflix-spacing-lg);
   }
 
   .pdp-loading-container h4,
   .pdp-error-container h4,
   .pdp-not-found-container h4 {
-    color: var(--text-color-dark);
+    color: var(--ugflix-text-primary);
     font-weight: 600;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--ugflix-spacing-md);
   }
 
   /* Main Product Container */
   .product-detail-page-container {
-    background: var(--white);
+    background: var(--ugflix-bg-primary);
   }
 
   /* Product Image Gallery */
@@ -81,21 +80,21 @@ const inlineStyles = `
   .main-image-wrapper {
     width: 100%;
     aspect-ratio: 1;
-    background: var(--background-light);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    background: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all var(--transition-speed) var(--transition-timing);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
     position: relative;
   }
 
   .main-image-wrapper:hover {
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-md);
+    border-color: var(--ugflix-primary);
+    box-shadow: var(--ugflix-shadow-hover);
   }
 
   .main-image-wrapper img {
@@ -157,26 +156,26 @@ const inlineStyles = `
     flex: 0 0 auto;
     width: 70px;
     height: 70px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--ugflix-border);
     border-radius: 0px;
     overflow: hidden;
     cursor: pointer;
-    transition: all var(--transition-speed) var(--transition-timing);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--white);
+    background: var(--ugflix-bg-secondary);
     position: relative;
   }
 
   .thumb-wrapper:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+    border-color: var(--ugflix-primary);
+    box-shadow: 0 0 0 2px rgba(183, 28, 28, 0.2);
   }
 
   .thumb-wrapper.selected-thumb {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.3);
+    border-color: var(--ugflix-primary);
+    box-shadow: 0 0 0 2px rgba(183, 28, 28, 0.3);
   }
 
   .thumb-wrapper img {
@@ -196,29 +195,29 @@ const inlineStyles = `
   .product-title {
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--text-color-dark);
+    color: var(--ugflix-text-primary);
     line-height: 1.3;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--ugflix-spacing-lg);
   }
 
   .category-badge {
-    background: var(--primary-color);
-    color: var(--white);
-    padding: var(--spacing-xs) var(--spacing-md);
-    border-radius: var(--border-radius);
+    background: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
+    padding: var(--ugflix-spacing-xs) var(--ugflix-spacing-md);
+    border-radius: 0px;
     font-weight: 500;
     font-size: 13px;
     border: none;
   }
 
   .rating-container {
-    background: var(--background-light);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-md);
+    background: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    padding: var(--ugflix-spacing-md);
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--ugflix-spacing-md);
   }
 
   .rating-stars {
@@ -228,17 +227,17 @@ const inlineStyles = `
   }
 
   .rating-stars i {
-    color: var(--warning-color);
+    color: var(--ugflix-accent);
     font-size: 1rem;
   }
 
   .rating-value {
     font-weight: 600;
-    color: var(--text-color-dark);
+    color: var(--ugflix-text-primary);
   }
 
   .rating-count {
-    color: var(--text-color-medium);
+    color: var(--ugflix-text-secondary);
     font-size: 14px;
   }
 
@@ -256,147 +255,155 @@ const inlineStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    background: var(--white);
-    color: var(--text-color-medium);
-    transition: all var(--transition-speed) var(--transition-timing);
+    border-radius: 0px;
+    border: 1px solid var(--ugflix-border);
+    background: var(--ugflix-bg-secondary);
+    color: var(--ugflix-text-secondary);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
     font-size: 14px;
   }
 
   .share-buttons .btn:hover {
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--ugflix-shadow-hover);
   }
 
   .share-buttons .btn-facebook:hover {
     background: #1877f2;
-    color: var(--white);
+    color: var(--ugflix-text-primary);
     border-color: #1877f2;
   }
 
   .share-buttons .btn-twitter:hover {
     background: #1da1f2;
-    color: var(--white);
+    color: var(--ugflix-text-primary);
     border-color: #1da1f2;
   }
 
   .share-buttons .btn-whatsapp:hover {
     background: #25d366;
-    color: var(--white);
+    color: var(--ugflix-text-primary);
     border-color: #25d366;
   }
 
   /* Sidebar Card */
-  .sidebar-card {
-    background: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    position: sticky;
-    top: var(--spacing-2xl);
+  .description-container {
+    background-color: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    padding: 16px;
+  }
+
+  .sidebar-container {
+    background-color: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+  }
+
+  .sidebar-content {
+    padding: 16px;
   }
 
   .sidebar-card .card-body {
-    padding: var(--spacing-2xl);
+    padding: var(--ugflix-spacing-2xl);
   }
 
   /* Pricing Section */
   .pricing-section {
-    margin-bottom: var(--spacing-2xl);
-    padding-bottom: var(--spacing-lg);
-    border-bottom: 1px solid var(--border-color-light);
+    margin-bottom: var(--ugflix-spacing-2xl);
+    padding-bottom: var(--ugflix-spacing-lg);
+    border-bottom: 1px solid var(--ugflix-border);
   }
 
   .current-price {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--ugflix-primary);
     line-height: 1.2;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: var(--ugflix-spacing-xs);
   }
 
   .old-price {
     font-size: 1rem;
-    color: var(--text-color-light);
+    color: var(--ugflix-text-muted);
     text-decoration: line-through;
-    margin-left: var(--spacing-sm);
+    margin-left: var(--ugflix-spacing-sm);
   }
 
   .savings-badge {
-    background: var(--success-color);
-    color: var(--white);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--border-radius);
+    background: var(--ugflix-accent);
+    color: var(--ugflix-text-primary);
+    padding: var(--ugflix-spacing-xs) var(--ugflix-spacing-sm);
+    border-radius: 0px;
     font-weight: 500;
     font-size: 12px;
-    margin-top: var(--spacing-xs);
+    margin-top: var(--ugflix-spacing-xs);
     display: inline-block;
   }
 
   /* Stock Status */
   .stock-container {
-    background: var(--background-light);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
-    transition: all var(--transition-speed) var(--transition-timing);
+    background: var(--ugflix-bg-card);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    padding: var(--ugflix-spacing-lg);
+    margin-bottom: var(--ugflix-spacing-lg);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
   }
 
   .stock-container.in-stock {
-    background: rgba(25, 135, 84, 0.05);
-    border-color: rgba(25, 135, 84, 0.2);
+    background: rgba(34, 139, 34, 0.05);
+    border-color: rgba(34, 139, 34, 0.2);
   }
 
   .stock-container.out-of-stock {
-    background: rgba(var(--primary-color-rgb), 0.05);
-    border-color: rgba(var(--primary-color-rgb), 0.2);
+    background: rgba(183, 28, 28, 0.05);
+    border-color: rgba(183, 28, 28, 0.2);
   }
 
   .stock-status {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--ugflix-spacing-sm);
     font-weight: 600;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--ugflix-spacing-sm);
   }
 
   .stock-status.in-stock {
-    color: var(--success-color);
+    color: var(--ugflix-success);
   }
 
   .stock-status.out-of-stock {
-    color: var(--primary-color);
+    color: var(--ugflix-primary);
   }
 
   .stock-count {
-    color: var(--text-color-medium);
+    color: var(--ugflix-text-secondary);
     font-size: 14px;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--ugflix-spacing-sm);
   }
 
   /* Progress Bar */
   .stock-progress {
     height: 6px;
-    background: var(--background-muted);
-    border-radius: var(--border-radius);
+    background: var(--ugflix-bg-disabled);
+    border-radius: 0px;
     overflow: hidden;
   }
 
   .stock-progress .progress-bar {
-    border-radius: var(--border-radius);
+    border-radius: 0px;
     transition: width 0.6s ease;
   }
 
   /* Variants */
   .variants-section {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--ugflix-spacing-lg);
   }
 
   .variant-label {
     font-weight: 600;
-    color: var(--text-color-dark);
-    margin-bottom: var(--spacing-sm);
+    color: var(--ugflix-text-primary);
+    margin-bottom: var(--ugflix-spacing-sm);
     display: block;
     font-size: 14px;
   }
@@ -404,43 +411,43 @@ const inlineStyles = `
   .variant-options {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-sm);
+    gap: var(--ugflix-spacing-sm);
   }
 
   .variant-btn {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border-color);
-    background: var(--white);
-    color: var(--text-color-medium);
-    border-radius: var(--border-radius);
+    padding: var(--ugflix-spacing-sm) var(--ugflix-spacing-md);
+    border: 1px solid var(--ugflix-border);
+    background: var(--ugflix-bg-secondary);
+    color: var(--ugflix-text-secondary);
+    border-radius: 0px;
     cursor: pointer;
-    transition: all var(--transition-speed) var(--transition-timing);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
     font-weight: 500;
     font-size: 13px;
   }
 
   .variant-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background: var(--background-light);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-primary);
+    background: var(--ugflix-bg-card);
   }
 
   .variant-btn.active {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: var(--white);
-    box-shadow: var(--shadow-sm);
+    background: var(--ugflix-primary);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-text-primary);
+    box-shadow: var(--ugflix-shadow-sm);
   }
 
   /* Quantity */
   .quantity-section {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--ugflix-spacing-lg);
   }
 
   .quantity-label {
     font-weight: 600;
-    color: var(--text-color-dark);
-    margin-bottom: var(--spacing-sm);
+    color: var(--ugflix-text-primary);
+    margin-bottom: var(--ugflix-spacing-sm);
     display: block;
     font-size: 14px;
   }
@@ -1325,13 +1332,15 @@ const inlineStyles = `
       font-size: 1.75rem;
     }
 
-    .product-detail-page-container {
+    .product-detail-page-container,
+    .product-detail-container {
       padding: var(--spacing-lg);
     }
   }
 
   @media (max-width: 767.98px) {
-    .product-detail-page-container {
+    .product-detail-page-container,
+    .product-detail-container {
       padding: var(--spacing-md);
     }
 
@@ -2453,13 +2462,12 @@ const ProductDetailPage: React.FC = () => {
       />
       <style dangerouslySetInnerHTML={{ __html: inlineStyles }} />
       <DynamicBreadcrumb />
-      <Container className="my-0">
+      <Container fluid className="my-0">
         <Row>
           {/* Main Content Area - Left Side */}
           <Col lg={8} md={7}>
             {/* Product Images and Basic Info */}
-            <Card className="border-0 shadow-none">
-              <Card.Body className="p-4 product-detail-page-container">
+            <div className="product-detail-container">
                 <Row>
                   {/* Product Images */}
                   <Col md={6} className="mb-2">
@@ -2709,12 +2717,10 @@ const ProductDetailPage: React.FC = () => {
                       )}
                   </Col>
                 </Row>
-              </Card.Body>
-            </Card>
+              </div>
 
             {/* Description Card - Below main product card */}
-            <Card className="border-0 shadow-sm mt-4">
-              <Card.Body className="p-4">
+            <div className="description-container mt-4">
                 <h5 className="section-title">
                   <i className="bi bi-file-text"></i>
                   Product Description
@@ -2729,14 +2735,13 @@ const ProductDetailPage: React.FC = () => {
                 ) : (
                   <p className="text-muted">No description available for this product.</p>
                 )}
-              </Card.Body>
-            </Card>
+              </div>
           </Col>
 
           {/* Right Sidebar */}
           <Col lg={4} md={5}>
-            <div className="sidebar-card">
-              <div className="card-body">
+            <div className="sidebar-container">
+              <div className="sidebar-content">
                 {/* Pricing */}
                 <div className="pricing-section">
                   <div className="d-flex align-items-center flex-wrap">
@@ -2992,7 +2997,7 @@ const ProductDetailPage: React.FC = () => {
 
       {/* Related Products Section - Separate Card */}
       {relatedProducts.length > 0 && (
-        <Container className="mt-4">
+        <Container fluid className="mt-4">
           <div className="related-products">
             <h3>Related Products</h3>
             

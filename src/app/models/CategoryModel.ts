@@ -101,10 +101,11 @@ export class CategoryModel {
     return this.is_parent === "Yes";
   }
 
-  /** Fetch all categories (GET /manifest/categories). */
+  /** Fetch all categories (GET /api/ProductCategory). */
   static async fetchCategories(): Promise<CategoryModel[]> {
     try {
-      const response = await http_get("/manifest/categories");
+      // Mobile app uses /api/ProductCategory with is_not_private=1 parameter
+      const response = await http_get("api/ProductCategory?is_not_private=1");
       
       // Handle API response format: {code, message, data}
       if (response.code !== 1) {
