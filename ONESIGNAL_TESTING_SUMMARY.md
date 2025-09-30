@@ -7,7 +7,7 @@ Complete OneSignal push notification system integration between Laravel backend 
 
 ### 1. OneSignal Connection Test
 ```bash
-curl -X POST http://localhost:8888/ugflix/api/onesignal/test-connection
+curl -X POST http://localhost:8888/katogo/api/onesignal/test-connection
 ```
 **Result:** ✅ SUCCESS
 ```json
@@ -20,7 +20,7 @@ curl -X POST http://localhost:8888/ugflix/api/onesignal/test-connection
 
 ### 2. Device Registration Test
 ```bash
-curl -X POST http://localhost:8888/ugflix/api/onesignal/register-device \
+curl -X POST http://localhost:8888/katogo/api/onesignal/register-device \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": 123,
@@ -46,7 +46,7 @@ curl -X POST http://localhost:8888/ugflix/api/onesignal/register-device \
 
 ### 3. User Information Update Test
 ```bash
-curl -X POST http://localhost:8888/ugflix/api/onesignal/update-user \
+curl -X POST http://localhost:8888/katogo/api/onesignal/update-user \
   -H "Content-Type: application/json" \
   -d '{
     "player_id": "test-player-id-123",
@@ -73,7 +73,7 @@ curl -X POST http://localhost:8888/ugflix/api/onesignal/update-user \
 
 ### 4. Device Unregistration Test
 ```bash
-curl -X POST http://localhost:8888/ugflix/api/onesignal/unregister-device \
+curl -X POST http://localhost:8888/katogo/api/onesignal/unregister-device \
   -H "Content-Type: application/json" \
   -d '{
     "player_id": "test-player-id-123"
@@ -83,7 +83,7 @@ curl -X POST http://localhost:8888/ugflix/api/onesignal/unregister-device \
 
 ### 5. Push Notification Send Test
 ```bash
-curl -X POST http://localhost:8888/ugflix/api/onesignal/send \
+curl -X POST http://localhost:8888/katogo/api/onesignal/send \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Test Notification",
@@ -134,7 +134,7 @@ curl -X POST http://localhost:8888/ugflix/api/onesignal/send \
 ## Admin Dashboard ✅ OPERATIONAL
 - Admin notification management interface available
 - Real-time notification sending capability
-- Testing dashboard accessible at: http://localhost:8888/ugflix/admin/notifications
+- Testing dashboard accessible at: http://localhost:8888/katogo/admin/notifications
 
 ## API Endpoints Summary
 

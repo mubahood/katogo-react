@@ -37,7 +37,7 @@
 /* Authentication-specific theme */
 @import './auth-theme.css';
 
-/* BlitzXpress core theme (from components folder) */
+/* UgFlix core theme (from components folder) */
 @import '../components/css/ugflix-theme.css';
 
 /* Wishlist utilities */

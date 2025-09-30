@@ -17,21 +17,28 @@ import {
  */
 export const useManifest = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const mountedRef = useRef(false);
   
   const manifest = useSelector((state: RootState) => selectManifest(state));
   const isLoading = useSelector((state: RootState) => selectManifestLoading(state));
   const error = useSelector((state: RootState) => selectManifestError(state));
   const initialized = useSelector((state: RootState) => selectManifestInitialized(state));
 
-  // Load manifest on first mount
+  // Load manifest on first mount only - prevent React.StrictMode double mounting
   useEffect(() => {
-    if (!initialized && !isLoading) {
-      dispatch(loadManifest());
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      
+      if (!initialized && !isLoading) {
+        console.log('🏃 Loading manifest for the first time');
+        dispatch(loadManifest());
+      }
     }
   }, [dispatch, initialized, isLoading]);
 
   // Method to reload manifest (useful after important actions)
   const reloadManifest = () => {
+    console.log('🔄 Manual manifest reload requested');
     dispatch(loadManifest());
   };
 
@@ -198,30 +205,43 @@ export const useInventoryStats = () => {
  */
 export const useManifestRefresh = () => {
   const { reloadManifest } = useManifest();
+  const refreshTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  // Debounced refresh to prevent excessive calls
+  const debouncedRefresh = (delay: number = 1000) => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+    
+    refreshTimeoutRef.current = setTimeout(() => {
+      console.log('⏰ Debounced manifest refresh triggered');
+      reloadManifest();
+    }, delay);
+  };
   
   const refreshAfterOrderPlacement = () => {
     // Refresh after order is placed to update counts
-    setTimeout(() => reloadManifest(), 1000);
+    debouncedRefresh(1500);
   };
 
   const refreshAfterProfileUpdate = () => {
     // Refresh after profile update to get latest user info
-    setTimeout(() => reloadManifest(), 500);
+    debouncedRefresh(800);
   };
 
   const refreshAfterWishlistChange = () => {
     // Refresh after wishlist changes to update counts
-    setTimeout(() => reloadManifest(), 500);
+    debouncedRefresh(800);
   };
 
   const refreshAfterVendorRegistration = () => {
     // Refresh after new vendor registration
-    setTimeout(() => reloadManifest(), 1000);
+    debouncedRefresh(1500);
   };
 
   const refreshAfterProductChange = () => {
     // Refresh after product add/edit/delete
-    setTimeout(() => reloadManifest(), 1000);
+    debouncedRefresh(1500);
   };
 
   return {
@@ -232,6 +252,19 @@ export const useManifestRefresh = () => {
     refreshAfterProductChange,
     refreshNow: reloadManifest,
   };
+};
+
+// Cleanup effect for useManifestRefresh
+export const useManifestRefreshCleanup = () => {
+  const refreshTimeoutRef = useRef<NodeJS.Timeout>();
+  
+  useEffect(() => {
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, []);
 };
 
 /**

@@ -35,6 +35,108 @@ body {
 }
 
 /* ===================================================================
+   ENHANCED TYPOGRAPHY - Google Fonts Integration
+   =================================================================== */
+
+/* Headings use display font (Poppins) for better visual hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--ugflix-text-primary);
+  margin: 0 0 var(--space-4) 0;
+}
+
+h1 {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.015em;
+}
+
+h3 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+h4 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-medium);
+}
+
+h5 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+h6 {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Responsive typography scaling */
+@media (min-width: 768px) {
+  h1 {
+    font-size: var(--text-5xl);
+  }
+  
+  h2 {
+    font-size: var(--text-4xl);
+  }
+  
+  h3 {
+    font-size: var(--text-3xl);
+  }
+}
+
+@media (min-width: 992px) {
+  h1 {
+    font-size: var(--text-6xl);
+  }
+  
+  h2 {
+    font-size: var(--text-5xl);
+  }
+}
+
+/* Body text and UI elements use Inter font */
+p, span, div, label, input, textarea, select, button, a {
+  font-family: var(--font-family-primary);
+}
+
+/* Special typography classes */
+.text-display {
+  font-family: var(--font-family-display);
+}
+
+.text-mono {
+  font-family: var(--font-family-mono);
+}
+
+/* Improved readability for body text */
+p {
+  line-height: var(--line-height-relaxed);
+  margin: 0 0 var(--space-4) 0;
+}
+
+/* Better link styling */
+a {
+  color: var(--brand-primary);
+  text-decoration: none;
+  transition: var(--transition-colors);
+}
+
+a:hover {
+  color: var(--brand-primary-700);
+  text-decoration: underline;
+}
+
+/* ===================================================================
    LAYOUT COMPONENTS
    =================================================================== */
 

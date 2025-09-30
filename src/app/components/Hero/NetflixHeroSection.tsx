@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { Play, Plus, Info, Volume2, VolumeX, RotateCcw } from 'react-feather';
 import type { Movie } from '../../services/manifest.service';
+import { truncateDescription } from '../../utils';
 
 interface NetflixHeroSectionProps {
   movie: Movie;
@@ -371,8 +372,8 @@ const NetflixHeroSection: React.FC<NetflixHeroSectionProps> = ({
         }
 
         .hero-title {
-          font-size: clamp(2.2rem, 6vw, 4.5rem);
-          font-weight: 800;
+          font-size: clamp(1.8rem, 4vw, 3rem);
+          font-weight: 700;
           color: var(--ugflix-text-primary);
           text-shadow: 2px 4px 12px rgba(0, 0, 0, 0.9);
           margin-bottom: 0.8rem;
@@ -397,12 +398,16 @@ const NetflixHeroSection: React.FC<NetflixHeroSectionProps> = ({
         }
 
         .hero-description {
-          font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+          font-size: clamp(0.85rem, 1.2vw, 1rem);
           color: var(--ugflix-text-secondary);
-          line-height: 1.5;
+          line-height: 1.4;
           margin-bottom: 1.8rem;
-          max-width: 550px;
+          max-width: 500px;
           text-shadow: 1px 2px 6px rgba(0, 0, 0, 0.8);
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
         }
 
         .hero-actions {
@@ -531,14 +536,15 @@ const NetflixHeroSection: React.FC<NetflixHeroSectionProps> = ({
           }
 
           .hero-title {
-            font-size: clamp(1.8rem, 8vw, 2.8rem);
+            font-size: clamp(1.5rem, 6vw, 2.2rem);
             margin-bottom: 0.6rem;
           }
 
           .hero-description {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-bottom: 1.3rem;
             max-width: 100%;
+            -webkit-line-clamp: 2;
           }
 
           .hero-actions {
@@ -581,12 +587,13 @@ const NetflixHeroSection: React.FC<NetflixHeroSectionProps> = ({
           }
 
           .hero-title {
-            font-size: clamp(1.6rem, 10vw, 2.4rem);
+            font-size: clamp(1.4rem, 8vw, 2rem);
           }
 
           .hero-description {
-            font-size: 0.85rem;
-            line-height: 1.4;
+            font-size: 0.8rem;
+            line-height: 1.3;
+            -webkit-line-clamp: 2;
           }
 
           .hero-content {
@@ -708,7 +715,7 @@ const NetflixHeroSection: React.FC<NetflixHeroSectionProps> = ({
 
                 {/* Movie Description */}
                 <p className="hero-description">
-                  {movie.description || 'Experience premium entertainment with stunning visuals and compelling storytelling that will keep you on the edge of your seat.'}
+                  {truncateDescription(movie.description, 120) || 'Experience premium entertainment with stunning visuals and compelling storytelling.'}
                 </p>
 
                 {/* Action Buttons */}

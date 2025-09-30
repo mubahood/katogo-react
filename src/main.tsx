@@ -71,7 +71,8 @@ if (!container) throw new Error("Failed to find the root element");
 
 const root = createRoot(container);
 
-root.render(
+// Conditionally wrap with StrictMode only in development
+const AppWrapper = import.meta.env.DEV ? (
   <React.StrictMode>
     <HelmetProvider>
       <Provider store={store}>
@@ -85,9 +86,26 @@ root.render(
             <App />
           </BrowserRouter>
           {/* Only show React Query DevTools in development */}
-          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </Provider>
     </HelmetProvider>
   </React.StrictMode>
+) : (
+  <HelmetProvider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <App />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </Provider>
+  </HelmetProvider>
 );
+
+root.render(AppWrapper);

@@ -58,7 +58,7 @@
   min-height: 100vh;
   background: linear-gradient(135deg, var(--ugflix-bg-primary) 0%, var(--ugflix-bg-secondary) 100%);
   color: var(--ugflix-text-primary);
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: var(--font-family-primary);
   position: relative;
   overflow-x: hidden;
 }

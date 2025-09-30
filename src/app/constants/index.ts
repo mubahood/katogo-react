@@ -12,8 +12,8 @@ export * from "../../Constants";
 // ===================================================================
 
 /* 
-  BASE_URL: "http://localhost:8888/ugflix",
-  API_URL: "http://localhost:8888/ugflix/api",
+  BASE_URL: "http://localhost:8888/katogo",
+  API_URL: "http://localhost:8888/katogo/api",
 */
 
 export const API_CONFIG = {

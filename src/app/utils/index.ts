@@ -41,6 +41,24 @@ export const truncateText = (text: string, maxLength: number): string => {
   return text.slice(0, maxLength).trim() + '...';
 };
 
+/**
+ * Strip HTML tags from text
+ */
+export const stripHtml = (html: string): string => {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+};
+
+/**
+ * Truncate description with HTML stripping
+ */
+export const truncateDescription = (description: string, maxLength: number = 150): string => {
+  if (!description) return '';
+  const cleanText = stripHtml(description);
+  return truncateText(cleanText, maxLength);
+};
+
 // ===================================================================
 // PRODUCT UTILITIES
 // ===================================================================

@@ -54,41 +54,53 @@ class ManifestService {
   private baseUrl = API_ENDPOINTS.BASE_URL;
   private lastRequestTime = 0;
   private isRequesting = false;
+  private pendingRequest: Promise<ManifestResponse> | null = null;
   private cachedResponse: ManifestResponse | null = null;
-  private readonly MIN_REQUEST_INTERVAL = 10000; // 10 seconds minimum between requests
+  private readonly MIN_REQUEST_INTERVAL = 3000; // Reduced to 3 seconds
   private readonly RATE_LIMIT_BACKOFF = 30000; // 30 seconds backoff for 429 errors
+  private readonly CACHE_DURATION = 60000; // 1 minute cache duration
 
   /**
    * Get streaming manifest with movies and categories
    */
   async getManifest(): Promise<ManifestResponse> {
-    // Prevent concurrent requests
-    if (this.isRequesting) {
-      console.log('🔄 Manifest request already in progress, using cached response');
-      if (this.cachedResponse) {
-        return this.cachedResponse;
-      }
-      // Wait for ongoing request to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (this.cachedResponse) {
-        return this.cachedResponse;
-      }
+    // Return cached response if still valid
+    const now = Date.now();
+    if (this.cachedResponse && (now - this.lastRequestTime) < this.CACHE_DURATION) {
+      console.log('� Using cached manifest response');
+      return this.cachedResponse;
+    }
+
+    // Return pending request if one is already in progress
+    if (this.pendingRequest) {
+      console.log('🔄 Manifest request already in progress, waiting for completion');
+      return this.pendingRequest;
     }
 
     // Throttle requests - enforce minimum interval
-    const now = Date.now();
     const timeSinceLastRequest = now - this.lastRequestTime;
-    if (timeSinceLastRequest < this.MIN_REQUEST_INTERVAL) {
-      console.log(`🚦 Throttling manifest request - ${Math.ceil((this.MIN_REQUEST_INTERVAL - timeSinceLastRequest) / 1000)}s remaining`);
-      if (this.cachedResponse) {
-        return this.cachedResponse;
-      }
-      // Wait for throttle period if no cached response
-      await new Promise(resolve => setTimeout(resolve, this.MIN_REQUEST_INTERVAL - timeSinceLastRequest));
+    if (timeSinceLastRequest < this.MIN_REQUEST_INTERVAL && this.cachedResponse) {
+      console.log(`🚦 Using cached response due to throttling - ${Math.ceil((this.MIN_REQUEST_INTERVAL - timeSinceLastRequest) / 1000)}s remaining`);
+      return this.cachedResponse;
     }
 
-    this.isRequesting = true;
+    // Create and store the pending request
+    this.pendingRequest = this.executeManifestRequest();
     this.lastRequestTime = now;
+
+    try {
+      const result = await this.pendingRequest;
+      this.cachedResponse = result;
+      return result;
+    } finally {
+      this.pendingRequest = null;
+    }
+  }
+
+  /**
+   * Execute the actual manifest request
+   */
+  private async executeManifestRequest(): Promise<ManifestResponse> {
 
     try {
       const token = localStorage.getItem('ugflix_auth_token');
@@ -123,7 +135,7 @@ class ManifestService {
       // Handle rate limiting specifically
       if (response.status === 429) {
         console.warn('🚦 Rate limited - implementing exponential backoff');
-        this.lastRequestTime = now + this.RATE_LIMIT_BACKOFF; // Block requests for 30 seconds
+        this.lastRequestTime = Date.now() + this.RATE_LIMIT_BACKOFF; // Block requests for 30 seconds
         throw new Error('Rate limited - please wait before retrying');
       }
 
@@ -137,8 +149,6 @@ class ManifestService {
         throw new Error(data.message || 'Failed to load manifest');
       }
 
-      // Cache successful response
-      this.cachedResponse = data;
       return data;
     } catch (error: any) {
       console.error('Manifest error:', error);
@@ -148,7 +158,7 @@ class ManifestService {
         console.log('🔄 Using cached manifest due to rate limiting');
         return this.cachedResponse;
       }
-      
+
       // Return empty manifest on error to prevent app crash
       return {
         code: 0,
@@ -164,9 +174,16 @@ class ManifestService {
           WHATSAPP_CONTAT_NUMBER: ''
         }
       };
-    } finally {
-      this.isRequesting = false;
     }
+  }
+
+  /**
+   * Clear cache to force fresh request
+   */
+  clearCache(): void {
+    this.cachedResponse = null;
+    this.lastRequestTime = 0;
+    this.pendingRequest = null;
   }
 
   /**

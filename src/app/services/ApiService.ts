@@ -424,51 +424,21 @@ export class ApiService {
 
   // ===== MANIFEST =====
 
-  private static lastManifestRequest = 0;
-  private static manifestRequestInProgress = false;
-  private static cachedManifest: any = null;
-  private static readonly MANIFEST_THROTTLE_MS = 10000; // 10 seconds
-
   /**
    * Get application manifest with essential data and counts
+   * Delegates to the optimized ManifestService for better caching and request deduplication
    */
   static async getManifest(): Promise<any> {
-    // Prevent concurrent requests
-    if (this.manifestRequestInProgress) {
-      console.log('🔄 Manifest request in progress, returning cached data');
-      if (this.cachedManifest) {
-        return this.cachedManifest;
-      }
-      // Wait briefly for ongoing request
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (this.cachedManifest) {
-        return this.cachedManifest;
-      }
-    }
-
-    // Throttle requests
-    const now = Date.now();
-    const timeSinceLastRequest = now - this.lastManifestRequest;
-    if (timeSinceLastRequest < this.MANIFEST_THROTTLE_MS) {
-      console.log(`🚦 Throttling manifest request - ${Math.ceil((this.MANIFEST_THROTTLE_MS - timeSinceLastRequest) / 1000)}s remaining`);
-      if (this.cachedManifest) {
-        return this.cachedManifest;
-      }
-    }
-
-    this.manifestRequestInProgress = true;
-    this.lastManifestRequest = now;
-
     try {
-      const response = await http_get("manifest");
+      // Use the optimized manifest service instead of direct API calls
+      const { manifestService } = await import('./manifest.service');
+      const response = await manifestService.getManifest();
       
-      if (!response?.data) {
-        throw new Error("No manifest data received");
+      if (response.code === 1 && response.data) {
+        return response.data;
+      } else {
+        throw new Error(response.message || 'Failed to load manifest');
       }
-
-      // Cache successful response
-      this.cachedManifest = response.data;
-      return response.data;
     } catch (error: any) {
       // Use offline fallback for network errors
       if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
@@ -477,16 +447,8 @@ export class ApiService {
         return OfflineService.getDefaultManifest();
       } else {
         console.error("Failed to load manifest:", error);
-        
-        // If we have cached data and it's a rate limit error, use cache
-        if (this.cachedManifest && (error.response?.status === 429 || error.message?.includes('429'))) {
-          console.log('🔄 Using cached manifest due to rate limiting');
-          return this.cachedManifest;
-        }
+        throw error;
       }
-      throw error;
-    } finally {
-      this.manifestRequestInProgress = false;
     }
   }
 
