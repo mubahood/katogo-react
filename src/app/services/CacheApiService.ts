@@ -424,14 +424,13 @@ export class CacheApiService {
    */
   private static async checkServerHealth(): Promise<boolean> {
     try {
-      // Try a simple health check - just test if the base URL is reachable
-      const response = await fetch(import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:8888/katogo', {
-        method: 'HEAD',
-        mode: 'no-cors',
-        timeout: 2000
-      } as any);
+      // Use centralized http_get with a lightweight existing endpoint
+      // Using chat-heads as it's a simple GET endpoint that exists
+      const { http_get } = await import('./Api');
+      await http_get('chat-heads');
       return true;
     } catch (error) {
+      // Server unreachable or user not authenticated
       return false;
     }
   }

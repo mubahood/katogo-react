@@ -31,6 +31,14 @@ export interface ChatHead {
   type?: string;
   sender_unread_count?: number;
   receiver_unread_count?: number;
+  // New convenience fields from perfected backend
+  other_user_id?: number;
+  other_user_name?: string;
+  other_user_photo?: string;
+  other_user_last_seen?: string;
+  unread_count?: number;
+  is_last_message_mine?: boolean;
+  last_message_sender_id?: number;
 }
 
 export interface ChatMessage {
@@ -184,17 +192,19 @@ export class ChatApiService {
   }
 
   /**
-   * Get current user from storage or auth context
-   * This should be replaced with your actual auth implementation
+   * Get current user from storage - uses centralized constants
    */
   private static getCurrentUser(): { id: number } | null {
     try {
-      // This should match your authentication system
-      const token = localStorage.getItem('ugflix_auth_token');
-      const user = localStorage.getItem('ugflix_user');
+      // Import Utils to use centralized storage access
+      const Utils = require('./Utils').default;
+      const { ugflix_auth_token, ugflix_user } = require('../../Constants');
+      
+      const token = Utils.loadFromDatabase(ugflix_auth_token);
+      const user = Utils.loadFromDatabase(ugflix_user);
       
       if (token && user) {
-        return JSON.parse(user);
+        return user;
       }
       return null;
     } catch (error) {
@@ -205,8 +215,15 @@ export class ChatApiService {
 
   /**
    * Get unread message count for a user in a chat head
+   * Now uses backend's convenience field for better performance
    */
   static getUnreadCount(chatHead: ChatHead, userId: number): number {
+    // Use new convenience field from perfected backend if available
+    if (chatHead.unread_count !== undefined) {
+      return chatHead.unread_count;
+    }
+    
+    // Fallback to old logic for backward compatibility
     if (userId.toString() === chatHead.product_owner_id) {
       return parseInt(chatHead.product_owner_unread_messages_count || '0');
     } else if (userId.toString() === chatHead.customer_id) {
@@ -217,6 +234,7 @@ export class ChatApiService {
 
   /**
    * Get the other participant's info from a chat head
+   * Now uses backend's convenience fields for better performance
    */
   static getOtherParticipant(chatHead: ChatHead, currentUserId: number): {
     id: string;
@@ -224,6 +242,17 @@ export class ChatApiService {
     photo: string;
     lastSeen: string;
   } {
+    // Use new convenience fields from perfected backend if available
+    if (chatHead.other_user_id && chatHead.other_user_name) {
+      return {
+        id: chatHead.other_user_id.toString(),
+        name: chatHead.other_user_name,
+        photo: chatHead.other_user_photo || '',
+        lastSeen: chatHead.other_user_last_seen || ''
+      };
+    }
+    
+    // Fallback to old logic for backward compatibility
     const isProductOwner = currentUserId.toString() === chatHead.product_owner_id;
     
     if (isProductOwner) {

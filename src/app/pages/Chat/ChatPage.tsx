@@ -4,6 +4,7 @@ import { Container, Row, Col, Card, Button, Form, InputGroup, Spinner, Alert, Ba
 import { useSearchParams } from 'react-router-dom';
 import ChatApiService, { ChatHead, ChatMessage } from '../../services/ChatApiService';
 import Utils from '../../services/Utils';
+import { ugflix_auth_token, ugflix_user } from '../../../Constants';
 
 interface ChatPageProps {
   productId?: number; // For contact seller functionality
@@ -21,9 +22,13 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: number } | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLInputElement>(null);
+  const chatHeadsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const messagesIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Get current user
@@ -32,7 +37,25 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
     
     if (user) {
       loadChatHeads();
+      
+      // Set up real-time polling for chat heads every 10 seconds
+      chatHeadsIntervalRef.current = setInterval(() => {
+        loadChatHeads(true); // Silent refresh
+      }, 10000);
     }
+    
+    // Cleanup on unmount
+    return () => {
+      if (chatHeadsIntervalRef.current) {
+        clearInterval(chatHeadsIntervalRef.current);
+      }
+      if (messagesIntervalRef.current) {
+        clearInterval(messagesIntervalRef.current);
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -70,7 +93,29 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
   useEffect(() => {
     if (selectedChatHead) {
       loadMessages(selectedChatHead.id);
+      
+      // Set up real-time polling for messages every 5 seconds
+      if (messagesIntervalRef.current) {
+        clearInterval(messagesIntervalRef.current);
+      }
+      
+      messagesIntervalRef.current = setInterval(() => {
+        loadMessages(selectedChatHead.id, true); // Silent refresh
+      }, 5000);
+    } else {
+      // Clear interval when no chat is selected
+      if (messagesIntervalRef.current) {
+        clearInterval(messagesIntervalRef.current);
+        messagesIntervalRef.current = null;
+      }
     }
+    
+    return () => {
+      if (messagesIntervalRef.current) {
+        clearInterval(messagesIntervalRef.current);
+        messagesIntervalRef.current = null;
+      }
+    };
   }, [selectedChatHead]);
 
   useEffect(() => {
@@ -79,12 +124,21 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
 
   const getCurrentUser = (): { id: number } | null => {
     try {
-      const token = localStorage.getItem('ugflix_auth_token');
-      const user = localStorage.getItem('ugflix_user');
+      // Use centralized storage constants
+      const token = Utils.loadFromDatabase(ugflix_auth_token);
+      const user = Utils.loadFromDatabase(ugflix_user);
+      
+      console.log('🔍 ChatPage getCurrentUser:', {
+        hasToken: !!token,
+        hasUser: !!user,
+        userId: user?.id,
+        tokenLength: token?.length
+      });
       
       if (token && user) {
-        return JSON.parse(user);
+        return user;
       }
+      console.warn('⚠️ ChatPage: No token or user found in localStorage!');
       return null;
     } catch (error) {
       console.error("Failed to get current user:", error);
@@ -92,27 +146,39 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
     }
   };
 
-  const loadChatHeads = async () => {
+  const loadChatHeads = async (silent: boolean = false) => {
     try {
-      setIsLoading(true);
-      setError(null);
+      if (!silent) {
+        setIsLoading(true);
+        setError(null);
+      }
+      
       const data = await ChatApiService.getChatHeads();
       
-      console.log('📥 Loaded chat heads:', data);
-      console.log('🔍 Looking for chatHeadId:', searchParams.get('chatHeadId'));
+      if (!silent) {
+        console.log('📥 Loaded chat heads:', data);
+        console.log('🔍 Looking for chatHeadId:', searchParams.get('chatHeadId'));
+      }
       
       setChatHeads(data);
     } catch (error) {
       console.error('Error loading chat heads:', error);
-      setError('Failed to load conversations');
+      if (!silent) {
+        setError('Failed to load conversations');
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   };
 
-  const loadMessages = async (chatHeadId: number) => {
+  const loadMessages = async (chatHeadId: number, silent: boolean = false) => {
     try {
-      setIsLoadingMessages(true);
+      if (!silent) {
+        setIsLoadingMessages(true);
+      }
+      
       const data = await ChatApiService.getChatMessages(chatHeadId);
       
       // Set isMyMessage property for each message
@@ -121,27 +187,39 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
         isMyMessage: currentUser ? ChatApiService.isMyMessage(message, currentUser.id) : false
       }));
       
-      setMessages(messagesWithUserFlag);
+      // Only update if there are new messages (to avoid unnecessary re-renders)
+      setMessages(prev => {
+        if (JSON.stringify(prev) !== JSON.stringify(messagesWithUserFlag)) {
+          return messagesWithUserFlag;
+        }
+        return prev;
+      });
       
-      // Mark messages as read
-      await ChatApiService.markAsRead(chatHeadId);
-      
-      // Update chat head unread count
-      setChatHeads(prev => 
-        prev.map(head => 
-          head.id === chatHeadId 
-            ? { 
-                ...head, 
-                customer_unread_messages_count: currentUser?.id.toString() === head.customer_id ? '0' : head.customer_unread_messages_count,
-                product_owner_unread_messages_count: currentUser?.id.toString() === head.product_owner_id ? '0' : head.product_owner_unread_messages_count
-              }
-            : head
-        )
-      );
+      // Mark messages as read (only if not silent to avoid too many requests)
+      if (!silent) {
+        await ChatApiService.markAsRead(chatHeadId);
+        
+        // Update chat head unread count
+        setChatHeads(prev => 
+          prev.map(head => 
+            head.id === chatHeadId 
+              ? { 
+                  ...head, 
+                  customer_unread_messages_count: currentUser?.id.toString() === head.customer_id ? '0' : head.customer_unread_messages_count,
+                  product_owner_unread_messages_count: currentUser?.id.toString() === head.product_owner_id ? '0' : head.product_owner_unread_messages_count
+                }
+              : head
+          )
+        );
+      }
     } catch (error) {
-      console.error('Error loading messages:', error);
+      if (!silent) {
+        console.error('Error loading messages:', error);
+      }
     } finally {
-      setIsLoadingMessages(false);
+      if (!silent) {
+        setIsLoadingMessages(false);
+      }
     }
   };
 
@@ -420,34 +498,63 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
                       {messages.map((message, index) => (
                         <div
                           key={message.id}
-                          className={`mb-3 d-flex ${message.isMyMessage ? 'justify-content-end' : 'justify-content-start'}`}
+                          className={`mb-3 d-flex message-container ${
+                            message.isMyMessage ? 'justify-content-end' : 'justify-content-start'
+                          }`}
+                          style={{
+                            animation: 'messageSlideIn 0.3s ease-out',
+                            animationDelay: `${Math.min(index * 0.02, 0.3)}s`,
+                            opacity: 0,
+                            animationFillMode: 'forwards'
+                          }}
                         >
+                          {!message.isMyMessage && (
+                            <img
+                              src={Utils.img(ChatApiService.getOtherParticipant(selectedChatHead, currentUser.id).photo) || '/default-avatar.png'}
+                              alt="Avatar"
+                              className="rounded-circle me-2"
+                              width="32"
+                              height="32"
+                              style={{ objectFit: 'cover', alignSelf: 'flex-end' }}
+                            />
+                          )}
                           <div
-                            className={`message-bubble p-3 rounded ${
+                            className={`message-bubble p-3 rounded shadow-sm ${
                               message.isMyMessage 
-                                ? 'bg-primary text-white' 
-                                : 'bg-light text-dark'
+                                ? 'bg-primary text-white message-sent' 
+                                : 'bg-light text-dark message-received'
                             }`}
                             style={{ maxWidth: '70%' }}
                           >
-                            <div className="message-content">
+                            <div className="message-content" style={{ wordBreak: 'break-word' }}>
                               {message.body}
                             </div>
                             <small 
-                              className={`d-block mt-1 ${
+                              className={`d-block mt-1 text-end ${
                                 message.isMyMessage ? 'text-white-50' : 'text-muted'
                               }`}
+                              style={{ fontSize: '0.75rem' }}
                             >
                               {formatTime(message.created_at)}
-                              {message.isMyMessage && message.status && (
+                              {message.isMyMessage && (
                                 <span className="ms-2">
-                                  {message.status === 'sent' && <i className="bi bi-check"></i>}
+                                  {message.status === 'read' && <i className="bi bi-check-all text-white"></i>}
                                   {message.status === 'delivered' && <i className="bi bi-check-all"></i>}
-                                  {message.status === 'read' && <i className="bi bi-check-all text-info"></i>}
+                                  {!message.status || message.status === 'sent' ? <i className="bi bi-check"></i> : null}
                                 </span>
                               )}
                             </small>
                           </div>
+                          {message.isMyMessage && (
+                            <img
+                              src={Utils.img(currentUser?.id ? currentUser.id.toString() : '') || '/default-avatar.png'}
+                              alt="You"
+                              className="rounded-circle ms-2"
+                              width="32"
+                              height="32"
+                              style={{ objectFit: 'cover', alignSelf: 'flex-end', display: 'none' }}
+                            />
+                          )}
                         </div>
                       ))}
                       <div ref={messagesEndRef} />
@@ -459,14 +566,43 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
                 <div className="chat-input border-top p-3 bg-light">
                   <Form onSubmit={handleSendMessage}>
                     <InputGroup>
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => messageInputRef.current?.focus()}
+                        title="Emoji (Coming soon)"
+                      >
+                        <i className="bi bi-emoji-smile"></i>
+                      </Button>
                       <Form.Control
                         ref={messageInputRef}
                         type="text"
                         placeholder="Type a message..."
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={(e) => {
+                          setNewMessage(e.target.value);
+                          
+                          // Show typing indicator
+                          setIsTyping(true);
+                          
+                          // Clear previous timeout
+                          if (typingTimeoutRef.current) {
+                            clearTimeout(typingTimeoutRef.current);
+                          }
+                          
+                          // Hide typing indicator after 1 second of no typing
+                          typingTimeoutRef.current = setTimeout(() => {
+                            setIsTyping(false);
+                          }, 1000);
+                        }}
                         disabled={isSending}
+                        autoComplete="off"
                       />
+                      <Button
+                        variant="outline-secondary"
+                        title="Attach file (Coming soon)"
+                      >
+                        <i className="bi bi-paperclip"></i>
+                      </Button>
                       <Button 
                         type="submit" 
                         variant="primary" 
@@ -475,7 +611,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
                         {isSending ? (
                           <Spinner animation="border" size="sm" />
                         ) : (
-                          <i className="bi bi-send"></i>
+                          <i className="bi bi-send-fill"></i>
                         )}
                       </Button>
                     </InputGroup>
@@ -494,7 +630,27 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
         </Row>
       </Container>
 
-      <style jsx>{`
+      <style>{`
+        @keyframes messageSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 0.6;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+
         .chat-page {
           min-height: 80vh;
           background: var(--ugflix-bg-primary);
@@ -554,21 +710,40 @@ const ChatPage: React.FC<ChatPageProps> = ({ productId, sellerId }) => {
           border-radius: 3px;
         }
 
+        .message-container {
+          transition: all 0.2s ease;
+        }
+
         .message-bubble {
           max-width: 70%;
           word-wrap: break-word;
           border-radius: 18px !important;
+          transition: all 0.2s ease;
+          position: relative;
         }
 
-        .message-bubble.bg-primary {
-          background: var(--ugflix-primary) !important;
-          color: var(--ugflix-text-on-primary) !important;
+        .message-bubble:hover {
+          transform: translateY(-2px);
         }
 
-        .message-bubble.bg-light {
+        .message-bubble.message-sent {
+          background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%) !important;
+          color: white !important;
+          border-bottom-right-radius: 4px !important;
+          box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+        }
+
+        .message-bubble.message-received {
           background: var(--ugflix-bg-card) !important;
           color: var(--ugflix-text-primary) !important;
           border: 1px solid var(--ugflix-border);
+          border-bottom-left-radius: 4px !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-bubble.bg-primary {
+          background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%) !important;
+          color: white !important;
         }
 
         .chat-input {

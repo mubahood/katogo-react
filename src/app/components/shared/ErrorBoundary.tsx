@@ -66,13 +66,11 @@ class ErrorBoundary extends Component<Props, State> {
       // Example: Sentry.captureException(error, { extra: errorData });
       console.error('Production Error:', errorData);
       
-      // Send to your error tracking endpoint
-      fetch('/api/errors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(errorData),
-      }).catch(() => {
-        // Silently fail if error reporting fails
+      // Send to your error tracking endpoint using centralized method
+      import('../../services/Api').then(({ http_post }) => {
+        http_post('errors', errorData).catch(() => {
+          // Silently fail if error reporting fails
+        });
       });
     } else {
       // Development logging

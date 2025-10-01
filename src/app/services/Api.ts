@@ -8,13 +8,68 @@ import ToastService from "./ToastService";
 const api = axios.create({
   // baseURL: "https://fabricare.hambren.com/api", // Backend API base URL
   baseURL: API_CONFIG.API_URL, // Backend API base URL
+  //get token
   headers: {
     "Content-Type": "application/json",
-    Accept: "application/json",
+    "Accept": "application/json",
   },
   withCredentials: false, // Temporarily disable credentials to test CORS
   timeout: 30000, // 30 second timeout
 });
+
+// CRITICAL FIX: Set auth headers on axios defaults BEFORE interceptor
+// This ensures headers are ALWAYS present on every request
+const token = localStorage.getItem('ugflix_auth_token');
+const userStr = localStorage.getItem('ugflix_user');
+const user = userStr ? JSON.parse(userStr) : null;
+
+if (token) {
+  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  api.defaults.headers.common['authorization'] = `Bearer ${token}`;
+  api.defaults.headers.common['Tok'] = `Bearer ${token}`;
+  api.defaults.headers.common['tok'] = `Bearer ${token}`;
+  console.log('🔒 Auth headers set on axios defaults');
+}
+
+if (user && user.id) {
+  api.defaults.headers.common['logged_in_user_id'] = user.id.toString();
+  console.log('👤 User ID header set on axios defaults:', user.id);
+}
+
+// Expose debug function globally for browser console debugging
+if (typeof window !== 'undefined') {
+  (window as any).debugAuth = () => {
+    const token = localStorage.getItem('ugflix_auth_token');
+    const user = localStorage.getItem('ugflix_user');
+    console.log('🔍 localStorage Debug:', {
+      hasToken: !!token,
+      tokenLength: token?.length || 0,
+      tokenPreview: token ? token.substring(0, 50) + '...' : 'NO TOKEN',
+      hasUser: !!user,
+      userParsed: user ? JSON.parse(user) : null
+    });
+    return { token, user: user ? JSON.parse(user) : null };
+  };
+  console.log('💡 Debug helper installed! Run debugAuth() in console to check authentication state');
+}
+
+// Debug function to check token and user in localStorage
+export function debugAuthState() {
+  const token = Utils.loadFromDatabase(ugflix_auth_token);
+  const user = Utils.loadFromDatabase(ugflix_user);
+  
+  console.log('🔍 AUTH DEBUG STATE:', {
+    hasToken: !!token,
+    tokenLength: token?.length || 0,
+    tokenPreview: token ? token.substring(0, 50) + '...' : 'NO TOKEN',
+    hasUser: !!user,
+    userId: user?.id || 'NO USER',
+    userName: user?.name || 'NO NAME',
+    userEmail: user?.email || 'NO EMAIL'
+  });
+  
+  return { token, user };
+}
 
 // Function to handle user registration
 export async function register(email: string, password: string, additionalData?: Record<string, any>) {
@@ -151,32 +206,65 @@ function saveUserData(resp: AuthResponseData) {
   }
 }
 
-// Add an interceptor for request authorization - matches mobile app pattern
+// Add an interceptor for request authorization - matches mobile app pattern EXACTLY
 api.interceptors.request.use(
   (config) => {
-    console.log('🔧 Axios request interceptor:', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      headers: Object.keys(config.headers || {}),
-      hasData: !!config.data,
-      dataType: config.data?.constructor?.name
-    });
-    
     const token = Utils.loadFromDatabase(ugflix_auth_token);
     const u = Utils.loadFromDatabase(ugflix_user);
     
-    // Follow exact mobile app authentication pattern
+    console.log('🔧 Axios request interceptor BEFORE adding headers:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      existingHeaders: config.headers ? Object.keys(config.headers) : [],
+      hasToken: !!token,
+      tokenPreview: token ? token.substring(0, 20) + '...' : 'NO TOKEN',
+      hasUser: !!u,
+      userId: u?.id || 'NO USER ID'
+    });
+    
+    // CRITICAL FIX: Ensure headers object exists
+    if (!config.headers) {
+      config.headers = {} as any;
+    }
+    
+    // Follow EXACT Flutter/Dart mobile app authentication pattern
+    // Flutter sends: Authorization, authorization, tok, Tok headers
     if (token) {
-      // Mobile app uses both Authorization and Tok headers
-      config.headers.Authorization = `Bearer ${token}`;
-      config.headers.Tok = `Bearer ${token}`;
+      // Set on BOTH axios defaults AND request config to ensure they stick
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common['Tok'] = `Bearer ${token}`;
+      api.defaults.headers.common['tok'] = `Bearer ${token}`;
+      
+      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers['authorization'] = `Bearer ${token}`;
+      config.headers['Tok'] = `Bearer ${token}`;
+      config.headers['tok'] = `Bearer ${token}`;
+      console.log('✅ Added 4 token headers to BOTH defaults and request config');
+    } else {
+      console.warn('⚠️ NO TOKEN FOUND - Request will be sent without authentication headers!');
+      console.warn('⚠️ Check localStorage for ugflix_auth_token');
     }
     
     if (u && u.id) {
-      // Mobile app sends logged_in_user_id header
-      config.headers.logged_in_user_id = u.id.toString();
+      // Set on BOTH axios defaults AND request config
+      api.defaults.headers.common['logged_in_user_id'] = u.id.toString();
+      config.headers['logged_in_user_id'] = u.id.toString();
+      console.log('✅ Added logged_in_user_id header to BOTH defaults and request config:', u.id);
+    } else {
+      console.warn('⚠️ NO USER ID FOUND - Request will be sent without logged_in_user_id header!');
+      console.warn('⚠️ Check localStorage for ugflix_user');
     }
+    
+    console.log('🔧 Axios request interceptor AFTER adding headers:', {
+      allHeaders: config.headers ? Object.keys(config.headers) : [],
+      Authorization: typeof config.headers['Authorization'] === 'string' ? config.headers['Authorization'].substring(0, 30) + '...' : 'NOT SET',
+      authorization: typeof config.headers['authorization'] === 'string' ? config.headers['authorization'].substring(0, 30) + '...' : 'NOT SET',
+      Tok: typeof config.headers['Tok'] === 'string' ? config.headers['Tok'].substring(0, 30) + '...' : 'NOT SET',
+      tok: typeof config.headers['tok'] === 'string' ? config.headers['tok'].substring(0, 30) + '...' : 'NOT SET',
+      logged_in_user_id: config.headers['logged_in_user_id']
+    });
     
     // Add platform type to body for POST requests (like mobile app)
     // Only add if data is not FormData (FormData is handled in http_post)
@@ -259,9 +347,10 @@ api.interceptors.response.use(
 export const http_post = async (path: string, params: Record<string, any>) => {
   try {
     const u = Utils.loadFromDatabase(ugflix_user);
-    
-    console.log(`📡 POST ${path}:`, { 
-      hasUser: !!u, 
+    const token = localStorage.getItem('ugflix_auth_token');
+
+    console.log(`📡 POST ${path}:`, {
+      hasUser: !!u,
       userId: u?.id,
       params: Object.keys(params)
     });
@@ -279,12 +368,9 @@ export const http_post = async (path: string, params: Record<string, any>) => {
       formData.append(key, params[key]);
     });
     
-    const response = await api.post(path, formData, {
-      headers: {
-        // Don't set Content-Type for FormData - let axios handle it with boundary
-        Accept: "application/json",
-      },
-    });
+    // DON'T pass headers config here - let interceptor handle ALL headers
+    // Passing headers here can override interceptor headers!
+    const response = await api.post(path, formData);
     
     console.log(`✅ POST ${path} response:`, response.status, response.statusText);
     return handleResponse(response);

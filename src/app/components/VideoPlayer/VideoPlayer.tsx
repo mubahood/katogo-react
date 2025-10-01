@@ -146,13 +146,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const uploadProgress = async (movieId: string, currentTime: number) => {
     try {
-      await fetch('/api/movies/progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          movie_id: movieId, 
-          progress: currentTime 
-        })
+      // Use centralized http_post to include authentication headers
+      const { http_post } = await import('../../services/Api');
+      await http_post('movies/progress', { 
+        movie_id: movieId, 
+        progress: currentTime 
       });
     } catch (error) {
       console.error('Failed to upload progress:', error);

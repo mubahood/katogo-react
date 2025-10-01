@@ -1,5 +1,7 @@
 import { API_ENDPOINTS, getAuthHeaders } from '../config/api.config';
 import { http_post } from './Api';
+import Utils from './Utils';
+import { ugflix_auth_token, ugflix_user } from '../../Constants';
 
 export interface LoginRequest {
   email: string;
@@ -158,29 +160,11 @@ class AuthService {
   async logout(): Promise<void> {
     try {
       const token = this.getAuthToken();
-      const user = this.getCurrentUser();
       
       if (token) {
-        // Use same authentication headers as mobile app
-        const headers: Record<string, string> = {
-          'Authorization': `Bearer ${token}`,
-          'Tok': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        };
-
-        // Add user ID header if available
-        if (user?.id) {
-          headers['logged_in_user_id'] = user.id.toString();
-        }
-
-        await fetch(`${this.baseUrl}/auth/logout`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            platform_type: 'web'
-          }),
+        // Use centralized http_post method - it handles authentication automatically
+        await http_post('auth/logout', {
+          platform_type: 'web'
         });
       }
     } catch (error) {
@@ -198,15 +182,14 @@ class AuthService {
    * Get current auth token
    */
   getAuthToken(): string | null {
-    return localStorage.getItem('ugflix_auth_token');
+    return Utils.loadFromDatabase(ugflix_auth_token);
   }
 
   /**
    * Get current user data
    */
   getCurrentUser(): any | null {
-    const userString = localStorage.getItem('ugflix_user');
-    return userString ? JSON.parse(userString) : null;
+    return Utils.loadFromDatabase(ugflix_user);
   }
 
   /**
@@ -223,19 +206,10 @@ class AuthService {
    */
   async verifyEmail(token: string): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/verify-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({ token }),
-      });
+      // Use centralized http_post method
+      const data = await http_post('auth/verify-email', { token }) as AuthResponse;
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (data.code !== 1) {
         throw new Error(data.message || 'Email verification failed');
       }
 
@@ -251,23 +225,14 @@ class AuthService {
    */
   async resendVerificationEmail(email: string): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/resend-verification`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({ email }),
-      });
+      // Use centralized http_post method
+      const data = await http_post('auth/resend-verification', { email });
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (data.code !== 1) {
         throw new Error(data.message || 'Failed to resend verification email');
       }
 
-      return data;
+      return { success: true, message: data.message };
     } catch (error: any) {
       console.error('Resend verification error:', error);
       throw new Error(error.message || 'Network error occurred');
@@ -279,23 +244,14 @@ class AuthService {
    */
   async requestPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({ email }),
-      });
+      // Use centralized http_post method
+      const data = await http_post('auth/forgot-password', { email });
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (data.code !== 1) {
         throw new Error(data.message || 'Failed to send password reset email');
       }
 
-      return data;
+      return { success: true, message: data.message };
     } catch (error: any) {
       console.error('Password reset request error:', error);
       throw new Error(error.message || 'Network error occurred');
@@ -307,24 +263,15 @@ class AuthService {
    */
   async resetPassword(token: string, email: string, password: string, confirmPassword: string): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({
-          token,
-          email,
-          password,
-          password_confirmation: confirmPassword,
-        }),
-      });
+      // Use centralized http_post method
+      const data = await http_post('auth/reset-password', {
+        token,
+        email,
+        password,
+        password_confirmation: confirmPassword,
+      }) as AuthResponse;
 
-      const data = await response.json();
-
-      if (!response.ok) {
+      if (data.code !== 1) {
         if (data.errors) {
           const errorMessages = Object.values(data.errors).flat();
           throw new Error(errorMessages.join(', '));
@@ -345,35 +292,15 @@ class AuthService {
   async refreshToken(): Promise<AuthResponse> {
     try {
       const token = this.getAuthToken();
-      const user = this.getCurrentUser();
       
       if (!token) {
         throw new Error('No auth token available');
       }
 
-      // Use same authentication headers as mobile app
-      const headers: Record<string, string> = {
-        'Authorization': `Bearer ${token}`,
-        'Tok': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      };
-
-      // Add user ID header if available
-      if (user?.id) {
-        headers['logged_in_user_id'] = user.id.toString();
-      }
-
-      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          platform_type: 'web'
-        }),
-      });
-
-      const data = await response.json();
+      // Use centralized http_post method - it handles authentication automatically
+      const data = await http_post('auth/refresh', {
+        platform_type: 'web'
+      }) as AuthResponse;
 
       if (data.code !== 1) {
         throw new Error(data.message || 'Token refresh failed');

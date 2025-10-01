@@ -1,4 +1,7 @@
 import { API_ENDPOINTS } from '../config/api.config';
+import { http_get } from './Api';
+import Utils from './Utils';
+import { ugflix_auth_token, ugflix_user } from '../../Constants';
 
 export interface Movie {
   id: number;
@@ -103,47 +106,8 @@ class ManifestService {
   private async executeManifestRequest(): Promise<ManifestResponse> {
 
     try {
-      const token = localStorage.getItem('ugflix_auth_token');
-      const user = localStorage.getItem('ugflix_user');
-      
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-
-      // Parse user data to get user ID
-      const userData = user ? JSON.parse(user) : null;
-      
-      // Use same authentication headers as mobile app
-      const headers: Record<string, string> = {
-        'Authorization': `Bearer ${token}`,
-        'Tok': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      };
-
-      // Add user ID header if available
-      if (userData?.id) {
-        headers['logged_in_user_id'] = userData.id.toString();
-      }
-
-      const response = await fetch(`${this.baseUrl}/manifest`, {
-        method: 'GET',
-        headers,
-      });
-
-      // Handle rate limiting specifically
-      if (response.status === 429) {
-        console.warn('🚦 Rate limited - implementing exponential backoff');
-        this.lastRequestTime = Date.now() + this.RATE_LIMIT_BACKOFF; // Block requests for 30 seconds
-        throw new Error('Rate limited - please wait before retrying');
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      // Use centralized http_get method - it handles authentication automatically
+      const data = await http_get('manifest', {});
 
       if (data.code !== 1) {
         throw new Error(data.message || 'Failed to load manifest');
@@ -191,38 +155,12 @@ class ManifestService {
    */
   async getMoviesByCategory(category: string, page: number = 1, limit: number = 20): Promise<Movie[]> {
     try {
-      const token = localStorage.getItem('ugflix_auth_token');
-      const user = localStorage.getItem('ugflix_user');
-      
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-
-      const userData = user ? JSON.parse(user) : null;
-      
-      const headers: Record<string, string> = {
-        'Authorization': `Bearer ${token}`,
-        'Tok': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      };
-
-      if (userData?.id) {
-        headers['logged_in_user_id'] = userData.id.toString();
-      }
-
-      // Use the movies endpoint from API routes
-      const response = await fetch(`${this.baseUrl}/movies?category=${category}&page=${page}&limit=${limit}`, {
-        method: 'GET',
-        headers,
+      // Use centralized http_get method - it handles authentication automatically
+      const data = await http_get('movies', {
+        category,
+        page: page.toString(),
+        limit: limit.toString()
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch movies');
-      }
-
-      const data = await response.json();
       
       if (data.code === 1 && data.data) {
         return data.data;
@@ -240,37 +178,11 @@ class ManifestService {
    */
   async searchMovies(query: string, page: number = 1): Promise<Movie[]> {
     try {
-      const token = localStorage.getItem('ugflix_auth_token');
-      const user = localStorage.getItem('ugflix_user');
-      
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-
-      const userData = user ? JSON.parse(user) : null;
-      
-      const headers: Record<string, string> = {
-        'Authorization': `Bearer ${token}`,
-        'Tok': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      };
-
-      if (userData?.id) {
-        headers['logged_in_user_id'] = userData.id.toString();
-      }
-
-      const response = await fetch(`${this.baseUrl}/movies?search=${encodeURIComponent(query)}&page=${page}`, {
-        method: 'GET',
-        headers,
+      // Use centralized http_get method - it handles authentication automatically
+      const data = await http_get('movies', {
+        search: query,
+        page: page.toString()
       });
-
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-
-      const data = await response.json();
       
       if (data.code === 1 && data.data) {
         return data.data;
@@ -287,16 +199,15 @@ class ManifestService {
    * Get current user data
    */
   getCurrentUser(): any | null {
-    const userString = localStorage.getItem('ugflix_user');
-    return userString ? JSON.parse(userString) : null;
+    return Utils.loadFromDatabase(ugflix_user);
   }
 
   /**
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('ugflix_auth_token');
-    const user = localStorage.getItem('ugflix_user');
+    const token = Utils.loadFromDatabase(ugflix_auth_token);
+    const user = Utils.loadFromDatabase(ugflix_user);
     return !!(token && user);
   }
 }
