@@ -67,6 +67,7 @@ import AccountSubscriptions from "../pages/account/AccountSubscriptions";
 import AccountWatchHistory from "../pages/account/AccountWatchHistory";
 import AccountLikes from "../pages/account/AccountLikes";
 import AccountProducts from "../pages/account/AccountProducts";
+import AccountChats from "../pages/account/AccountChats";
 import NewChatPage from "../pages/Chat/NewChatPage";
 import OrderDetailsPage from "../pages/account/OrderDetailsPage";
 import Account from "../pages/account/Account";
@@ -258,7 +259,7 @@ const AppRoutes: React.FC = () => {
             <Route path="history" element={<AccountWatchHistory />} />
             <Route path="likes" element={<AccountLikes />} />
             <Route path="products" element={<AccountProducts />} />
-            <Route path="chats" element={<NewChatPage />} />
+            <Route path="chats" element={<AccountChats />} />
             <Route path="orders" element={<AccountOrdersPage />} />
             <Route path="orders/:orderId" element={<OrderDetailsPage />} />
             <Route path="settings" element={<AccountSettings />} />

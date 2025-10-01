@@ -112,12 +112,14 @@ export interface ChatConversation {
 
 export interface ChatMessage {
   id: number;
-  conversation_id: number;
+  conversation_id?: number;
   sender_id: number;
+  receiver_id?: number;
   content: string;
   message_type: 'text' | 'image' | 'file';
   sent_at: string;
   read_at?: string;
+  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 }
 
 export interface DashboardStats {
@@ -364,7 +366,7 @@ export class AccountApiService {
    */
   static async cancelSubscription(subscriptionId: number): Promise<void> {
     try {
-      await http_post(`account/subscriptions/${subscriptionId}/cancel`);
+      await http_post(`account/subscriptions/${subscriptionId}/cancel`, {});
       ToastService.success("Subscription cancelled");
     } catch (error) {
       console.error("Failed to cancel subscription:", error);

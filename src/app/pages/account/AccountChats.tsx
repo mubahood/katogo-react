@@ -1,8 +1,9 @@
 // src/app/pages/account/AccountChats.tsx
-import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Button, Spinner, Alert, Badge, ListGroup, Form, InputGroup } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button, Spinner, Alert } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
 import AccountApiService, { ChatConversation, ChatMessage } from '../../services/AccountApiService';
+import './AccountChats.css';
 
 const AccountChats: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -14,6 +15,10 @@ const AccountChats: React.FC = () => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadConversations();
@@ -25,12 +30,22 @@ const AccountChats: React.FC = () => {
     }
   }, [selectedConversation]);
 
-  const loadConversations = async () => {
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const loadConversations = async (isRetry: boolean = false) => {
     try {
       setIsLoading(true);
       setError(null);
       const data = await AccountApiService.getConversations();
       setConversations(data);
+      setRetryCount(0);
       
       // Check if there's a specific chatId to select
       const chatId = searchParams.get('chatId');
@@ -46,9 +61,16 @@ const AccountChats: React.FC = () => {
       if (data.length > 0 && !selectedConversation) {
         setSelectedConversation(data[0]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading conversations:', error);
-      setError('Failed to load conversations');
+      const errorMessage = error?.message || 'Failed to load conversations';
+      setError(errorMessage);
+      
+      // Auto-retry logic (max 3 attempts)
+      if (!isRetry && retryCount < 3) {
+        setRetryCount(prev => prev + 1);
+        setTimeout(() => loadConversations(true), 2000 * (retryCount + 1));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -57,22 +79,30 @@ const AccountChats: React.FC = () => {
   const loadMessages = async (conversationId: number) => {
     try {
       setIsLoadingMessages(true);
+      setError(null);
       const response = await AccountApiService.getMessages(conversationId);
       setMessages(response.data);
       
       // Mark messages as read
-      await AccountApiService.markMessagesAsRead(conversationId);
-      
-      // Update conversation unread count
-      setConversations(prev => 
-        prev.map(conv => 
-          conv.id === conversationId 
-            ? { ...conv, unread_count: 0 }
-            : conv
-        )
-      );
-    } catch (error) {
+      try {
+        await AccountApiService.markMessagesAsRead(conversationId);
+        
+        // Update conversation unread count
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === conversationId 
+              ? { ...conv, unread_count: 0 }
+              : conv
+          )
+        );
+      } catch (markReadError) {
+        // Don't fail if marking as read fails
+        console.warn('Failed to mark messages as read:', markReadError);
+      }
+    } catch (error: any) {
       console.error('Error loading messages:', error);
+      const errorMessage = error?.message || 'Failed to load messages';
+      setError(errorMessage);
     } finally {
       setIsLoadingMessages(false);
     }
@@ -81,19 +111,50 @@ const AccountChats: React.FC = () => {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newMessage.trim() || !selectedConversation || isSending) {
+    // Input validation
+    const trimmedMessage = newMessage.trim();
+    if (!trimmedMessage || !selectedConversation || isSending) {
       return;
     }
 
+    // Validate message length
+    if (trimmedMessage.length > 5000) {
+      setError('Message is too long. Maximum 5000 characters.');
+      return;
+    }
+
+    // Create optimistic message
+    const optimisticMessage: ChatMessage = {
+      id: Date.now(), // Temporary ID
+      sender_id: 0, // Will be set by backend
+      content: trimmedMessage,
+      sent_at: new Date().toISOString(),
+      message_type: 'text',
+      status: 'sending'
+    };
+
     try {
       setIsSending(true);
+      setError(null);
+      
+      // Add optimistic message immediately
+      setMessages(prev => [...prev, optimisticMessage]);
+      setNewMessage('');
+      
+      // Send to backend
       const message = await AccountApiService.sendMessage(
         selectedConversation.id, 
-        newMessage.trim()
+        trimmedMessage
       );
       
-      setMessages(prev => [...prev, message]);
-      setNewMessage('');
+      // Replace optimistic message with real one
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === optimisticMessage.id 
+            ? { ...message, status: 'sent' }
+            : msg
+        )
+      );
       
       // Update conversation's last message
       setConversations(prev => 
@@ -111,20 +172,72 @@ const AccountChats: React.FC = () => {
             : conv
         )
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
+      const errorMessage = error?.message || 'Failed to send message';
+      setError(errorMessage);
+      
+      // Mark optimistic message as failed
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === optimisticMessage.id 
+            ? { ...msg, status: 'failed' }
+            : msg
+        )
+      );
+      
+      // Restore message to input for retry
+      setNewMessage(trimmedMessage);
     } finally {
       setIsSending(false);
     }
   };
 
-  const formatMessageTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // Get initials from name (first letter of first and last name)
+  const getInitials = (name: string): string => {
+    if (!name) return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  };
+
+  // Generate consistent color from name
+  const getAvatarColor = (name: string): string => {
+    if (!name) return '#667eea';
     
-    if (diffDays === 1) {
+    const colors = [
+      '#667eea', // Purple
+      '#f093fb', // Pink
+      '#4facfe', // Blue
+      '#43e97b', // Green
+      '#fa709a', // Rose
+      '#feca57', // Yellow
+      '#ee5a6f', // Red
+      '#c471ed', // Violet
+      '#f7797d', // Coral
+      '#00d2ff', // Cyan
+    ];
+    
+    // Simple hash function
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      hash = hash & hash;
+    }
+    
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+  };
+
+  const formatMessageTime = (timestamp: string): string => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (diffDays < 7) {
       return date.toLocaleDateString([], { weekday: 'short' });
@@ -133,233 +246,316 @@ const AccountChats: React.FC = () => {
     }
   };
 
+  // Toggle mobile sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Close sidebar when conversation is selected on mobile
+  const handleSelectConversation = (conversation: ChatConversation) => {
+    setSelectedConversation(conversation);
+    setIsSidebarOpen(false); // Close sidebar on mobile
+  };
+
+  // Skeleton loader component
+  const ConversationSkeleton = () => (
+    <div className="conversation-skeleton">
+      <div className="skeleton-avatar"></div>
+      <div className="skeleton-content">
+        <div className="skeleton-line skeleton-name"></div>
+        <div className="skeleton-line skeleton-message"></div>
+      </div>
+    </div>
+  );
+
+  const MessageSkeleton = () => (
+    <div className="message-skeleton">
+      <div className="skeleton-bubble"></div>
+    </div>
+  );
+
   if (isLoading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-        <Spinner animation="border" variant="primary" />
-        <span className="ms-2">Loading conversations...</span>
+      <div className="account-chats">
+        <div className="chat-layout">
+          <div className="conversations-section">
+            <div className="conversations-header">
+              <h6>Loading...</h6>
+            </div>
+            <div className="conversations-list">
+              {[1, 2, 3, 4, 5].map(i => <ConversationSkeleton key={i} />)}
+            </div>
+          </div>
+          <div className="messages-section">
+            <div className="messages-header">
+              <div className="skeleton-avatar skeleton-avatar-small"></div>
+              <div className="skeleton-line skeleton-name"></div>
+            </div>
+            <div className="messages-container">
+              <div className="messages-list">
+                {[1, 2, 3].map(i => <MessageSkeleton key={i} />)}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="account-chats">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="page-title mb-2">My Chats</h2>
-          <p className="text-muted">Your conversations and messages</p>
-        </div>
-        <Badge bg="primary" className="fs-6">
-          {conversations.reduce((total, conv) => total + conv.unread_count, 0)} unread
-        </Badge>
-      </div>
-
       {error && (
-        <Alert variant="danger" className="mb-4">
-          <i className="bi bi-exclamation-triangle me-2"></i>
-          {error}
+        <Alert 
+          variant="danger" 
+          dismissible 
+          onClose={() => setError(null)}
+          style={{ marginBottom: '12px', fontSize: '11px', padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
+          <div>
+            <i className="bi bi-exclamation-triangle" style={{ marginRight: '6px' }}></i>
+            {error}
+          </div>
+          {retryCount > 0 && retryCount < 3 && (
+            <Button 
+              size="sm" 
+              variant="outline-light" 
+              onClick={() => loadConversations()}
+              style={{ fontSize: '10px', padding: '4px 8px', marginLeft: '8px' }}
+            >
+              <i className="bi bi-arrow-clockwise" style={{ marginRight: '4px' }}></i>
+              Retry
+            </Button>
+          )}
         </Alert>
       )}
 
       {conversations.length > 0 ? (
-        <Row className="g-3">
-          {/* Conversations List */}
-          <Col md={4}>
-            <Card className="h-100 border-0 shadow-sm">
-              <Card.Header className="bg-transparent border-0 pb-2">
-                <h6 className="mb-0">Conversations</h6>
-              </Card.Header>
-              <Card.Body className="p-0">
-                <ListGroup variant="flush">
-                  {conversations.map((conversation) => (
-                    <ListGroup.Item
-                      key={conversation.id}
-                      className={`conversation-item ${selectedConversation?.id === conversation.id ? 'active' : ''}`}
-                      style={{ cursor: 'pointer', border: 'none' }}
-                      onClick={() => setSelectedConversation(conversation)}
-                    >
-                      <div className="d-flex align-items-center">
-                        <div className="conversation-avatar me-3">
-                          {conversation.participants[0]?.avatar ? (
-                            <img 
-                              src={conversation.participants[0].avatar} 
-                              alt="Avatar"
-                              className="rounded-circle"
-                              width="40"
-                              height="40"
-                              style={{ objectFit: 'cover' }}
-                            />
-                          ) : (
-                            <div 
-                              className="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
-                              style={{ width: '40px', height: '40px' }}
-                            >
-                              <i className="bi bi-person"></i>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="conversation-details flex-grow-1">
-                          <div className="d-flex justify-content-between align-items-start mb-1">
-                            <h6 className="conversation-name mb-0 small">
-                              {conversation.participants.map(p => p.name).join(', ')}
-                            </h6>
-                            <div className="d-flex align-items-center">
-                              {conversation.unread_count > 0 && (
-                                <Badge bg="danger" className="small me-2">
-                                  {conversation.unread_count}
-                                </Badge>
-                              )}
-                              <small className="text-muted">
-                                {formatMessageTime(conversation.last_message.sent_at)}
-                              </small>
-                            </div>
-                          </div>
-                          
-                          <p className="conversation-preview text-muted small mb-0" style={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {conversation.last_message.content}
-                          </p>
-                        </div>
+        <>
+          {/* Mobile Sidebar Overlay */}
+          <div 
+            className={`chat-sidebar-overlay ${isSidebarOpen ? 'active' : ''}`}
+            onClick={toggleSidebar}
+          ></div>
+
+          {/* Mobile Toggle Button */}
+          <button 
+            className="chat-sidebar-toggle"
+            onClick={toggleSidebar}
+            aria-label="Toggle conversations"
+          >
+            <i className="bi bi-chat-dots"></i>
+          </button>
+
+          <div className="chat-layout">
+            {/* Conversations List - Flat, No Cards */}
+            <div className={`conversations-section ${isSidebarOpen ? 'mobile-open' : ''}`}>
+            <div className="conversations-header">
+              <h6>Conversations ({conversations.length})</h6>
+              <button 
+                className="conversations-close" 
+                onClick={toggleSidebar}
+                aria-label="Close"
+              >
+                <i className="bi bi-x"></i>
+              </button>
+            </div>
+            <div className="conversations-list">
+              {conversations.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  className={`conversation-item ${selectedConversation?.id === conversation.id ? 'active' : ''}`}
+                  onClick={() => handleSelectConversation(conversation)}
+                >
+                  <div className="conversation-avatar">
+                    {conversation.participants[0]?.avatar ? (
+                      <img 
+                        src={conversation.participants[0].avatar} 
+                        alt="Avatar"
+                        onError={(e) => {
+                          // Hide failed image and show initials fallback
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            const fallback = document.createElement('div');
+                            fallback.className = 'conversation-avatar-placeholder';
+                            fallback.style.background = getAvatarColor(conversation.participants[0]?.name || '');
+                            fallback.textContent = getInitials(conversation.participants[0]?.name || 'Unknown');
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div 
+                        className="conversation-avatar-placeholder"
+                        style={{ 
+                          background: getAvatarColor(conversation.participants[0]?.name || '')
+                        }}
+                      >
+                        {getInitials(conversation.participants[0]?.name || 'Unknown')}
                       </div>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          {/* Messages Area */}
-          <Col md={8}>
-            {selectedConversation ? (
-              <Card className="h-100 border-0 shadow-sm">
-                <Card.Header className="bg-transparent border-0">
-                  <div className="d-flex align-items-center">
-                    <div className="me-3">
-                      {selectedConversation.participants[0]?.avatar ? (
-                        <img 
-                          src={selectedConversation.participants[0].avatar} 
-                          alt="Avatar"
-                          className="rounded-circle"
-                          width="32"
-                          height="32"
-                          style={{ objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <div 
-                          className="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white"
-                          style={{ width: '32px', height: '32px' }}
-                        >
-                          <i className="bi bi-person"></i>
-                        </div>
-                      )}
-                    </div>
-                    <h6 className="mb-0">
-                      {selectedConversation.participants.map(p => p.name).join(', ')}
-                    </h6>
+                    )}
                   </div>
-                </Card.Header>
+                  
+                  <div className="conversation-details">
+                    <p className="conversation-name">
+                      {conversation.participants.map(p => p.name).join(', ')}
+                    </p>
+                    <p className="conversation-preview">
+                      {conversation.last_message.content}
+                    </p>
+                  </div>
+                  
+                  <div className="conversation-meta">
+                    <span className="conversation-time">
+                      {formatMessageTime(conversation.last_message.sent_at)}
+                    </span>
+                    {conversation.unread_count > 0 && (
+                      <span className="unread-badge">
+                        {conversation.unread_count}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-                <Card.Body className="messages-container" style={{ 
-                  height: '400px', 
-                  overflowY: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}>
-                  {isLoadingMessages ? (
-                    <div className="d-flex justify-content-center align-items-center h-100">
-                      <Spinner animation="border" size="sm" />
-                    </div>
+          {/* Messages Area - Flat, No Cards */}
+          {selectedConversation ? (
+            <div className="messages-section">
+              <div className="messages-header">
+                <div className="messages-header-avatar">
+                  {selectedConversation.participants[0]?.avatar ? (
+                    <img 
+                      src={selectedConversation.participants[0].avatar} 
+                      alt="Avatar"
+                      onError={(e) => {
+                        // Hide failed image and show initials fallback
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) {
+                          const fallback = document.createElement('div');
+                          fallback.className = 'conversation-avatar-placeholder';
+                          fallback.style.background = getAvatarColor(selectedConversation.participants[0]?.name || '');
+                          fallback.textContent = getInitials(selectedConversation.participants[0]?.name || 'Unknown');
+                          parent.appendChild(fallback);
+                        }
+                      }}
+                    />
                   ) : (
-                    <div className="messages-list">
-                      {messages.map((message) => (
-                        <div 
-                          key={message.id} 
-                          className={`message mb-3 ${message.sender_id === selectedConversation.participants[0]?.id ? 'message-received' : 'message-sent'}`}
-                        >
-                          <div 
-                            className={`message-bubble p-3 rounded ${
-                              message.sender_id === selectedConversation.participants[0]?.id 
-                                ? 'bg-light text-dark' 
-                                : 'bg-primary text-white ms-auto'
-                            }`}
-                            style={{ 
-                              maxWidth: '70%',
-                              marginLeft: message.sender_id === selectedConversation.participants[0]?.id ? '0' : 'auto'
-                            }}
-                          >
-                            <p className="mb-1">{message.content}</p>
-                            <small className={`d-block text-end ${
-                              message.sender_id === selectedConversation.participants[0]?.id 
-                                ? 'text-muted' 
-                                : 'text-white-50'
-                            }`}>
-                              {new Date(message.sent_at).toLocaleTimeString([], { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })}
-                            </small>
-                          </div>
-                        </div>
-                      ))}
+                    <div 
+                      className="conversation-avatar-placeholder"
+                      style={{ 
+                        background: getAvatarColor(selectedConversation.participants[0]?.name || '')
+                      }}
+                    >
+                      {getInitials(selectedConversation.participants[0]?.name || 'Unknown')}
                     </div>
                   )}
-                </Card.Body>
+                </div>
+                <h6>
+                  {selectedConversation.participants.map(p => p.name).join(', ')}
+                </h6>
+              </div>
 
-                <Card.Footer className="bg-transparent border-0">
-                  <Form onSubmit={handleSendMessage}>
-                    <InputGroup>
-                      <Form.Control
-                        type="text"
-                        placeholder="Type a message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        disabled={isSending}
-                      />
-                      <Button 
-                        type="submit" 
-                        variant="primary"
-                        disabled={!newMessage.trim() || isSending}
-                      >
-                        {isSending ? (
-                          <Spinner animation="border" size="sm" />
-                        ) : (
-                          <i className="bi bi-send"></i>
-                        )}
-                      </Button>
-                    </InputGroup>
-                  </Form>
-                </Card.Footer>
-              </Card>
-            ) : (
-              <Card className="h-100 border-0 shadow-sm">
-                <Card.Body className="d-flex align-items-center justify-content-center">
-                  <div className="text-center text-muted">
-                    <i className="bi bi-chat-dots display-4 mb-3"></i>
-                    <h5>Select a conversation</h5>
-                    <p>Choose a conversation from the list to start chatting</p>
+              <div className="messages-container">
+                {isLoadingMessages ? (
+                  <div className="chat-loading">
+                    <Spinner animation="border" size="sm" />
                   </div>
-                </Card.Body>
-              </Card>
-            )}
-          </Col>
-        </Row>
+                ) : (
+                  <div className="messages-list" ref={messageListRef}>
+                    {messages.length === 0 ? (
+                      <div className="chat-empty-messages">
+                        <i className="bi bi-chat-text"></i>
+                        <p>No messages yet. Start the conversation!</p>
+                      </div>
+                    ) : (
+                      messages.map((message) => (
+                        <div 
+                          key={message.id} 
+                          className={`message ${message.sender_id === selectedConversation.participants[0]?.id ? 'message-received' : 'message-sent'} ${message.status === 'failed' ? 'message-failed' : ''}`}
+                        >
+                          <div className="message-bubble">
+                            <p>{message.content}</p>
+                            <div className="message-meta">
+                              <small className="message-time">
+                                {new Date(message.sent_at).toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </small>
+                              {message.sender_id !== selectedConversation.participants[0]?.id && (
+                                <span className="message-status">
+                                  {message.status === 'sending' && (
+                                    <i className="bi bi-clock" title="Sending..."></i>
+                                  )}
+                                  {message.status === 'sent' && (
+                                    <i className="bi bi-check" title="Sent"></i>
+                                  )}
+                                  {message.status === 'delivered' && (
+                                    <i className="bi bi-check-all" title="Delivered"></i>
+                                  )}
+                                  {message.status === 'read' && (
+                                    <i className="bi bi-check-all text-primary" title="Read"></i>
+                                  )}
+                                  {message.status === 'failed' && (
+                                    <i className="bi bi-exclamation-circle text-danger" title="Failed to send"></i>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+              </div>
+
+              <div className="messages-input-area">
+                <form className="messages-input-form" onSubmit={handleSendMessage}>
+                  <input
+                    type="text"
+                    placeholder="Type a message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    disabled={isSending}
+                  />
+                  <button 
+                    type="submit"
+                    disabled={!newMessage.trim() || isSending}
+                  >
+                    {isSending ? (
+                      <Spinner animation="border" size="sm" />
+                    ) : (
+                      <i className="bi bi-send"></i>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
+          ) : (
+            <div className="chat-empty-state">
+              <i className="bi bi-chat-dots"></i>
+              <h5>Select a conversation</h5>
+              <p>Choose a conversation from the list to start chatting</p>
+            </div>
+          )}
+        </div>
+        </>
       ) : (
-        <div className="text-center py-5">
-          <div className="mb-4">
-            <i className="bi bi-chat-dots display-1 text-muted"></i>
-          </div>
-          <h4 className="mb-3">No Conversations</h4>
-          <p className="text-muted mb-4">
+        <div className="no-conversations-state">
+          <i className="bi bi-chat-dots"></i>
+          <h4>No Conversations</h4>
+          <p>
             You don't have any conversations yet. Start chatting with sellers or buyers.
           </p>
-          <Button variant="primary">
-            <i className="bi bi-plus-circle me-2"></i>
+          <button>
+            <i className="bi bi-plus-circle"></i>
             Start New Conversation
-          </Button>
+          </button>
         </div>
       )}
     </div>

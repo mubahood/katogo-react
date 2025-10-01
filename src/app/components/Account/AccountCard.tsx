@@ -50,35 +50,10 @@ const AccountCard: React.FC<AccountCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Card Header */}
-      {(title || actions.length > 0) && (
-        <div className="card-header">
-          {title && (
-            <div className="header-text">
-              <h3 className="card-title">{title}</h3>
-              {subtitle && <p className="card-subtitle">{subtitle}</p>}
-            </div>
-          )}
-
-          {actions.length > 0 && (
-            <div className="card-actions">
-              {actions.map((action, index) => (
-                <button
-                  key={index}
-                  className="card-action-btn"
-                  onClick={action.onClick}
-                >
-                  {action.icon && <span className="action-icon">{action.icon}</span>}
-                  <span className="action-label">{action.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+     
 
       {/* Card Body */}
-      <div className={`card-body ${noPadding ? 'no-padding' : ''}`}>
+      <div className={` pb-2 pb-md-4 ${noPadding ? 'no-padding' : ''}`}>
         {isLoading ? (
           <div className="card-loading">
             <div className="loading-spinner-small" />

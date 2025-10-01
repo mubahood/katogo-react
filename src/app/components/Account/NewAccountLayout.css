@@ -2,21 +2,19 @@
    NEW ACCOUNT LAYOUT - Simple, Flat, Mobile-First Design
    ============================================================================= */
 
-/* CSS Variables */
-:root {
-  --primary-red: #B71C1C;
-  --primary-hover: #8B0000;
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-muted: rgba(255, 255, 255, 0.5);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --hover-bg: rgba(255, 255, 255, 0.05);
-  --active-bg: rgba(183, 28, 28, 0.15);
-  --transition: 0.3s ease;
-}
-
-/* Layout Container */
+/* Layout Container with Scoped Variables */
 .new-account-layout {
+  /* Scoped CSS Variables - Won't affect main header */
+  --account-primary-red: #B71C1C;
+  --account-primary-hover: #8B0000;
+  --account-text-primary: #ffffff;
+  --account-text-secondary: rgba(255, 255, 255, 0.7);
+  --account-text-muted: rgba(255, 255, 255, 0.5);
+  --account-border-color: rgba(255, 255, 255, 0.1);
+  --account-hover-bg: rgba(255, 255, 255, 0.05);
+  --account-active-bg: rgba(183, 28, 28, 0.15);
+  --account-transition: 0.3s ease;
+  
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -30,25 +28,26 @@
   right: 0;
   height: 56px;
   background: rgba(0, 0, 0, 0.95);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--account-border-color);
   display: none;
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  z-index: 999;
+  z-index: 1001;
+  backdrop-filter: blur(10px);
 }
 
 .mobile-menu-toggle {
   background: transparent;
   border: none;
-  color: var(--text-primary);
+  color: var(--account-text-primary);
   font-size: 24px;
   cursor: pointer;
   padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition);
+  transition: var(--account-transition);
 }
 
 .mobile-menu-toggle:active {
@@ -58,7 +57,7 @@
 .mobile-page-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--account-text-primary);
   margin: 0;
 }
 
@@ -81,11 +80,11 @@
   width: 260px;
   height: 100vh;
   background: rgba(0, 0, 0, 0.95);
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--account-border-color);
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 998;
-  transition: transform var(--transition);
+  transition: transform var(--account-transition);
   display: flex;
   flex-direction: column;
 }
@@ -93,7 +92,7 @@
 /* User Profile Section */
 .sidebar-user-profile {
   padding: 16px 12px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--account-border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -106,14 +105,14 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--primary-red);
+  background: var(--account-primary-red);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 24px;
   font-weight: 600;
-  border: 2px solid var(--border-color);
+  border: 2px solid var(--account-border-color);
   overflow: hidden;
 }
 
@@ -131,7 +130,7 @@
 .user-name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--account-text-primary);
   margin: 0 0 2px 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -140,7 +139,7 @@
 
 .user-email {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--account-text-secondary);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -162,13 +161,13 @@
 .nav-section-logout {
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--account-border-color);
 }
 
 .section-title {
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--account-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0 12px;
@@ -187,9 +186,9 @@
   gap: 10px;
   padding: 9px 10px;
   margin: 0 6px;
-  color: var(--text-secondary);
+  color: var(--account-text-secondary);
   text-decoration: none;
-  transition: var(--transition);
+  transition: var(--account-transition);
   position: relative;
   cursor: pointer;
   border-radius: 4px;
@@ -201,33 +200,33 @@
 }
 
 .nav-link:hover {
-  background: var(--hover-bg);
-  color: var(--text-primary);
+  background: var(--account-hover-bg);
+  color: var(--account-text-primary);
   text-decoration: none;
 }
 
 .nav-link.active {
-  background: var(--active-bg);
-  color: var(--primary-red);
+  background: var(--account-active-bg);
+  color: var(--account-primary-red);
 }
 
 .nav-link.active .nav-icon {
-  color: var(--primary-red);
+  color: var(--account-primary-red);
 }
 
 .logout-link {
-  color: var(--text-secondary);
+  color: var(--account-text-secondary);
 }
 
 .logout-link:hover {
   background: rgba(183, 28, 28, 0.1);
-  color: var(--primary-red);
+  color: var(--account-primary-red);
 }
 
 .nav-icon {
   font-size: 16px;
-  color: var(--text-muted);
-  transition: var(--transition);
+  color: var(--account-text-muted);
+  transition: var(--account-transition);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -242,7 +241,7 @@
 }
 
 .nav-badge {
-  background: var(--primary-red);
+  background: var(--account-primary-red);
   color: white;
   font-size: 11px;
   font-weight: 600;
@@ -259,7 +258,7 @@
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--primary-red);
+  background: var(--account-primary-red);
   border-radius: 0 3px 3px 0;
 }
 
@@ -267,16 +266,20 @@
 .account-main-content {
   flex: 1;
   margin-left: 0;
-  min-height: 100vh;
-  transition: margin-left var(--transition);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--account-transition);
   padding: 12px;
 }
 
 /* Breadcrumb */
 .account-breadcrumb {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--account-border-color);
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .breadcrumb-list {
@@ -294,31 +297,35 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--account-text-secondary);
 }
 
 .breadcrumb-item a {
-  color: var(--text-secondary);
+  color: var(--account-text-secondary);
   text-decoration: none;
-  transition: var(--transition);
+  transition: var(--account-transition);
 }
 
 .breadcrumb-item a:hover {
-  color: var(--text-primary);
+  color: var(--account-text-primary);
 }
 
 .breadcrumb-separator {
-  color: var(--text-muted);
+  color: var(--account-text-muted);
   font-size: 14px;
 }
 
 .breadcrumb-current {
-  color: var(--primary-red);
+  color: var(--account-primary-red);
   font-weight: 500;
 }
 
 .account-page-content {
-  padding: 12px;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
 }
 
 /* Sidebar Overlay (Mobile) */
@@ -344,10 +351,18 @@
     transform: translateX(-100%);
     background: rgba(0, 0, 0, 0.98);
     width: 280px;
+    top: 56px;
+    height: calc(100vh - 56px);
   }
 
   .account-sidebar.open {
     transform: translateX(0);
+  }
+
+  .account-main-content {
+    margin-top: 56px;
+    height: calc(100vh - 56px);
+    padding: 8px;
   }
 
   .account-main-content {
@@ -357,7 +372,7 @@
   }
 
   .account-page-content {
-    padding: 8px;
+    padding: 0px;
   }
 
   .account-breadcrumb {
@@ -430,7 +445,7 @@
   }
 
   .account-page-content {
-    padding: 12px;
+    padding: 0px;
   }
 
   .user-avatar {
@@ -456,7 +471,7 @@
   }
 
   .account-page-content {
-    padding: 16px;
+    padding: 0px;
   }
 
   .sidebar-overlay {
@@ -491,7 +506,7 @@
   }
 
   .account-page-content {
-    padding: 20px;
+    padding: 0px;
     max-width: 1400px;
   }
 
@@ -553,19 +568,19 @@
 /* Focus visible for keyboard navigation */
 .nav-link:focus-visible,
 .mobile-menu-toggle:focus-visible {
-  outline: 2px solid var(--primary-red);
+  outline: 2px solid var(--account-primary-red);
   outline-offset: 2px;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .nav-link.active {
-    border: 2px solid var(--primary-red);
+    border: 2px solid var(--account-primary-red);
   }
   
   .sidebar-user-profile,
   .nav-section {
-    border-color: var(--text-primary);
+    border-color: var(--account-text-primary);
   }
 }
 

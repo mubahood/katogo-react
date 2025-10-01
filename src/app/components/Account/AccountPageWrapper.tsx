@@ -45,30 +45,7 @@ const AccountPageWrapper: React.FC<AccountPageWrapperProps> = ({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Page Header */}
-      <div className="page-header">
-        <div className="header-content">
-          <h1 className="page-title">{title}</h1>
-          {subtitle && <p className="page-subtitle">{subtitle}</p>}
-        </div>
-
-        {actions.length > 0 && (
-          <div className="page-actions">
-            {actions.map((action, index) => (
-              <button
-                key={index}
-                className={`action-btn ${action.variant || 'primary'}`}
-                onClick={action.onClick}
-                disabled={action.disabled || isLoading}
-              >
-                {action.icon && <span className="btn-icon">{action.icon}</span>}
-                <span className="btn-label">{action.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
+    
       {/* Page Content */}
       <div className="page-body">
         {isLoading ? (

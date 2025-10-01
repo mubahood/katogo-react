@@ -526,7 +526,7 @@
 .action-icons {
   display: flex;
   align-items: center;
-  gap: 20px; /* Increased for better spacing */
+  gap: 12px; /* Reduced from 20px for more compact layout */
   flex-shrink: 0;
 }
 
@@ -535,25 +535,37 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 2px; /* Reduced from 6px - very small separation */
   color: var(--ugflix-text-secondary, #cccccc);
   text-decoration: none;
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.2;
   transition: all 0.2s ease;
-  padding: 10px 12px; /* Better padding for touch targets */
-  border-radius: 8px; /* Slightly rounded for modern look */
+  padding: 4px 6px; /* Minimal padding - no boxes */
+  border-radius: 0; /* No rounded corners */
   position: relative;
-  min-width: 70px; /* Consistent button width */
-  border: 1px solid transparent;
+  min-width: auto; /* Natural width - no fixed width */
+  border: none !important; /* No borders at all */
+  background: transparent !important; /* No background - force override */
+  box-shadow: none !important; /* No shadows */
 }
 
 .action-link:hover {
   color: var(--ugflix-primary, #B71C1C);
-  background: transparent;
-  border-color: transparent;
+  background: transparent !important; /* Keep transparent on hover */
+  border: none; /* No borders on hover */
   text-decoration: none;
+}
+
+/* Override any active/current page states */
+.action-link:active,
+.action-link:focus,
+.action-link.active,
+.action-link[aria-current="page"] {
+  background: transparent !important;
+  border: none !important;
+  outline: none;
 }
 
 .action-icon-wrapper {
@@ -561,12 +573,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background: transparent; /* No background */
+  border: none; /* No borders */
+  padding: 0; /* No padding */
 }
 
 .action-icon {
-  font-size: 1.6rem;
-  color: var(--ugflix-text-muted, #888888);
+  font-size: 1.4rem; /* Reduced from 1.6rem for cleaner look */
+  color: var(--ugflix-text-secondary, #cccccc); /* Lighter color */
   transition: all 0.3s ease;
+  background: transparent; /* No background */
+  padding: 0; /* No padding */
 }
 
 .action-link:hover .action-icon {
@@ -576,6 +593,8 @@
 .action-text {
   font-weight: 500;
   transition: all 0.3s ease;
+  background: transparent; /* No background */
+  padding: 0; /* No padding */
 }
 
 /* Notification Dot */

@@ -2,7 +2,6 @@
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import HeaderWrapper from "../Header/HeaderWrapper";
-import Footer from "./Footer";
 
 const MainLayout: React.FC = () => {
   const location = useLocation();
@@ -14,7 +13,6 @@ const MainLayout: React.FC = () => {
       <main className={`main-content ${isHomepage ? 'homepage-layout' : ''}`}>
         <Outlet />
       </main>
-      <Footer />
     </>
   );
 };
