@@ -19,6 +19,7 @@ const AccountChats: React.FC = () => {
   const [retryCount, setRetryCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageListRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     loadConversations();
@@ -34,6 +35,29 @@ const AccountChats: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Handle product details from URL parameters
+  useEffect(() => {
+    const productId = searchParams.get('productId');
+    const productName = searchParams.get('productName');
+    const productPrice = searchParams.get('productPrice');
+
+    // If product details are present, auto-fill message
+    if (productId && productName && selectedConversation) {
+      const priceText = productPrice ? ` - UGX ${productPrice}` : '';
+      const productMessage = `Hi! I'm interested in this product:\n\nProduct: ${decodeURIComponent(productName)}${priceText}\nProduct ID: ${productId}\n\nCould you provide more details?`;
+      
+      setNewMessage(productMessage);
+      
+      // Focus on message input after a brief delay
+      setTimeout(() => {
+        messageInputRef.current?.focus();
+        // Move cursor to end of text
+        const textLength = productMessage.length;
+        messageInputRef.current?.setSelectionRange(textLength, textLength);
+      }, 500);
+    }
+  }, [selectedConversation, searchParams]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -516,12 +540,20 @@ const AccountChats: React.FC = () => {
 
               <div className="messages-input-area">
                 <form className="messages-input-form" onSubmit={handleSendMessage}>
-                  <input
-                    type="text"
+                  <textarea
+                    ref={messageInputRef}
                     placeholder="Type a message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     disabled={isSending}
+                    rows={3}
+                    onKeyDown={(e) => {
+                      // Send on Enter, new line on Shift+Enter
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage(e);
+                      }
+                    }}
                   />
                   <button 
                     type="submit"

@@ -2882,6 +2882,8 @@ const ProductDetailPage: React.FC = () => {
                 <div className="action-buttons">
                   <ContactSellerButton
                     productId={parseInt(id || '0')}
+                    productName={product.name}
+                    productPrice={product.price_2 || product.price_1}
                     sellerId={product.user}
                     className="btn-contact-seller"
                     size="lg"
@@ -3136,6 +3138,8 @@ const ProductDetailPage: React.FC = () => {
         <div className="mobile-action-buttons">
           <ContactSellerButton
             productId={parseInt(id || '0')}
+            productName={product.name}
+            productPrice={product.price_2 || product.price_1}
             sellerId={product.user}
             className="mobile-btn-contact-seller"
             size="lg"

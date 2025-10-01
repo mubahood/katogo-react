@@ -535,27 +535,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px; /* Reduced from 6px - very small separation */
+  gap: 1px; /* Extremely minimal gap between icon and text */
   color: var(--ugflix-text-secondary, #cccccc);
   text-decoration: none;
-  font-size: 0.8rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
   transition: all 0.2s ease;
-  padding: 4px 6px; /* Minimal padding - no boxes */
-  border-radius: 0; /* No rounded corners */
+  padding: 6px 8px;
+  border-radius: 0;
   position: relative;
-  min-width: auto; /* Natural width - no fixed width */
-  border: none !important; /* No borders at all */
-  background: transparent !important; /* No background - force override */
-  box-shadow: none !important; /* No shadows */
+  min-width: auto;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .action-link:hover {
   color: var(--ugflix-primary, #B71C1C);
-  background: transparent !important; /* Keep transparent on hover */
-  border: none; /* No borders on hover */
+  background: transparent !important;
+  border: none !important;
   text-decoration: none;
+  transform: translateY(-1px);
 }
 
 /* Override any active/current page states */
@@ -566,6 +567,7 @@
   background: transparent !important;
   border: none !important;
   outline: none;
+  box-shadow: none !important;
 }
 
 .action-icon-wrapper {
@@ -573,28 +575,67 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent; /* No background */
-  border: none; /* No borders */
-  padding: 0; /* No padding */
+  background: transparent !important; /* Force no background */
+  border: none !important; /* Force no borders */
+  padding: 0 !important; /* Force no padding */
+  margin: 0 !important; /* Force no margin */
+  box-shadow: none !important; /* Force no shadow */
+  border-radius: 0 !important; /* Force no border radius */
 }
 
 .action-icon {
-  font-size: 1.4rem; /* Reduced from 1.6rem for cleaner look */
-  color: var(--ugflix-text-secondary, #cccccc); /* Lighter color */
+  font-size: 20px;
+  color: var(--ugflix-text-secondary, #cccccc);
   transition: all 0.3s ease;
-  background: transparent; /* No background */
-  padding: 0; /* No padding */
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .action-link:hover .action-icon {
   color: var(--ugflix-primary, #B71C1C);
+  transform: scale(1.1);
 }
 
 .action-text {
   font-weight: 500;
+  font-size: 0.75rem;
   transition: all 0.3s ease;
-  background: transparent; /* No background */
-  padding: 0; /* No padding */
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Force remove any backgrounds from SVG icons and their wrappers */
+.action-link svg,
+.action-link i,
+.action-icon-wrapper svg,
+.action-icon-wrapper i,
+.action-icon svg,
+.action-icon i {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Additional override for any nested elements */
+.action-link *,
+.action-icon-wrapper *,
+.action-icon * {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Exception for notification dot and cart badge - they need backgrounds */
+.notification-dot,
+.cart-badge {
+  background: var(--ugflix-primary, #B71C1C) !important;
 }
 
 /* Notification Dot */

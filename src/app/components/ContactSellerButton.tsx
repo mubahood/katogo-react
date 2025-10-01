@@ -1,30 +1,31 @@
 // src/app/components/ContactSellerButton.tsx
 import React, { useState } from 'react';
-import { Button, Modal } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import ChatApiService from '../services/ChatApiService';
-import ChatPage from '../pages/Chat/ChatPage';
+import AccountApiService from '../services/AccountApiService';
+import ToastService from '../services/ToastService';
 
 interface ContactSellerButtonProps {
   productId?: number;
-  sellerId?: number;
+  productName?: string;
+  productPrice?: string | number;
+  sellerId: number; // Required - the seller's user ID
   className?: string;
   variant?: string;
   size?: 'sm' | 'lg';
   children?: React.ReactNode;
-  showModal?: boolean; // If true, opens chat in modal, if false navigates to chat page
 }
 
 const ContactSellerButton: React.FC<ContactSellerButtonProps> = ({
   productId,
+  productName,
+  productPrice,
   sellerId,
   className,
   variant = 'primary',
   size,
-  children,
-  showModal = false
+  children
 }) => {
-  const [showChatModal, setShowChatModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -38,6 +39,7 @@ const ContactSellerButton: React.FC<ContactSellerButtonProps> = ({
       
       if (!token || !userStr) {
         // Redirect to login page
+        ToastService.warning('Please login to contact seller');
         navigate('/auth/login');
         return;
       }
@@ -45,38 +47,47 @@ const ContactSellerButton: React.FC<ContactSellerButtonProps> = ({
       const currentUser = JSON.parse(userStr);
       
       // Don't allow user to contact themselves
-      if (sellerId && currentUser.id === sellerId) {
-        alert("You can't contact yourself");
+      if (currentUser.id === sellerId) {
+        ToastService.warning("You can't contact yourself");
         return;
       }
       
-      // Start chat using ChatApiService
-      if (sellerId) {
-        // Start chat with specific seller
-        console.log('🔄 Starting chat with seller:', sellerId, 'for product:', productId);
-        
-        const newChatHead = await ChatApiService.startChat({
-          sender_id: currentUser.id,
-          receiver_id: sellerId,
-          product_id: productId
-        });
-        
-        console.log('✅ Chat started successfully:', newChatHead);
-        
-        // Navigate to the standalone chat page with the new chat head ID
-        navigate(`/chat?chatHeadId=${newChatHead.id}`);
-      } else {
-        // Navigate to general account chats page  
-        navigate('/account/chats');
+      // Start conversation using AccountApiService (uses chat-start endpoint)
+      console.log('🔄 Starting conversation with seller:', sellerId, 'for product:', productId);
+      
+      const conversation = await AccountApiService.startConversation(
+        sellerId,
+        productId ? `Hi, I'm interested in this product` : undefined
+      );
+      
+      console.log('✅ Conversation started successfully:', conversation);
+      
+      // Build URL with conversation ID and optional product details
+      let chatUrl = `/account/chats?chatId=${conversation.id}`;
+      
+      if (productId && productName) {
+        chatUrl += `&productId=${productId}`;
+        chatUrl += `&productName=${encodeURIComponent(productName)}`;
+        if (productPrice) {
+          chatUrl += `&productPrice=${encodeURIComponent(String(productPrice))}`;
+        }
       }
+      
+      // Navigate to account chats with the new conversation ID and product details
+      navigate(chatUrl);
+      ToastService.success('Chat started successfully');
+      
     } catch (error: any) {
-      console.error('❌ Error starting chat:', error);
+      console.error('❌ Error starting conversation:', error);
       
       // Show user-friendly error message
-      if (error.message && error.message.includes('not found')) {
-        alert('Unable to start chat: User not found');
+      if (error?.message?.includes('not found')) {
+        ToastService.error('Unable to start chat: User not found');
+      } else if (error?.message?.includes('authenticated')) {
+        ToastService.error('Please login to contact seller');
+        navigate('/auth/login');
       } else {
-        alert('Failed to start chat. Please try again.');
+        ToastService.error('Failed to start chat. Please try again.');
       }
     } finally {
       setIsLoading(false);
@@ -106,25 +117,6 @@ const ContactSellerButton: React.FC<ContactSellerButtonProps> = ({
           )
         )}
       </Button>
-
-      {showModal && (
-        <Modal
-          show={showChatModal}
-          onHide={() => setShowChatModal(false)}
-          size="xl"
-          centered
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>
-              <i className="bi bi-chat-dots me-2"></i>
-              Chat with Seller
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="p-0" style={{ height: '70vh' }}>
-            <ChatPage productId={productId} sellerId={sellerId} />
-          </Modal.Body>
-        </Modal>
-      )}
     </>
   );
 };

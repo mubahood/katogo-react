@@ -93,10 +93,7 @@ const ModernMainNav: React.FC = () => {
       
       // Detailed Redux state
       reduxAuthState: authState
-    });
-    
-    // Show what the header will display
-    console.log('🔄 Header will show:', isAuthenticated ? 'My Account' : 'Login');
+    }); 
     
     // If localStorage has auth data but Redux doesn't, dispatch restore
     if (localToken && localUser && !isAuthenticated && !authState.isLoading) {

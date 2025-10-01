@@ -68,7 +68,7 @@ import AccountWatchHistory from "../pages/account/AccountWatchHistory";
 import AccountLikes from "../pages/account/AccountLikes";
 import AccountProducts from "../pages/account/AccountProducts";
 import AccountChats from "../pages/account/AccountChats";
-import NewChatPage from "../pages/Chat/NewChatPage";
+// Old chat modules removed - using AccountChats module now
 import OrderDetailsPage from "../pages/account/OrderDetailsPage";
 import Account from "../pages/account/Account";
 
@@ -234,12 +234,13 @@ const AppRoutes: React.FC = () => {
             } 
           />
           
-          {/* Standalone Chat Route - Protected */}
+          {/* Redirect old chat route to new account chats */}
+                    {/* Redirect old chat route to new account chats */}
           <Route 
             path="chat" 
             element={
               <ProtectedRoute>
-                <NewChatPage />
+                <Navigate to="/account/chats" replace />
               </ProtectedRoute>
             } 
           />

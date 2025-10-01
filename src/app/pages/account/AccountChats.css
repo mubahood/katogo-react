@@ -316,7 +316,8 @@
   align-items: center;
 }
 
-.messages-input-form input {
+.messages-input-form input,
+.messages-input-form textarea {
   flex: 1;
   padding: 8px 10px;
   font-size: 11px;
@@ -326,14 +327,26 @@
   color: inherit;
   outline: none;
   transition: all 0.2s ease;
+  font-family: inherit;
+  line-height: 1.4;
 }
 
-.messages-input-form input:focus {
+.messages-input-form textarea {
+  resize: vertical;
+  min-height: 42px;
+  max-height: 120px;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.messages-input-form input:focus,
+.messages-input-form textarea:focus {
   border-color: rgba(183, 28, 28, 0.5);
   background: rgba(255, 255, 255, 0.08);
 }
 
-.messages-input-form input::placeholder {
+.messages-input-form input::placeholder,
+.messages-input-form textarea::placeholder {
   color: rgba(255, 255, 255, 0.4);
   font-size: 11px;
 }
@@ -559,7 +572,8 @@
     font-size: 12px;
   }
 
-  .messages-input-form input {
+  .messages-input-form input,
+  .messages-input-form textarea {
     font-size: 12px;
     padding: 10px 12px;
   }
