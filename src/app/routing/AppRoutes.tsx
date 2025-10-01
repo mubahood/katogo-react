@@ -66,7 +66,7 @@ import AccountSubscriptions from "../pages/account/AccountSubscriptions";
 import AccountWatchHistory from "../pages/account/AccountWatchHistory";
 import AccountLikes from "../pages/account/AccountLikes";
 import AccountProducts from "../pages/account/AccountProducts";
-import ChatPage from "../pages/Chat/ChatPage";
+import NewChatPage from "../pages/Chat/NewChatPage";
 import OrderDetailsPage from "../pages/account/OrderDetailsPage";
 import Account from "../pages/account/Account";
 
@@ -237,7 +237,7 @@ const AppRoutes: React.FC = () => {
             path="chat" 
             element={
               <ProtectedRoute>
-                <ChatPage />
+                <NewChatPage />
               </ProtectedRoute>
             } 
           />
@@ -257,7 +257,7 @@ const AppRoutes: React.FC = () => {
             <Route path="history" element={<AccountWatchHistory />} />
             <Route path="likes" element={<AccountLikes />} />
             <Route path="products" element={<AccountProducts />} />
-            <Route path="chats" element={<ChatPage />} />
+            <Route path="chats" element={<NewChatPage />} />
             <Route path="orders" element={<AccountOrdersPage />} />
             <Route path="orders/:orderId" element={<OrderDetailsPage />} />
             <Route path="settings" element={<AccountSettings />} />
