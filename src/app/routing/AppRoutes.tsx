@@ -59,6 +59,7 @@ const LandingPage = React.lazy(() => import("../pages/auth/LandingPage"));
 
 // Account Pages - Direct imports to fix dynamic import issues
 import AccountDashboard from "../pages/account/AccountDashboard";
+import AccountDashboardNew from "../pages/account/AccountDashboardNew";
 import AccountProfile from "../pages/account/AccountProfile";
 import AccountOrdersPage from "../pages/account/AccountOrdersPage";
 import AccountSettings from "../pages/account/AccountSettings";
@@ -251,7 +252,7 @@ const AppRoutes: React.FC = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<AccountDashboard />} />
+            <Route index element={<AccountDashboardNew />} />
             <Route path="profile" element={<AccountProfile />} />
             <Route path="subscriptions" element={<AccountSubscriptions />} />
             <Route path="history" element={<AccountWatchHistory />} />

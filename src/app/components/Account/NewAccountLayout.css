@@ -1,0 +1,584 @@
+/* =============================================================================
+   NEW ACCOUNT LAYOUT - Simple, Flat, Mobile-First Design
+   ============================================================================= */
+
+/* CSS Variables */
+:root {
+  --primary-red: #B71C1C;
+  --primary-hover: #8B0000;
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --hover-bg: rgba(255, 255, 255, 0.05);
+  --active-bg: rgba(183, 28, 28, 0.15);
+  --transition: 0.3s ease;
+}
+
+/* Layout Container */
+.new-account-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== MOBILE HEADER (< 992px) ========== */
+.account-mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: rgba(0, 0, 0, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 999;
+}
+
+.mobile-menu-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.mobile-menu-toggle:active {
+  opacity: 0.7;
+}
+
+.mobile-page-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.mobile-header-spacer {
+  width: 40px;
+}
+
+/* ========== LAYOUT CONTAINER ========== */
+.account-layout-container {
+  display: flex;
+  flex: 1;
+  position: relative;
+}
+
+/* ========== SIDEBAR ========== */
+.account-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 998;
+  transition: transform var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+/* User Profile Section */
+.sidebar-user-profile {
+  padding: 16px 12px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-top: 80px; /* Push down to avoid header overlap */
+}
+
+.user-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  border: 2px solid var(--border-color);
+  overflow: hidden;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-info {
+  text-align: center;
+  width: 100%;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-email {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-section {
+  margin-bottom: 16px;
+}
+
+.nav-section-logout {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 12px;
+  margin: 0 0 6px 0;
+}
+
+.nav-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  margin: 0 6px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition);
+  position: relative;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  width: calc(100% - 12px);
+  font-family: inherit;
+}
+
+.nav-link:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.nav-link.active {
+  background: var(--active-bg);
+  color: var(--primary-red);
+}
+
+.nav-link.active .nav-icon {
+  color: var(--primary-red);
+}
+
+.logout-link {
+  color: var(--text-secondary);
+}
+
+.logout-link:hover {
+  background: rgba(183, 28, 28, 0.1);
+  color: var(--primary-red);
+}
+
+.nav-icon {
+  font-size: 16px;
+  color: var(--text-muted);
+  transition: var(--transition);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-badge {
+  background: var(--primary-red);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Active indicator for animations */
+.active-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--primary-red);
+  border-radius: 0 3px 3px 0;
+}
+
+/* ========== MAIN CONTENT ========== */
+.account-main-content {
+  flex: 1;
+  margin-left: 0;
+  min-height: 100vh;
+  transition: margin-left var(--transition);
+  padding: 12px;
+}
+
+/* Breadcrumb */
+.account-breadcrumb {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.breadcrumb-item a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.breadcrumb-item a:hover {
+  color: var(--text-primary);
+}
+
+.breadcrumb-separator {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.breadcrumb-current {
+  color: var(--primary-red);
+  font-weight: 500;
+}
+
+.account-page-content {
+  padding: 12px;
+}
+
+/* Sidebar Overlay (Mobile) */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 997;
+}
+
+/* ========== RESPONSIVE - MOBILE FIRST ========== */
+
+/* Mobile (< 576px) */
+@media (max-width: 575px) {
+  .account-mobile-header {
+    display: flex !important;
+  }
+
+  .account-sidebar {
+    transform: translateX(-100%);
+    background: rgba(0, 0, 0, 0.98);
+    width: 280px;
+  }
+
+  .account-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .account-main-content {
+    margin-left: 0;
+    padding-top: 56px;
+    padding: 56px 8px 8px 8px;
+  }
+
+  .account-page-content {
+    padding: 8px;
+  }
+
+  .account-breadcrumb {
+    display: none;
+  }
+
+  .sidebar-user-profile {
+    padding: 12px 8px;
+    margin-top: 0; /* Remove top margin on mobile */
+  }
+
+  .user-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .user-name {
+    font-size: 15px;
+  }
+
+  .user-email {
+    font-size: 12px;
+  }
+
+  .section-title {
+    padding: 0 8px;
+    font-size: 10px;
+  }
+
+  .nav-link {
+    margin: 0 4px;
+    padding: 10px 8px;
+    font-size: 13px;
+    width: calc(100% - 8px);
+  }
+
+  .nav-icon {
+    font-size: 16px;
+  }
+
+  .sidebar-nav {
+    padding: 8px 0;
+  }
+}
+
+/* Tablets (576px - 991px) */
+@media (min-width: 576px) and (max-width: 991px) {
+  .account-mobile-header {
+    display: flex !important;
+  }
+
+  .account-sidebar {
+    transform: translateX(-100%);
+    background: rgba(0, 0, 0, 0.98);
+  }
+
+  .account-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .account-main-content {
+    margin-left: 0;
+    padding-top: 56px;
+    padding: 56px 12px 12px 12px;
+  }
+
+  .account-breadcrumb {
+    display: none;
+  }
+
+  .account-page-content {
+    padding: 12px;
+  }
+
+  .user-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 22px;
+  }
+}
+
+/* Desktop (>= 992px) */
+@media (min-width: 992px) {
+  .account-mobile-header {
+    display: none;
+  }
+
+  .account-sidebar {
+    transform: translateX(0);
+  }
+
+  .account-main-content {
+    margin-left: 260px;
+    padding: 16px;
+  }
+
+  .account-page-content {
+    padding: 16px;
+  }
+
+  .sidebar-overlay {
+    display: none;
+  }
+
+  .sidebar-user-profile {
+    padding: 20px 12px;
+  }
+
+  .sidebar-nav {
+    padding: 16px 0;
+  }
+
+  .nav-section {
+    margin-bottom: 20px;
+  }
+
+  .nav-link {
+    padding: 11px 12px;
+  }
+
+  .account-breadcrumb {
+    margin-bottom: 20px;
+  }
+}
+
+/* Large Desktop (>= 1200px) */
+@media (min-width: 1200px) {
+  .account-main-content {
+    padding: 20px;
+  }
+
+  .account-page-content {
+    padding: 20px;
+    max-width: 1400px;
+  }
+
+  .sidebar-user-profile {
+    padding: 24px 12px;
+  }
+
+  .user-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 26px;
+  }
+
+  .user-name {
+    font-size: 17px;
+  }
+
+  .nav-link {
+    padding: 12px 12px;
+    font-size: 15px;
+  }
+
+  .nav-icon {
+    font-size: 19px;
+  }
+}
+
+/* ========== SCROLLBAR STYLING ========== */
+.account-sidebar::-webkit-scrollbar,
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.account-sidebar::-webkit-scrollbar-track,
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.account-sidebar::-webkit-scrollbar-thumb,
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.account-sidebar::-webkit-scrollbar-thumb:hover,
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ========== ACCESSIBILITY ========== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.nav-link:focus-visible,
+.mobile-menu-toggle:focus-visible {
+  outline: 2px solid var(--primary-red);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .nav-link.active {
+    border: 2px solid var(--primary-red);
+  }
+  
+  .sidebar-user-profile,
+  .nav-section {
+    border-color: var(--text-primary);
+  }
+}
+
+/* ========== PRINT STYLES ========== */
+@media print {
+  .account-sidebar,
+  .account-mobile-header,
+  .account-breadcrumb {
+    display: none;
+  }
+
+  .account-main-content {
+    margin-left: 0;
+    padding: 0;
+  }
+}
