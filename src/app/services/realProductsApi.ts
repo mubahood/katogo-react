@@ -90,8 +90,10 @@ export const realProductsApi = createApi({
     getProductById: builder.query<ProductModel, number>({
       queryFn: async (id) => {
         try {
-          // Bypass CacheApiService and use ApiService directly to avoid cache issues
+          console.log(`🔍 RTK Query: Fetching product with ID: ${id}`);
+          
           const result = await ApiService.getProduct(id);
+          console.log(`✅ RTK Query: Product fetched successfully:`, result);
           
           return { data: result };
         } catch (error: any) {

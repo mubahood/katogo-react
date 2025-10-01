@@ -1,9 +1,11 @@
 // src/app/pages/account/AccountChats.tsx
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Button, Spinner, Alert, Badge, ListGroup, Form, InputGroup } from 'react-bootstrap';
+import { useSearchParams } from 'react-router-dom';
 import AccountApiService, { ChatConversation, ChatMessage } from '../../services/AccountApiService';
 
 const AccountChats: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -29,6 +31,16 @@ const AccountChats: React.FC = () => {
       setError(null);
       const data = await AccountApiService.getConversations();
       setConversations(data);
+      
+      // Check if there's a specific chatId to select
+      const chatId = searchParams.get('chatId');
+      if (chatId && data.length > 0) {
+        const targetChat = data.find(conv => conv.id === parseInt(chatId));
+        if (targetChat) {
+          setSelectedConversation(targetChat);
+          return;
+        }
+      }
       
       // Auto-select first conversation if any
       if (data.length > 0 && !selectedConversation) {

@@ -415,14 +415,31 @@ export class ProductModel {
     }
   }
 
-  /** Fetch a single product by ID (GET /products/:id). */
+  /** Fetch a single product by ID (GET /products-1 and filter by ID). */
   static async fetchProductById(id: string | number): Promise<ProductModel> {
     try {
-      const response = await http_get(`products/${id}`);
-      // Handle both wrapped {code, message, data} and direct response
-      const productData = response.data || response;
+      console.log(`🔍 ProductModel.fetchProductById: Fetching product ID ${id}`);
+      
+      // Use the working products-1 endpoint and filter by ID
+      const response = await http_get(`products-1`);
+      console.log(`📦 ProductModel.fetchProductById: Response received:`, response);
+      
+      // Handle the response structure {code, message, data}
+      const productsData = response.data || [];
+      console.log(`📦 ProductModel.fetchProductById: Products data:`, productsData);
+      
+      // Find the product with matching ID
+      const productData = productsData.find((product: any) => product.id == id);
+      
+      if (!productData) {
+        console.error(`❌ ProductModel.fetchProductById: Product with ID ${id} not found`);
+        throw new Error(`Product with ID ${id} not found`);
+      }
+      
+      console.log(`✅ ProductModel.fetchProductById: Found product:`, productData);
       return ProductModel.fromJson(productData);
     } catch (error) {
+      console.error(`❌ ProductModel.fetchProductById: Error fetching product ${id}:`, error);
       throw error;
     }
   }

@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
 import { selectIsAuthenticated, restoreAuthState } from "../../store/slices/authSlice";
-import { loadWishlistFromAPI } from "../../store/slices/wishlistSlice";
 import { useCart } from "../../hooks/useCart";
 import { useAppCounts, useMegaMenuCategories } from "../../hooks/useManifest";
 import { useManifest } from "../../hooks/useManifest";
@@ -47,7 +46,6 @@ const ModernMainNav: React.FC = () => {
   const { cartCount } = useCart();
   const appCounts = useAppCounts();
   const { reloadManifest } = useManifest();
-  const wishlistCount = appCounts.wishlist_count;
 
   // VJ list for the mega menu - Split into 3 equal columns (13-13-12)
   const vjList = [
@@ -150,8 +148,6 @@ const ModernMainNav: React.FC = () => {
     }
   };
 
-  // Note: Wishlist is loaded via manifest, no need for separate API call
-
   // Enhanced mega menu hover handling
   useEffect(() => {
     const handleMouseLeave = (e: MouseEvent) => {
@@ -236,14 +232,6 @@ const ModernMainNav: React.FC = () => {
                     </div>
                   </Link>
                 )}
-                <Link to="/account/watchlist" className="mobile-action-link">
-                  <div className="mobile-action-icon-wrapper">
-                    <Heart size={18} />
-                    {wishlistCount > 0 && (
-                      <span className="mobile-cart-badge">{wishlistCount}</span>
-                    )}
-                  </div>
-                </Link>
               </div>
             </div>
           </div>
@@ -543,15 +531,6 @@ const ModernMainNav: React.FC = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/account/watchlist"  onClick={toggleMenu}>
-                    <Heart size={18} />
-                    <span>My Watchlist</span>
-                    {wishlistCount > 0 && (
-                      <span className="mobile-cart-badge">{wishlistCount}</span>
-                    )}
-                  </Link>
-                </li>
-                <li>
                   <Link to="/premium" onClick={toggleMenu}>
                     <Star size={18} />
                     <span>Premium Plans</span>
@@ -573,15 +552,6 @@ const ModernMainNav: React.FC = () => {
                   <Link to="/auth/register" onClick={toggleMenu}>
                     <UserPlus size={18} className="text-success" />
                     <span>Create Account</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/account/watchlist"  onClick={toggleMenu}>
-                    <Heart size={18} />
-                    <span>My Watchlist</span>
-                    {wishlistCount > 0 && (
-                      <span className="mobile-cart-badge">{wishlistCount}</span>
-                    )}
                   </Link>
                 </li>
               </ul>

@@ -25,7 +25,6 @@ const OrderSuccessPage = React.lazy(() => import("../pages/OrderSuccessPage"));
 const PaymentPage = React.lazy(() => import("../pages/PaymentPage"));
 const PaymentCallbackPage = React.lazy(() => import("../pages/PaymentCallbackPage"));
 const SearchResultsPage = React.lazy(() => import("../pages/SearchResultsPage"));
-const WishlistPage = React.lazy(() => import("../pages/WishlistPage"));
 const AboutPage = React.lazy(() => import("../pages/AboutPage"));
 const ContactPage = React.lazy(() => import("../pages/ContactPage"));
 const FAQPage = React.lazy(() => import("../pages/FAQPage"));
@@ -63,12 +62,11 @@ import AccountDashboard from "../pages/account/AccountDashboard";
 import AccountProfile from "../pages/account/AccountProfile";
 import AccountOrdersPage from "../pages/account/AccountOrdersPage";
 import AccountSettings from "../pages/account/AccountSettings";
-import AccountWishlist from "../pages/account/AccountWishlist";
 import AccountSubscriptions from "../pages/account/AccountSubscriptions";
 import AccountWatchHistory from "../pages/account/AccountWatchHistory";
 import AccountLikes from "../pages/account/AccountLikes";
 import AccountProducts from "../pages/account/AccountProducts";
-import AccountChats from "../pages/account/AccountChats";
+import ChatPage from "../pages/Chat/ChatPage";
 import OrderDetailsPage from "../pages/account/OrderDetailsPage";
 import Account from "../pages/account/Account";
 
@@ -88,30 +86,111 @@ const AppRoutes: React.FC = () => {
       <Routes>
         {/* Main Layout Routes */}
         <Route path="/" element={<MainLayout />}>
-          {/* Home */}
-          <Route index element={<HomePage />} />
+          {/* Home - Protected */}
+          <Route 
+            index 
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            } 
+          />
           
-          {/* Products */}
-          <Route path="products" element={<ProductsPage />} />
-          <Route path="product/:id" element={<ProductDetailPageWrapper />} />
-          <Route path="category/:categoryId" element={<CategoryPage />} />
-          <Route path="search" element={<SearchResultsPage />} />
+          {/* Products - Protected */}
+          <Route 
+            path="products" 
+            element={
+              <ProtectedRoute>
+                <ProductsPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="product/:id" 
+            element={
+              <ProtectedRoute>
+                <ProductDetailPageWrapper />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="category/:categoryId" 
+            element={
+              <ProtectedRoute>
+                <CategoryPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="search" 
+            element={
+              <ProtectedRoute>
+                <SearchResultsPage />
+              </ProtectedRoute>
+            } 
+          />
           
-          {/* Movies */}
-          <Route path="movies" element={<MoviesPage />} />
-          <Route path="movies/:id" element={<WatchPage />} />
-          <Route path="watch/:id" element={<WatchPage />} />
+          {/* Movies - Protected */}
+          <Route 
+            path="movies" 
+            element={
+              <ProtectedRoute>
+                <MoviesPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="movies/:id" 
+            element={
+              <ProtectedRoute>
+                <WatchPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="watch/:id" 
+            element={
+              <ProtectedRoute>
+                <WatchPage />
+              </ProtectedRoute>
+            } 
+          />
           
-          {/* Movie-related features - redirect watchlist to account */}
+          {/* Movie-related features - Protected redirects */}
           <Route 
             path="watchlist" 
-            element={<Navigate to="/account/watchlist" replace />}
+            element={
+              <ProtectedRoute>
+                <Navigate to="/account/watchlist" replace />
+              </ProtectedRoute>
+            }
           />
-          <Route path="downloads" element={<MoviesPage />} />
-          <Route path="premium" element={<MoviesPage />} />
+          <Route 
+            path="downloads" 
+            element={
+              <ProtectedRoute>
+                <MoviesPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="premium" 
+            element={
+              <ProtectedRoute>
+                <MoviesPage />
+              </ProtectedRoute>
+            } 
+          />
           
-          {/* Cart & Checkout */}
-          <Route path="cart" element={<CartPage />} />
+          {/* Cart & Checkout - Protected */}
+          <Route 
+            path="cart" 
+            element={
+              <ProtectedRoute>
+                <CartPage />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="delivery-address" 
             element={
@@ -153,12 +232,12 @@ const AppRoutes: React.FC = () => {
             } 
           />
           
-          {/* User Features */}
+          {/* Standalone Chat Route - Protected */}
           <Route 
-            path="wishlist" 
+            path="chat" 
             element={
               <ProtectedRoute>
-                <WishlistPage />
+                <ChatPage />
               </ProtectedRoute>
             } 
           />
@@ -175,11 +254,10 @@ const AppRoutes: React.FC = () => {
             <Route index element={<AccountDashboard />} />
             <Route path="profile" element={<AccountProfile />} />
             <Route path="subscriptions" element={<AccountSubscriptions />} />
-            <Route path="watchlist" element={<AccountWishlist />} />
             <Route path="history" element={<AccountWatchHistory />} />
             <Route path="likes" element={<AccountLikes />} />
             <Route path="products" element={<AccountProducts />} />
-            <Route path="chats" element={<AccountChats />} />
+            <Route path="chats" element={<ChatPage />} />
             <Route path="orders" element={<AccountOrdersPage />} />
             <Route path="orders/:orderId" element={<OrderDetailsPage />} />
             <Route path="settings" element={<AccountSettings />} />
@@ -229,15 +307,57 @@ const AppRoutes: React.FC = () => {
           } 
         />
         
-        {/* UgFlix Streaming Platform Auth Routes */}
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/auth/register" element={<RegisterPage />} />
-        <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+        {/* UgFlix Streaming Platform Auth Routes - Public Only */}
+        <Route 
+          path="/auth/login" 
+          element={
+            <PublicOnlyRoute>
+              <LoginPage />
+            </PublicOnlyRoute>
+          } 
+        />
+        <Route 
+          path="/auth/register" 
+          element={
+            <PublicOnlyRoute>
+              <RegisterPage />
+            </PublicOnlyRoute>
+          } 
+        />
+        <Route 
+          path="/auth/forgot-password" 
+          element={
+            <PublicOnlyRoute>
+              <ForgotPassword />
+            </PublicOnlyRoute>
+          } 
+        />
         
-        {/* Direct auth routes - redirect to minimal versions */}
-        <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-        <Route path="/register" element={<Navigate to="/auth/register" replace />} />
-        <Route path="/forgot-password" element={<Navigate to="/auth/forgot-password" replace />} />
+        {/* Direct auth routes - redirect to auth versions with PublicOnlyRoute */}
+        <Route 
+          path="/login" 
+          element={
+            <PublicOnlyRoute>
+              <Navigate to="/auth/login" replace />
+            </PublicOnlyRoute>
+          } 
+        />
+        <Route 
+          path="/register" 
+          element={
+            <PublicOnlyRoute>
+              <Navigate to="/auth/register" replace />
+            </PublicOnlyRoute>
+          } 
+        />
+        <Route 
+          path="/forgot-password" 
+          element={
+            <PublicOnlyRoute>
+              <Navigate to="/auth/forgot-password" replace />
+            </PublicOnlyRoute>
+          } 
+        />
 
         {/* Error Routes */}
         <Route path="/404" element={<NotFoundPage />} />

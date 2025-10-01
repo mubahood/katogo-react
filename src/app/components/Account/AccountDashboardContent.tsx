@@ -38,7 +38,6 @@ const AccountDashboardContent: React.FC = () => {
         movies_watched: 156,
         total_orders: appCounts.total_orders || 23,
         active_subscriptions: 3,
-        watchlist_items: appCounts.wishlist_count || 47,
         liked_content: 89,
         chat_messages: 12,
         my_products: 5
@@ -92,14 +91,6 @@ const AccountDashboardContent: React.FC = () => {
 
   // Comprehensive quick actions matching new account sections
   const quickActions = [
-    {
-      title: 'My Watchlist',
-      description: 'Manage saved movies & shows',
-      icon: 'bi-bookmark-heart',
-      link: '/account/watchlist',
-      color: 'primary',
-      badge: dashboardStats?.watchlist_items || appCounts.wishlist_count || 0
-    },
     {
       title: 'Watch History',
       description: 'Recently watched content',
@@ -160,12 +151,6 @@ const AccountDashboardContent: React.FC = () => {
       value: dashboardStats?.total_orders?.toString() || appCounts.total_orders?.toString() || '0',
       icon: 'bi-bag-check',
       color: 'primary'
-    },
-    {
-      label: 'Watchlist Items',
-      value: dashboardStats?.watchlist_items?.toString() || appCounts.wishlist_count?.toString() || '0',
-      icon: 'bi-bookmark-heart',
-      color: 'info'
     },
     {
       label: 'Movies Watched',

@@ -436,12 +436,38 @@ export class AccountApiService {
   // ===== CHATS =====
   
   /**
-   * Get user's conversations
+   * Get user's conversations (using existing chat-heads endpoint)
    */
   static async getConversations(): Promise<ChatConversation[]> {
     try {
-      const response = await http_get("account/chats");
-      return response.data;
+      const response = await http_get("chat-heads");
+      
+      // Transform the chat heads to match ChatConversation interface
+      const chatHeads = response.data || [];
+      return chatHeads.map((head: any) => ({
+        id: head.id,
+        participants: [
+          {
+            id: parseInt(head.customer_id),
+            name: head.customer_name || head.customer_text || 'Unknown User',
+            avatar: head.customer_photo || null
+          },
+          {
+            id: parseInt(head.product_owner_id),
+            name: head.product_owner_name || head.product_owner_text || 'Unknown User', 
+            avatar: head.product_owner_photo || null
+          }
+        ],
+        last_message: {
+          id: 0,
+          content: head.last_message_body || '',
+          sent_at: head.last_message_time || head.updated_at,
+          sender_id: 0
+        },
+        unread_count: parseInt(head.customer_unread_messages_count || '0') + parseInt(head.product_owner_unread_messages_count || '0'),
+        created_at: head.created_at,
+        updated_at: head.updated_at
+      }));
     } catch (error) {
       console.error("Failed to fetch conversations:", error);
       ToastService.error("Failed to load conversations");
@@ -450,12 +476,28 @@ export class AccountApiService {
   }
 
   /**
-   * Get messages for a conversation
+   * Get messages for a conversation (using existing chat-messages endpoint)
    */
   static async getMessages(conversationId: number, page: number = 1): Promise<{ data: ChatMessage[]; total: number; currentPage: number }> {
     try {
-      const response = await http_get(`account/chats/${conversationId}/messages?page=${page}`);
-      return response.data;
+      const response = await http_get(`chat-messages?chat_head_id=${conversationId}&page=${page}`);
+      
+      // Transform messages to match ChatMessage interface
+      const messages = (response.data || []).map((msg: any) => ({
+        id: msg.id,
+        content: msg.body,
+        sender_id: parseInt(msg.sender_id),
+        receiver_id: parseInt(msg.receiver_id),
+        sent_at: msg.created_at,
+        message_type: msg.type || 'text',
+        status: msg.status || 'sent'
+      }));
+      
+      return {
+        data: messages,
+        total: messages.length,
+        currentPage: page
+      };
     } catch (error) {
       console.error("Failed to fetch messages:", error);
       ToastService.error("Failed to load messages");
@@ -464,15 +506,43 @@ export class AccountApiService {
   }
 
   /**
-   * Send message
+   * Send message (using existing chat-send endpoint)
    */
   static async sendMessage(conversationId: number, content: string, messageType: 'text' | 'image' | 'file' = 'text'): Promise<ChatMessage> {
     try {
-      const response = await http_post(`account/chats/${conversationId}/messages`, {
-        content,
-        message_type: messageType
+      // First get the chat head to determine receiver
+      const chatHeads = await this.getConversations();
+      const chatHead = chatHeads.find(head => head.id === conversationId);
+      
+      if (!chatHead) {
+        throw new Error('Chat conversation not found');
+      }
+      
+      // Get current user to determine receiver
+      const currentUser = JSON.parse(localStorage.getItem('ugflix_user') || '{}');
+      const receiver = chatHead.participants.find(p => p.id !== currentUser.id);
+      
+      if (!receiver) {
+        throw new Error('Receiver not found');
+      }
+      
+      const response = await http_post("chat-send", {
+        chat_head_id: conversationId,
+        receiver_id: receiver.id,
+        body: content
       });
-      return response.data;
+      
+      // Transform response to match ChatMessage interface
+      const message = response.data;
+      return {
+        id: message.id,
+        content: message.body,
+        sender_id: parseInt(message.sender_id),
+        receiver_id: parseInt(message.receiver_id),
+        sent_at: message.created_at,
+        message_type: message.type || 'text',
+        status: message.status || 'sent'
+      };
     } catch (error) {
       console.error("Failed to send message:", error);
       ToastService.error("Failed to send message");
@@ -481,11 +551,11 @@ export class AccountApiService {
   }
 
   /**
-   * Mark messages as read
+   * Mark messages as read (using existing chat-mark-as-read endpoint)
    */
   static async markMessagesAsRead(conversationId: number): Promise<void> {
     try {
-      await http_post(`account/chats/${conversationId}/mark-read`);
+      await http_post("chat-mark-as-read", { chat_head_id: conversationId });
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
       // Don't show toast for this, it's a background operation
@@ -493,15 +563,45 @@ export class AccountApiService {
   }
 
   /**
-   * Start new conversation
+   * Start new conversation (using existing chat-start endpoint)
    */
   static async startConversation(participantId: number, initialMessage?: string): Promise<ChatConversation> {
     try {
-      const response = await http_post("account/chats", {
-        participant_id: participantId,
-        initial_message: initialMessage
+      // Get current user
+      const currentUser = JSON.parse(localStorage.getItem('ugflix_user') || '{}');
+      
+      const response = await http_post("chat-start", {
+        sender_id: currentUser.id,
+        receiver_id: participantId,
+        product_id: null // Can be added later if needed
       });
-      return response.data;
+      
+      // Transform response to match ChatConversation interface
+      const chatHead = response.data;
+      return {
+        id: chatHead.id,
+        participants: [
+          {
+            id: parseInt(chatHead.customer_id),
+            name: chatHead.customer_name || chatHead.customer_text || 'Unknown User',
+            avatar: chatHead.customer_photo || null
+          },
+          {
+            id: parseInt(chatHead.product_owner_id),
+            name: chatHead.product_owner_name || chatHead.product_owner_text || 'Unknown User',
+            avatar: chatHead.product_owner_photo || null
+          }
+        ],
+        last_message: {
+          id: 0,
+          content: initialMessage || '',
+          sent_at: chatHead.created_at,
+          sender_id: currentUser.id
+        },
+        unread_count: 0,
+        created_at: chatHead.created_at,
+        updated_at: chatHead.updated_at
+      };
     } catch (error) {
       console.error("Failed to start conversation:", error);
       ToastService.error("Failed to start conversation");

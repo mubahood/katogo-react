@@ -17,15 +17,13 @@ import {
 } from "../../services/realProductsApi";
 import { ProductModel } from "../../models/ProductModel";
 import { useDispatch } from "react-redux";
-import { useCart } from "../../hooks/useCart";
 import { showNotification } from "../../store/slices/notificationSlice";
+import ContactSellerButton from "../../components/ContactSellerButton";
 import ProductCard from "../../components/shared/ProductCard";
-import WishlistButton from "../../components/shared/WishlistButton";
 import DynamicBreadcrumb from "../../components/shared/DynamicBreadcrumb";
 import ShimmerImage from "../../components/ShimmerImage";
-import ReviewList from "../../components/reviews/ReviewList";
-import ReviewForm from "../../components/reviews/ReviewForm";
 import Utils from "../../services/Utils";
+import { getProductImage } from "../../utils";
 import { SEOHead, ProductSchema } from "../../components/seo";
 import { generateProductMetaTags } from "../../utils/seo";
 
@@ -101,7 +99,7 @@ const inlineStyles = `
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    transition: transform var(--transition-speed) var(--transition-timing);
+    transition: transform var(--ugflix-transition-speed) var(--ugflix-transition-timing);
   }
 
   .main-image-wrapper:hover img {
@@ -110,26 +108,26 @@ const inlineStyles = `
 
   .discount-badge {
     position: absolute;
-    top: var(--spacing-md);
-    right: var(--spacing-md);
-    background: var(--accent-color);
-    color: var(--white);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--border-radius);
+    top: var(--ugflix-spacing-md);
+    right: var(--ugflix-spacing-md);
+    background: var(--ugflix-accent);
+    color: var(--ugflix-text-on-primary);
+    padding: var(--ugflix-spacing-xs) var(--ugflix-spacing-sm);
+    border-radius: 0px;
     font-weight: 600;
     font-size: 12px;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--ugflix-shadow-md);
     z-index: 2;
   }
 
   /* Thumbnail Gallery */
   .thumbnail-row {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: var(--ugflix-spacing-sm);
     overflow-x: auto;
-    padding: var(--spacing-sm) 0;
+    padding: var(--ugflix-spacing-sm) 0;
     scrollbar-width: thin;
-    scrollbar-color: var(--primary-color) var(--background-light);
+    scrollbar-color: var(--ugflix-primary) var(--ugflix-bg-secondary);
     scroll-behavior: smooth;
   }
 
@@ -138,17 +136,17 @@ const inlineStyles = `
   }
 
   .thumbnail-row::-webkit-scrollbar-track {
-    background: var(--background-light);
+    background: var(--ugflix-bg-secondary);
     border-radius: 3px;
   }
 
   .thumbnail-row::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
+    background: var(--ugflix-primary);
     border-radius: 3px;
   }
 
   .thumbnail-row::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color);
+    background: var(--ugflix-primary);
     opacity: 0.8;
   }
 
@@ -200,6 +198,21 @@ const inlineStyles = `
     margin-bottom: var(--ugflix-spacing-lg);
   }
 
+  /* Responsive typography */
+  @media (max-width: 768px) {
+    .product-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .product-title {
+      font-size: 1.3rem;
+      margin-bottom: 0.75rem;
+    }
+  }
+
   .category-badge {
     background: var(--ugflix-primary);
     color: var(--ugflix-text-primary);
@@ -245,8 +258,8 @@ const inlineStyles = `
   .share-buttons {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-lg);
+    gap: var(--ugflix-spacing-sm);
+    margin-top: var(--ugflix-spacing-lg);
   }
 
   .share-buttons .btn {
@@ -320,6 +333,19 @@ const inlineStyles = `
     color: var(--ugflix-primary);
     line-height: 1.2;
     margin-bottom: var(--ugflix-spacing-xs);
+  }
+
+  /* Responsive price typography */
+  @media (max-width: 768px) {
+    .current-price {
+      font-size: 1.75rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .current-price {
+      font-size: 1.5rem;
+    }
   }
 
   .old-price {
@@ -454,18 +480,20 @@ const inlineStyles = `
 
   .quantity-input {
     width: 90px;
-    padding: var(--spacing-sm);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
+    padding: var(--ugflix-spacing-sm);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
     font-weight: 500;
     text-align: center;
-    transition: all var(--transition-speed) var(--transition-timing);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
     font-size: 14px;
+    background: var(--ugflix-bg-secondary);
+    color: var(--ugflix-text-primary);
   }
 
   .quantity-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+    border-color: var(--ugflix-primary);
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
     outline: none;
   }
 
@@ -473,54 +501,45 @@ const inlineStyles = `
   .action-buttons {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--ugflix-spacing-md);
   }
 
-  .btn-add-to-cart,
-  .btn-buy-now {
-    padding: var(--spacing-md) var(--spacing-lg);
-    font-size: 14px;
+  .btn-contact-seller {
+    padding: var(--ugflix-spacing-md) var(--ugflix-spacing-lg);
+    font-size: 16px;
     font-weight: 600;
-    border-radius: var(--border-radius);
+    border-radius: 0px;
     border: 1px solid transparent;
-    transition: all var(--transition-speed) var(--transition-timing);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-sm);
+    gap: var(--ugflix-spacing-sm);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    background: var(--ugflix-primary);
+    color: var(--ugflix-text-on-primary);
+    border-color: var(--ugflix-primary);
+    width: 100%;
   }
 
-  .btn-add-to-cart {
-    background: var(--primary-color);
-    color: var(--white);
-    border-color: var(--primary-color);
+  .btn-contact-seller:hover:not(:disabled) {
+    background: var(--ugflix-accent);
+    border-color: var(--ugflix-accent);
+    color: var(--ugflix-text-on-primary);
+    box-shadow: var(--ugflix-shadow-lg);
+    transform: translateY(-1px);
   }
 
-  .btn-add-to-cart:hover:not(:disabled) {
-    background: var(--primary-color-dark);
-    border-color: var(--primary-color-dark);
-    color: var(--white);
-    box-shadow: var(--shadow-md);
+  .btn-contact-seller:focus {
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.25);
+    background: var(--ugflix-primary);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-text-on-primary);
   }
 
-  .btn-buy-now {
-    background: var(--white);
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-  }
-
-  .btn-buy-now:hover:not(:disabled) {
-    background: var(--primary-color);
-    color: var(--white);
-    border-color: var(--primary-color);
-  }
-
-  .btn-add-to-cart:disabled,
-  .btn-buy-now:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  .btn-contact-seller:active {
+    transform: translateY(0);
   }
 
   /* Checkout Button */
@@ -530,17 +549,17 @@ const inlineStyles = `
     margin-top: 0.75rem;
     font-weight: 600;
     font-size: 0.95rem;
-    border-radius: var(--border-radius);
+    border-radius: 0px;
     border: none;
-    background: #28a745 !important;
-    color: white !important;
-    transition: all var(--transition-speed) var(--transition-timing);
+    background: var(--ugflix-success) !important;
+    color: var(--ugflix-text-on-primary) !important;
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
   }
 
   .btn-checkout:hover {
     background: #218838 !important;
-    color: white !important;
+    color: var(--ugflix-text-on-primary) !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
   }
@@ -555,10 +574,10 @@ const inlineStyles = `
 
   /* Product Tabs */
   .product-tabs {
-    background: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    background: var(--ugflix-bg-card);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    box-shadow: var(--ugflix-shadow-md);
     overflow: hidden;
     margin-bottom: var(--spacing-2xl);
   }
@@ -738,13 +757,13 @@ const inlineStyles = `
   }
 
   .attribute-row:nth-child(even) {
-    background: var(--bs-light);
+    background: var(--ugflix-bg-secondary);
   }
 
   .attribute-label {
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--bs-secondary);
+    color: var(--ugflix-text-primary);
     line-height: 1.3;
     text-transform: uppercase;
     letter-spacing: 0.3px;
@@ -752,7 +771,7 @@ const inlineStyles = `
 
   .attribute-value {
     font-size: 0.8rem;
-    color: var(--bs-dark);
+    color: var(--ugflix-text-primary);
     line-height: 1.3;
     font-weight: 400;
   }
@@ -764,18 +783,18 @@ const inlineStyles = `
     }
   }
 
-  /* Related Products */
+  /* Related Products - Dark Mode Compatible */
   .related-products {
-    background: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
+    background: var(--ugflix-bg-secondary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    box-shadow: var(--ugflix-shadow-sm);
     padding: 1.5rem;
     margin-top: 2rem;
   }
 
   .related-products h3 {
-    color: var(--text-color-dark);
+    color: var(--ugflix-text-primary);
     font-weight: 600;
     margin-bottom: 1.5rem;
     font-size: 1.2rem;
@@ -788,7 +807,7 @@ const inlineStyles = `
     content: "";
     width: 3px;
     height: 20px;
-    background: var(--primary-color);
+    background: var(--ugflix-primary);
     border-radius: 2px;
   }
 
@@ -818,9 +837,9 @@ const inlineStyles = `
   }
 
   .related-product-card {
-    background: var(--white);
-    border: 1px solid var(--border-color-light);
-    border-radius: var(--border-radius);
+    background: var(--ugflix-bg-primary);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
     overflow: hidden;
     transition: all 0.3s ease;
     height: 100%;
@@ -830,8 +849,8 @@ const inlineStyles = `
 
   .related-product-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary-color);
+    box-shadow: var(--ugflix-shadow-hover);
+    border-color: var(--ugflix-primary);
   }
 
   .related-product-image {
@@ -839,7 +858,7 @@ const inlineStyles = `
     width: 100%;
     height: 150px;
     overflow: hidden;
-    background: var(--bg-light);
+    background: var(--ugflix-bg-secondary);
   }
 
   .related-product-image img {
@@ -863,7 +882,7 @@ const inlineStyles = `
   .related-product-title {
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--text-color-dark);
+    color: var(--ugflix-text-primary);
     margin-bottom: 0.5rem;
     line-height: 1.3;
     display: -webkit-box;
@@ -875,7 +894,7 @@ const inlineStyles = `
   }
 
   .related-product-title:hover {
-    color: var(--primary-color);
+    color: var(--ugflix-primary);
   }
 
   .related-product-price {
@@ -888,17 +907,17 @@ const inlineStyles = `
   .related-product-price-current {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--primary-color);
+    color: var(--ugflix-primary);
   }
 
   .related-product-price-original {
     font-size: 0.8rem;
-    color: var(--text-color-muted);
+    color: var(--ugflix-text-muted);
     text-decoration: line-through;
   }
 
   .related-product-discount {
-    background: var(--accent-color);
+    background: var(--ugflix-accent);
     color: white;
     font-size: 0.7rem;
     font-weight: 500;
@@ -929,25 +948,26 @@ const inlineStyles = `
   }
 
   .related-product-btn-primary {
-    background: var(--primary-color);
+    background: var(--ugflix-primary);
     color: white;
   }
 
   .related-product-btn-primary:hover {
-    background: var(--primary-color-dark);
+    background: var(--ugflix-primary);
+    opacity: 0.9;
     transform: translateY(-1px);
   }
 
   .related-product-btn-outline {
     background: transparent;
-    color: var(--text-color-dark);
-    border: 1px solid var(--border-color);
+    color: var(--ugflix-text-primary);
+    border: 1px solid var(--ugflix-border);
   }
 
   .related-product-btn-outline:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background: var(--primary-color-light);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-primary);
+    background: rgba(183, 28, 28, 0.1);
   }
 
   .slider-button {
@@ -958,9 +978,9 @@ const inlineStyles = `
     height: 32px;
     border: none;
     border-radius: 50%;
-    background: var(--white);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    color: var(--text-color-dark);
+    background: var(--ugflix-bg-secondary);
+    box-shadow: var(--ugflix-shadow-sm);
+    color: var(--ugflix-text-primary);
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
@@ -972,7 +992,7 @@ const inlineStyles = `
   }
 
   .slider-button:hover {
-    background: var(--primary-color);
+    background: var(--ugflix-primary);
     color: white;
     transform: translateY(-50%) scale(1.1);
   }
@@ -1059,49 +1079,29 @@ const inlineStyles = `
       font-size: 0.7rem;
     }
   }
-    transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    background: var(--white);
-    border: 1px solid var(--border-color);
+
+  /* Related Products Loading & Empty States */
+  .related-products-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-color-muted);
+    font-style: italic;
+  }
+
+  .skeleton-box {
+    background: linear-gradient(90deg, var(--bg-light) 25%, var(--background-light) 50%, var(--bg-light) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
     border-radius: var(--border-radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-    color: var(--text-color-dark);
-    transition: all var(--transition-speed) var(--transition-timing);
-    z-index: 2;
-    box-shadow: var(--shadow-sm);
   }
 
-  .slider-button:hover {
-    background: var(--primary-color);
-    color: var(--white);
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-md);
-  }
-
-  .slider-button.prev {
-    left: -18px;
-  }
-
-  .slider-button.next {
-    right: -18px;
-  }
-
-  .slider-button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    background: var(--background-light);
-    color: var(--text-color-light);
-  }
-
-  .slider-button:disabled:hover {
-    background: var(--background-light);
-    color: var(--text-color-light);
-    border-color: var(--border-color);
+  @keyframes skeleton-loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 
   /* Fullscreen Modal Styles */
@@ -1419,7 +1419,7 @@ const inlineStyles = `
   .product-description-content {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--text-color);
+    color: var(--ugflix-text-primary);
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
@@ -1433,6 +1433,7 @@ const inlineStyles = `
   .product-description-content p {
     margin-bottom: 1rem;
     line-height: 1.6;
+    color: var(--ugflix-text-primary);
   }
 
   .product-description-content h1,
@@ -1441,7 +1442,7 @@ const inlineStyles = `
   .product-description-content h4,
   .product-description-content h5,
   .product-description-content h6 {
-    color: var(--primary-color);
+    color: var(--ugflix-primary);
     font-weight: 600;
     margin: 1.5rem 0 0.75rem 0;
     line-height: 1.3;
@@ -1459,11 +1460,13 @@ const inlineStyles = `
   .product-description-content ol {
     margin: 1rem 0;
     padding-left: 1.5rem;
+    color: var(--ugflix-text-primary);
   }
 
   .product-description-content li {
     margin-bottom: 0.5rem;
     line-height: 1.5;
+    color: var(--ugflix-text-primary);
   }
 
   /* Images */
@@ -1484,7 +1487,7 @@ const inlineStyles = `
 
   .product-description-content figcaption {
     font-size: 0.75rem;
-    color: var(--text-color-light);
+    color: var(--ugflix-text-secondary);
     margin-top: 0.5rem;
     font-style: italic;
   }
@@ -1495,8 +1498,8 @@ const inlineStyles = `
     border-collapse: collapse;
     margin: 1.5rem 0;
     font-size: 0.875rem;
-    background: var(--white);
-    border-radius: var(--border-radius);
+    background: var(--ugflix-bg-secondary);
+    border-radius: 0px;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
   }
@@ -1505,13 +1508,14 @@ const inlineStyles = `
   .product-description-content table td {
     padding: 0.75rem;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--ugflix-border);
     vertical-align: top;
+    color: var(--ugflix-text-primary);
   }
 
   .product-description-content table th {
-    background: var(--background-light);
-    color: var(--text-color-dark);
+    background: var(--ugflix-bg-secondary);
+    color: var(--ugflix-text-primary);
     font-weight: 600;
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -1523,36 +1527,37 @@ const inlineStyles = `
   }
 
   .product-description-content table tr:hover {
-    background: var(--background-light);
+    background: var(--ugflix-bg-card);
   }
 
   /* Links */
   .product-description-content a {
-    color: var(--primary-color);
+    color: var(--ugflix-primary);
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: all var(--transition-speed) var(--transition-timing);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
   }
 
   .product-description-content a:hover {
-    color: var(--primary-color-dark);
-    border-bottom-color: var(--primary-color);
+    color: var(--ugflix-accent);
+    border-bottom-color: var(--ugflix-primary);
   }
 
   /* Blockquotes */
   .product-description-content blockquote {
     margin: 1.5rem 0;
     padding: 1rem 1.5rem;
-    border-left: 4px solid var(--primary-color);
-    background: var(--background-light);
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    border-left: 4px solid var(--ugflix-primary);
+    background: var(--ugflix-bg-secondary);
+    border-radius: 0 4px 4px 0;
     font-style: italic;
+    color: var(--ugflix-text-primary);
   }
 
   /* Code */
   .product-description-content code {
-    background: var(--background-light);
-    color: var(--primary-color);
+    background: var(--ugflix-bg-secondary);
+    color: var(--ugflix-primary);
     padding: 0.2rem 0.4rem;
     border-radius: 4px;
     font-family: 'Courier New', monospace;
@@ -1560,10 +1565,10 @@ const inlineStyles = `
   }
 
   .product-description-content pre {
-    background: var(--background-light);
-    color: var(--text-color-dark);
+    background: var(--ugflix-bg-secondary);
+    color: var(--ugflix-text-primary);
     padding: 1rem;
-    border-radius: var(--border-radius);
+    border-radius: 4px;
     overflow-x: auto;
     margin: 1rem 0;
     font-family: 'Courier New', monospace;
@@ -1581,21 +1586,22 @@ const inlineStyles = `
   .product-description-content hr {
     border: none;
     height: 1px;
-    background: var(--border-color);
+    background: var(--ugflix-border);
     margin: 2rem 0;
   }
 
   /* Strong and emphasis */
   .product-description-content strong,
   .product-description-content b {
-    color: var(--text-color-dark);
+    color: var(--ugflix-text-primary);
     font-weight: 600;
   }
 
   .product-description-content em,
   .product-description-content i {
     font-style: italic;
-    color: var(--text-color);
+    color: var(--ugflix-text-primary);
+  }
   }
 
   /* Video and iframe responsiveness */
@@ -1655,14 +1661,14 @@ const inlineStyles = `
      Page Navigator Styling
      =================================================================== */
   .page-navigator {
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--ugflix-border);
     padding-top: 1rem;
   }
 
   .navigator-title {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--text-color-dark);
+    color: var(--ugflix-text-primary);
     margin-bottom: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1680,11 +1686,11 @@ const inlineStyles = `
     gap: 0.75rem;
     padding: 0.75rem;
     background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    color: var(--text-color);
+    border: 1px solid var(--ugflix-border);
+    border-radius: 0px;
+    color: var(--ugflix-text-primary);
     text-decoration: none;
-    transition: all var(--transition-speed) var(--transition-timing);
+    transition: all var(--ugflix-transition-speed) var(--ugflix-transition-timing);
     cursor: pointer;
     font-size: 0.875rem;
     width: 100%;
@@ -1692,26 +1698,27 @@ const inlineStyles = `
   }
 
   .nav-link-btn:hover {
-    background: var(--background-light);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    background: var(--ugflix-bg-secondary);
+    border-color: var(--ugflix-primary);
+    color: var(--ugflix-primary);
     transform: translateX(2px);
   }
 
   .nav-link-btn:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--primary-color-light);
+    box-shadow: 0 0 0 2px rgba(183, 28, 28, 0.3);
   }
 
   .nav-link-btn i {
     font-size: 1rem;
     width: 16px;
     text-align: center;
-    color: var(--primary-color);
+    color: var(--ugflix-primary);
   }
 
   .nav-link-btn span {
     font-weight: 500;
+    color: var(--ugflix-text-primary);
   }
 
   /* Mobile responsiveness for navigator */
@@ -1749,9 +1756,8 @@ const inlineStyles = `
     margin: 0 auto;
   }
 
-  .mobile-btn-add-to-cart,
-  .mobile-btn-buy-now {
-    flex: 1;
+  .mobile-btn-contact-seller {
+    width: 100%;
     padding: 0.875rem 1rem;
     font-weight: 600;
     font-size: 0.95rem;
@@ -1762,35 +1768,20 @@ const inlineStyles = `
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-  }
-
-  .mobile-btn-add-to-cart {
-    background: var(--white);
-    color: var(--primary-color);
-  }
-
-  .mobile-btn-add-to-cart:hover:not(:disabled) {
-    background: var(--primary-color-light);
-    color: var(--primary-color);
-    border-color: var(--primary-color);
-  }
-
-  .mobile-btn-buy-now {
     background: var(--primary-color);
     color: var(--white);
     border-color: var(--primary-color);
   }
 
-  .mobile-btn-buy-now:hover:not(:disabled) {
+  .mobile-btn-contact-seller:hover:not(:disabled) {
     background: var(--primary-color-dark);
     color: var(--white);
     border-color: var(--primary-color-dark);
+    transform: translateY(-1px);
   }
 
-  .mobile-btn-add-to-cart:disabled,
-  .mobile-btn-buy-now:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  .mobile-btn-contact-seller:focus {
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.25);
   }
 
   /* Show mobile bar only on mobile devices */
@@ -1802,6 +1793,29 @@ const inlineStyles = `
     /* Add bottom padding to container to prevent content overlap */
     .container {
       padding-bottom: 100px;
+    }
+
+    /* Improve mobile spacing */
+    .row {
+      margin: 0 -8px;
+    }
+
+    .row > * {
+      padding: 0 8px;
+    }
+
+    /* Better mobile product info spacing */
+    .product-title {
+      margin-bottom: 0.75rem;
+    }
+
+    .category-badge {
+      margin-bottom: 1rem;
+    }
+
+    .rating-container {
+      margin-bottom: 1rem;
+      padding: 0.75rem;
     }
   }
 
@@ -1934,6 +1948,164 @@ const inlineStyles = `
       margin-top: -12px;
     }
   }
+
+  /* ===================================================================
+     COMPREHENSIVE MOBILE RESPONSIVENESS IMPROVEMENTS
+     =================================================================== */
+  
+  /* Large mobile screens (tablets) */
+  @media (max-width: 768px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .product-image-gallery {
+      margin-bottom: 1.5rem;
+    }
+    
+    .main-image-wrapper {
+      height: 300px;
+    }
+    
+    .current-price {
+      font-size: 1.75rem;
+    }
+    
+    .btn-contact-seller {
+      font-size: 1rem;
+      padding: 0.75rem 1.5rem;
+    }
+    
+    /* Product information spacing */
+    .product-info-section h4 {
+      font-size: 1rem;
+    }
+    
+    .attribute-label,
+    .attribute-value {
+      font-size: 0.75rem;
+    }
+  }
+
+  /* Small mobile screens */
+  @media (max-width: 576px) {
+    .container {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+    
+    /* Stack layout on mobile */
+    .col-md-6 {
+      margin-bottom: 1rem;
+    }
+    
+    .main-image-wrapper {
+      height: 250px;
+      margin-bottom: 1rem;
+    }
+    
+    .thumbnail-list {
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .current-price {
+      font-size: 1.5rem;
+    }
+    
+    .old-price {
+      font-size: 0.9rem;
+    }
+    
+    .btn-contact-seller {
+      width: 100%;
+      font-size: 0.95rem;
+      padding: 0.75rem;
+      margin-top: 1rem;
+    }
+    
+    /* Product info mobile layout */
+    .product-info-section {
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .product-info-section h4 {
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .info-row {
+      padding: 0.5rem 0;
+    }
+    
+    .info-label {
+      font-size: 0.8rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+      font-size: 0.85rem;
+    }
+    
+    /* Share buttons mobile */
+    .share-section {
+      margin-top: 1rem;
+    }
+    
+    .share-buttons {
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .share-btn {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+    }
+    
+    /* Navigation improvements */
+    .page-navigator {
+      margin-top: 1rem;
+    }
+    
+    .navigator-links {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .nav-link-btn {
+      font-size: 0.8rem;
+      padding: 0.5rem 0.75rem;
+    }
+  }
+
+  /* Extra small screens */
+  @media (max-width: 480px) {
+    .container {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+    
+    .main-image-wrapper {
+      height: 220px;
+    }
+    
+    .current-price {
+      font-size: 1.4rem;
+    }
+  }
+
+  /* Mobile landscape and small tablet improvements */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .main-image-wrapper {
+      height: 200px;
+    }
+    
+    .related-product-image {
+      height: 120px;
+    }
+  }
 `;
 
 interface RouteParams {
@@ -1944,9 +2116,14 @@ const ProductDetailPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { addToCart: addToCartHook, isInCart } = useCart();
 
   const productId = useMemo(() => parseInt(id || "0", 10), [id]);
+  
+  console.log("🔍 ProductDetailPage Debug:", {
+    url_id: id,
+    parsed_productId: productId,
+    url: window.location.href
+  });
 
   const {
     data: product,
@@ -1963,6 +2140,15 @@ const ProductDetailPage: React.FC = () => {
     refetchOnFocus: true,
     refetchOnReconnect: true,
   });
+  
+  console.log("🔍 Product Query Debug:", {
+    productId,
+    product,
+    isLoading,
+    isFetching,
+    isError,
+    error
+  });
 
   // Force refetch when productId changes
   useEffect(() => {
@@ -1976,31 +2162,32 @@ const ProductDetailPage: React.FC = () => {
     // Product data changed, component will re-render with new data
   }, [product, isLoading, isFetching, isError, id]);
 
-  // Fetch related products
-  const { data: relatedProductsData } = useGetProductsQuery(
+  // Fetch related products - just get random products instead of category-based
+  const { data: relatedProductsData, isLoading: isLoadingRelated } = useGetProductsQuery(
     {
       page: 1,
-      limit: 4,
-      category: product?.category || undefined,
+      limit: 8, // Get more to account for filtering current product
+      // Remove category filter to get random products
     },
     {
-      skip: !product?.category,
+      skip: false, // Always fetch products
     }
   );
 
-  const relatedProducts = relatedProductsData?.data || [];
+  // Filter out current product and limit to 4 items
+  const relatedProducts = (relatedProductsData?.data || [])
+    .filter(item => item.id !== product?.id)
+    .slice(0, 4);
 
   // Local UI state
   const [selectedImage, setSelectedImage] = useState<string>("");
   const [imageErrored, setImageErrored] = useState(false);
-  const [quantity, setQuantity] = useState(1);
   const [variantsSelection, setVariantsSelection] = useState<
     Record<string, string>
   >({});
   const [showModal, setShowModal] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(0);
   const [modalImageIndex, setModalImageIndex] = useState(0);
-  const [showReviewModal, setShowReviewModal] = useState(false);
 
   // Handle tag click navigation
   const handleTagClick = (tag: string) => {
@@ -2012,12 +2199,10 @@ const ProductDetailPage: React.FC = () => {
     // Reset all local state to prevent showing old product data
     setSelectedImage("");
     setImageErrored(false);
-    setQuantity(1);
     setVariantsSelection({});
     setShowModal(false);
     setSliderPosition(0);
     setModalImageIndex(0);
-    setShowReviewModal(false);
     
     // Scroll to top when product changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2028,7 +2213,15 @@ const ProductDetailPage: React.FC = () => {
     if (!product) return;
 
     try {
-      setSelectedImage(product.getMainImage());
+      // Use the same logic as ProductCard - getProductImage from utils
+      const mainImage = getProductImage(product);
+      console.log("🖼️ Product image debug:", {
+        feature_photo: product.feature_photo,
+        rates: product.rates,
+        generated_image_url: mainImage
+      });
+      
+      setSelectedImage(mainImage);
       setImageErrored(false);
 
       const initial: Record<string, string> = {};
@@ -2042,7 +2235,7 @@ const ProductDetailPage: React.FC = () => {
       setVariantsSelection(initial);
     } catch (error) {
       console.error("Error initializing product data:", error);
-      setSelectedImage("/media/svg/files/blank-image.svg");
+      setSelectedImage(getProductImage(product) || Utils.img('logo.png'));
       setImageErrored(true);
     }
   }, [product]);
@@ -2123,111 +2316,13 @@ const ProductDetailPage: React.FC = () => {
     () => (total ? Math.min(100, (sold / total) * 100) : 0),
     [total, sold]
   );
-  const outOfStock = useMemo(
-    () => total > 0 && remaining <= 0,
-    [total, remaining]
-  );
 
   // Handlers
-  const onQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value, 10);
-    if (isNaN(val)) return setQuantity(1);
-    if (val < 1) return setQuantity(1);
-    if (val > remaining) {
-      dispatch(
-        showNotification({
-          message: `Only ${remaining} available`,
-          type: "warning",
-        })
-      );
-      return setQuantity(remaining);
-    }
-    setQuantity(val);
-  };
 
   const onVariantSelect = (type: string, option: string) =>
     setVariantsSelection((prev) => ({ ...prev, [type]: option }));
 
-  const onAddToCart = async () => {
-    try {
-      if (outOfStock || quantity < 1) {
-        dispatch(
-          showNotification({
-            message: "Cannot add to cart – out of stock or invalid quantity.",
-            type: "error",
-          })
-        );
-        return;
-      }
 
-      const variant = {
-        color: variantsSelection.Color || variantsSelection.color || "",
-        size: variantsSelection.Size || variantsSelection.size || "",
-        ...variantsSelection,
-      };
-
-      if (product) {
-        const success = await addToCartHook(product, quantity, variant);
-
-        if (success) {
-          setQuantity(1);
-        }
-      }
-    } catch (error) {
-      console.error("Error in onAddToCart:", error);
-      dispatch(
-        showNotification({
-          message: "Failed to add item to cart",
-          type: "error",
-        })
-      );
-    }
-  };
-
-  const onBuyNow = async () => {
-    if (outOfStock || quantity < 1) {
-      dispatch(
-        showNotification({
-          message: "Cannot proceed – out of stock or invalid quantity.",
-          type: "error",
-        })
-      );
-      return;
-    }
-
-    const variant = {
-      color: variantsSelection.Color || variantsSelection.color || "",
-      size: variantsSelection.Size || variantsSelection.size || "",
-      ...variantsSelection,
-    };
-
-    if (product) {
-      // If not in cart, add it first
-      if (!productInCart) {
-        const success = await addToCartHook(product, quantity, variant);
-        if (!success) {
-          dispatch(
-            showNotification({
-              message: "Failed to add item to cart",
-              type: "error",
-            })
-          );
-          return;
-        }
-      }
-
-      // Navigate to checkout
-      dispatch(
-        showNotification({
-          message: `Proceeding to checkout...`,
-          type: "info",
-        })
-      );
-      
-      // Redirect to checkout page
-      navigate("/checkout");
-    }
-  };
 
   const renderStars = (rate: number) => {
     const full = Math.floor(rate);
@@ -2274,24 +2369,50 @@ const ProductDetailPage: React.FC = () => {
     if (!product) return [];
 
     try {
-      const mainImage =
-        product.getMainImage && typeof product.getMainImage === "function"
-          ? product.getMainImage()
-          : product.feature_photo || "/media/svg/files/blank-image.svg";
+      console.log("🖼️ Gallery generation - product data:", {
+        feature_photo: product.feature_photo,
+        rates: product.rates
+      });
+      
+      // Use the same logic as ProductCard for main image
+      const mainImage = getProductImage(product);
+      console.log("🖼️ Gallery main image URL:", mainImage);
+      
+      // Parse rates field which contains gallery images as JSON string
+      let galleryImages: string[] = [];
+      if (product.rates) {
+        try {
+          const ratesData = JSON.parse(product.rates);
+          console.log("🖼️ Parsed rates data:", ratesData);
+          if (Array.isArray(ratesData)) {
+            galleryImages = ratesData
+              .map((rate, index) => {
+                console.log(`🖼️ Processing rate ${index}:`, rate);
+                if (rate.src && rate.src !== 'logo.png') {
+                  // Clean up the path - remove escaped slashes
+                  const cleanPath = rate.src.replace(/\\\//g, '/');
+                  const imgUrl = Utils.img(cleanPath);
+                  console.log("🖼️ Gallery image from rates:", rate.src, "->", imgUrl);
+                  return imgUrl;
+                }
+                return null;
+              })
+              .filter(Boolean);
+          }
+        } catch (parseError) {
+          console.error("Error parsing rates JSON:", parseError);
+        }
+      }
 
-      const allImages =
-        product.getAllImages && typeof product.getAllImages === "function"
-          ? product.getAllImages() || []
-          : [];
-
-      // Combine main image with all images and remove duplicates
-      const imageSet = new Set([mainImage, ...allImages].filter(Boolean));
+      // Combine main image with gallery images and remove duplicates
+      const imageSet = new Set([mainImage, ...galleryImages].filter(Boolean));
       const uniqueImages = Array.from(imageSet);
-
+      
+      console.log("🖼️ Final gallery URLs:", uniqueImages);
       return uniqueImages;
     } catch (error) {
       console.error("Error generating gallery:", error);
-      return ["/media/svg/files/blank-image.svg"];
+      return [getProductImage(product) || Utils.img('logo.png')];
     }
   }, [product]);
 
@@ -2321,26 +2442,15 @@ const ProductDetailPage: React.FC = () => {
   // Get current modal image with fallback
   const currentModalImage = useMemo(() => {
     if (!gallery.length) {
-      return selectedImage || "/media/svg/files/blank-image.svg";
+      return selectedImage || Utils.img('logo.png');
     }
     const image = gallery[modalImageIndex] || gallery[0] || selectedImage;
-    return image || "/media/svg/files/blank-image.svg";
+    return image || Utils.img('logo.png');
   }, [gallery, modalImageIndex, selectedImage]);
 
   // Touch/swipe support for mobile modal navigation
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
-
-  // Check if current product with selected variants is in cart
-  const productInCart = useMemo(() => {
-    if (!product) return false;
-    const currentVariant = {
-      color: variantsSelection.Color || variantsSelection.color || "",
-      size: variantsSelection.Size || variantsSelection.size || "",
-      ...variantsSelection,
-    };
-    return isInCart(product.id, currentVariant);
-  }, [product, variantsSelection, isInCart]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -2453,11 +2563,7 @@ const ProductDetailPage: React.FC = () => {
           availability: product.in_stock > 0 ? "InStock" : "OutOfStock",
           brand: "UgFlix",
           sku: `PRODUCT-${product.id}`,
-          category: product.category_text || undefined,
-          rating: product.average_rating > 0 ? {
-            average: product.average_rating,
-            count: product.review_count || 0
-          } : undefined
+          category: product.category_text || undefined
         }}
       />
       <style dangerouslySetInnerHTML={{ __html: inlineStyles }} />
@@ -2479,12 +2585,15 @@ const ProductDetailPage: React.FC = () => {
                         <ShimmerImage
                           src={
                             imageErrored
-                              ? "/media/svg/files/blank-image.svg"
-                              : selectedImage
+                              ? Utils.img('logo.png')
+                              : selectedImage || Utils.img('logo.png')
                           }
                           alt={product.name}
                           className="img-fluid"
-                          onError={() => setImageErrored(true)}
+                          onError={() => {
+                            console.log("🖼️ Image failed to load:", selectedImage);
+                            setImageErrored(true);
+                          }}
                           style={{
                             width: "100%",
                             height: "100%",
@@ -2579,34 +2688,11 @@ const ProductDetailPage: React.FC = () => {
                       <span className="category-badge">
                         {product.category_text || "Uncategorized"}
                       </span>
-
-                      <WishlistButton
-                        productId={product.id}
-                        productName={product.name}
-                        variant="icon"
-                        size="md"
-                      />
                     </div>
 
                     <h1 className="product-title">{product.name}</h1>
 
                     {/* Rating */}
-                    {product.rating && Number(product.rating) > 0 && (
-                      <div className="rating-container mb-4">
-                        <div className="rating-stars">
-                          {renderStars(Number(product.rating))}
-                        </div>
-                        <span className="rating-value">
-                          {Number(product.rating).toFixed(1)}
-                        </span>
-                        <span className="rating-count">
-                          ({Number(product.reviewsCount) || 0} review
-                          {(Number(product.reviewsCount) || 0) !== 1 ? "s" : ""}
-                          )
-                        </span>
-                      </div>
-                    )}
-
                     {/* Product Attributes/Specifications */}
                     {Array.isArray(product.attributes_array) &&
                       product.attributes_array.length > 0 && (
@@ -2792,50 +2878,17 @@ const ProductDetailPage: React.FC = () => {
                     </div>
                   )}
 
-                {/* Quantity Selection */}
-                <div className="quantity-section w-100 mt-0">
-                  <label className="quantity-label">Quantity:</label>
-                  <Form.Control
-                  type="number"
-                  min="1"
-                  max={remaining}
-                  value={quantity}
-                  onChange={onQuantityChange}
-                  disabled={outOfStock}
-                  className="quantity-input w-100"
-                  />
-                </div>
-
-                {/* Action Buttons */}
+                {/* Contact Seller Button */}
                 <div className="action-buttons">
-                  <Button
-                    className="btn-add-to-cart"
-                    onClick={onAddToCart}
-                    disabled={outOfStock}
+                  <ContactSellerButton
+                    productId={parseInt(id || '0')}
+                    sellerId={product.user}
+                    className="btn-contact-seller"
+                    size="lg"
                   >
-                    <i className="bi bi-cart-plus"></i>
-                    Add to Cart
-                  </Button>
-                  <Button
-                    className="btn-buy-now"
-                    onClick={onBuyNow}
-                    disabled={outOfStock}
-                  >
-                    <i className="bi bi-lightning"></i>
-                    Buy Now
-                  </Button>
-                  
-                  {/* Checkout Button - Shows when product is in cart */}
-                  {productInCart && (
-                    <Button
-                      className="btn-checkout"
-                      onClick={() => navigate("/checkout")}
-                      variant="success"
-                    >
-                      <i className="bi bi-check-circle me-2"></i>
-                      Proceed to Checkout
-                    </Button>
-                  )}
+                    <i className="bi bi-chat-dots me-2"></i>
+                    Contact Seller
+                  </ContactSellerButton>
                 </div>
 
                 {/* Page Navigator */}
@@ -2860,17 +2913,6 @@ const ProductDetailPage: React.FC = () => {
                       type="button"
                       className="nav-link-btn"
                       onClick={() => {
-                        const element = document.querySelector('[data-section="reviews"]');
-                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }}
-                    >
-                      <i className="bi bi-star"></i>
-                      <span>Reviews</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="nav-link-btn"
-                      onClick={() => {
                         const element = document.querySelector('.related-products');
                         element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       }}
@@ -2884,216 +2926,207 @@ const ProductDetailPage: React.FC = () => {
             </div>
           </Col>
         </Row>
-        {/* Product Details Cards */}
-        <Row className="mt-4">
-          {/* Reviews Card */}
-          <Col xs={12} className="mb-4">
-            <div data-section="reviews">
-              <ReviewList
-                productId={product.id}
-                onWriteReviewClick={() => setShowReviewModal(true)}
-                showWriteReviewButton={true}
-              />
-            </div>
-          </Col>
-        </Row>
+      </Container>
 
-        {/* Fullscreen Image Modal */}
-        <Modal
-          show={showModal}
-          onHide={handleModalClose}
-          size="xl"
-          centered
-          className="fullscreen-modal"
-          backdrop="static"
-        >
-          <Modal.Body>
-            <div
-              className="modal-image-container"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
+      {/* Fullscreen Image Modal */}
+      <Modal
+        show={showModal}
+        onHide={handleModalClose}
+        size="xl"
+        centered
+        className="fullscreen-modal"
+        backdrop="static"
+      >
+        <Modal.Body>
+          <div
+            className="modal-image-container"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <button
+              className="modal-close-btn"
+              onClick={handleModalClose}
+              aria-label="Close modal"
             >
-              <button
-                className="modal-close-btn"
-                onClick={handleModalClose}
-                aria-label="Close modal"
-              >
-                ×
-              </button>
+              ×
+            </button>
 
-              {gallery.length > 1 && (
-                <>
-                  <button
-                    className="modal-nav-btn prev"
-                    onClick={handleModalPrev}
-                    disabled={modalImageIndex === 0}
-                    aria-label="Previous image"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    className="modal-nav-btn next"
-                    onClick={handleModalNext}
-                    disabled={modalImageIndex === gallery.length - 1}
-                    aria-label="Next image"
-                  >
-                    ›
-                  </button>
-                </>
-              )}
+            {gallery.length > 1 && (
+              <>
+                <button
+                  className="modal-nav-btn prev"
+                  onClick={handleModalPrev}
+                  disabled={modalImageIndex === 0}
+                  aria-label="Previous image"
+                >
+                  ‹
+                </button>
+                <button
+                  className="modal-nav-btn next"
+                  onClick={handleModalNext}
+                  disabled={modalImageIndex === gallery.length - 1}
+                  aria-label="Next image"
+                >
+                  ›
+                </button>
+              </>
+            )}
 
-              <div className="modal-image-wrapper">
-                {currentModalImage ? (
-                  <ShimmerImage
-                    src={currentModalImage}
-                    alt={`${product.name} - Image ${modalImageIndex + 1}`}
-                    width="100%"
-                    height="100%"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      maxWidth: "100%",
-                      maxHeight: "100%",
-                      objectFit: "contain",
-                      borderRadius: "0px",
-                      display: "block",
-                    }}
-                    objectFit="contain"
-                    loaderBackgroundColor="rgba(255, 255, 255, 0.2)"
-                    loaderForegroundColor="rgba(255, 255, 255, 0.4)"
-                    loaderSpeed={1.2}
-                    onError={(e) => {
-                      // Optionally handle image load error here
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      background: "rgba(255, 255, 255, 0.1)",
-                      color: "rgba(255, 255, 255, 0.7)",
-                      fontSize: "18px",
-                    }}
-                  >
-                    No image available
-                  </div>
-                )}
-              </div>
-
-              {gallery.length > 1 && (
-                <div className="modal-image-counter">
-                  {modalImageIndex + 1}/{gallery.length}
+            <div className="modal-image-wrapper">
+              {currentModalImage ? (
+                <ShimmerImage
+                  src={currentModalImage}
+                  alt={`${product.name} - Image ${modalImageIndex + 1}`}
+                  width="100%"
+                  height="100%"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    objectFit: "contain",
+                    borderRadius: "0px",
+                    display: "block",
+                  }}
+                  objectFit="contain"
+                  loaderBackgroundColor="rgba(255, 255, 255, 0.2)"
+                  loaderForegroundColor="rgba(255, 255, 255, 0.4)"
+                  loaderSpeed={1.2}
+                  onError={(e) => {
+                    // Optionally handle image load error here
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(255, 255, 255, 0.1)",
+                    color: "rgba(255, 255, 255, 0.7)",
+                    fontSize: "18px",
+                  }}
+                >
+                  No image available
                 </div>
               )}
             </div>
-          </Modal.Body>
-        </Modal>
-      </Container>
+
+            {gallery.length > 1 && (
+              <div className="modal-image-counter">
+                {modalImageIndex + 1}/{gallery.length}
+              </div>
+            )}
+          </div>
+        </Modal.Body>
+      </Modal>
 
       {/* Related Products Section - Separate Card */}
-      {relatedProducts.length > 0 && (
+      {product && (
         <Container fluid className="mt-4">
           <div className="related-products">
             <h3>Related Products</h3>
             
-            <div className="related-products-slider">
-              <button
-                className="slider-button prev"
-                onClick={handleSliderPrev}
-                type="button"
-                aria-label="Previous products"
-              >
-                ‹
-              </button>
-              
-              <div className="related-products-container">
-                {relatedProducts.map((relatedProduct) => (
-                  <div key={relatedProduct.id} className="related-product-item">
-                    <div className="related-product-card">
-                      <div className="related-product-image">
-                        <img
-                          src={Utils.img(relatedProduct.feature_photo)}
-                          alt={relatedProduct.name}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = Utils.img('default.png');
-                          }}
-                        />
-                      </div>
-                      
-                      <div className="related-product-content">
-                        <Link
-                          to={`/product/${relatedProduct.id}`}
-                          className="related-product-title"
-                        >
-                          {relatedProduct.name}
-                        </Link>
-                        
-                        <div className="related-product-price">
-                          <span className="related-product-price-current">
-                            UGX {relatedProduct.price_2 || relatedProduct.price_1}
-                          </span>
-                          {relatedProduct.price_2 && parseFloat(relatedProduct.price_2) < parseFloat(relatedProduct.price_1) && (
-                            <>
-                              <span className="related-product-price-original">
-                                UGX {relatedProduct.price_1}
-                              </span>
-                              <span className="related-product-discount">
-                                -{Math.round(((parseFloat(relatedProduct.price_1) - parseFloat(relatedProduct.price_2)) / parseFloat(relatedProduct.price_1)) * 100)}%
-                              </span>
-                            </>
-                          )}
+            {isLoadingRelated ? (
+              <div className="related-products-loading">
+                <div className="related-products-container">
+                  {[1, 2, 3, 4].map((index) => (
+                    <div key={index} className="related-product-item">
+                      <div className="related-product-card">
+                        <div className="related-product-image">
+                          <div className="skeleton-box" style={{ width: '100%', height: '100%' }}></div>
                         </div>
-                        
-                        <div className="related-product-actions">
-                          <button
-                            className="related-product-btn related-product-btn-primary"
-                            onClick={async () => {
-                              try {
-                                const success = await addToCartHook(relatedProduct, 1);
-                                if (success) {
-                                  dispatch(showNotification({
-                                    message: `${relatedProduct.name} added to cart!`,
-                                    type: 'success'
-                                  }));
-                                }
-                              } catch (error) {
-                                dispatch(showNotification({
-                                  message: 'Failed to add item to cart',
-                                  type: 'error'
-                                }));
-                              }
-                            }}
-                          >
-                            + Cart
-                          </button>
-                          <Link
-                            to={`/product/${relatedProduct.id}`}
-                            className="related-product-btn related-product-btn-outline"
-                          >
-                            View
-                          </Link>
+                        <div className="related-product-content">
+                          <div className="skeleton-box" style={{ width: '80%', height: '16px', marginBottom: '8px' }}></div>
+                          <div className="skeleton-box" style={{ width: '60%', height: '14px', marginBottom: '12px' }}></div>
+                          <div className="skeleton-box" style={{ width: '100%', height: '32px' }}></div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-              
-              <button
-                className="slider-button next"
-                onClick={handleSliderNext}
-                type="button"
-                aria-label="Next products"
-              >
-                ›
-              </button>
-            </div>
+            ) : relatedProducts.length > 0 ? (
+              <div className="related-products-slider">
+                <button
+                  className="slider-button prev"
+                  onClick={handleSliderPrev}
+                  type="button"
+                  aria-label="Previous products"
+                >
+                  ‹
+                </button>
+                
+                <div className="related-products-container">
+                  {relatedProducts.map((relatedProduct) => (
+                    <div key={relatedProduct.id} className="related-product-item">
+                      <div className="related-product-card">
+                        <div className="related-product-image">
+                          <img
+                            src={Utils.img(relatedProduct.feature_photo)}
+                            alt={relatedProduct.name}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = Utils.img('logo.png');
+                            }}
+                          />
+                        </div>
+                        
+                        <div className="related-product-content">
+                          <Link
+                            to={`/product/${relatedProduct.id}`}
+                            className="related-product-title"
+                          >
+                            {relatedProduct.name}
+                          </Link>
+                          
+                          <div className="related-product-price">
+                            <span className="related-product-price-current">
+                              UGX {relatedProduct.price_2 || relatedProduct.price_1}
+                            </span>
+                            {relatedProduct.price_2 && parseFloat(relatedProduct.price_2) < parseFloat(relatedProduct.price_1) && (
+                              <>
+                                <span className="related-product-price-original">
+                                  UGX {relatedProduct.price_1}
+                                </span>
+                                <span className="related-product-discount">
+                                  -{Math.round(((parseFloat(relatedProduct.price_1) - parseFloat(relatedProduct.price_2)) / parseFloat(relatedProduct.price_1)) * 100)}%
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          
+                          <div className="related-product-actions">
+                            <Link
+                              to={`/product/${relatedProduct.id}`}
+                              className="related-product-btn related-product-btn-primary"
+                            >
+                              View Details
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <button
+                  className="slider-button next"
+                  onClick={handleSliderNext}
+                  type="button"
+                  aria-label="Next products"
+                >
+                  ›
+                </button>
+              </div>
+            ) : (
+              <div className="related-products-empty">
+                <p>No related products found in this category.</p>
+              </div>
+            )}
           </div>
         </Container>
       )}
@@ -3101,36 +3134,17 @@ const ProductDetailPage: React.FC = () => {
       {/* Mobile Sticky Bottom Bar */}
       <div className="mobile-sticky-bottom">
         <div className="mobile-action-buttons">
-          <Button
-            className="mobile-btn-add-to-cart"
-            onClick={onAddToCart}
-            disabled={outOfStock}
+          <ContactSellerButton
+            productId={parseInt(id || '0')}
+            sellerId={product.user}
+            className="mobile-btn-contact-seller"
+            size="lg"
           >
-            <i className="bi bi-cart-plus"></i>
-            Add to Cart
-          </Button>
-          <Button
-            className="mobile-btn-buy-now"
-            onClick={onBuyNow}
-            disabled={outOfStock}
-          >
-            <i className="bi bi-lightning"></i>
-            Buy Now
-          </Button>
+            <i className="bi bi-chat-dots me-2"></i>
+            Contact Seller
+          </ContactSellerButton>
         </div>
       </div>
-
-      {/* Review Form Modal */}
-      <ReviewForm
-        productId={product.id}
-        show={showReviewModal}
-        onHide={() => setShowReviewModal(false)}
-        asModal={true}
-        onReviewSubmitted={() => {
-          // The ReviewList will automatically refetch due to cache invalidation
-          // Don't close modal here - let ReviewForm handle it after successful submission
-        }}
-      />
     </>
   );
 };

@@ -439,15 +439,70 @@ export class ApiService {
    */
   static async getManifest(): Promise<any> {
     try {
-      // Use the optimized manifest service instead of direct API calls
-      const { manifestService } = await import('./manifest.service');
-      const response = await manifestService.getManifest();
+      // Use the shop manifest service for categories and shop data
+      const { default: shopManifestService } = await import('./ManifestService');
+      const homepageManifest = await shopManifestService.loadHomepageManifest();
       
-      if (response.code === 1 && response.data) {
-        return response.data;
-      } else {
-        throw new Error(response.message || 'Failed to load manifest');
-      }
+      // Also get categories directly for the dropdown
+      const categories = await this.getCategories();
+      
+      // Build manifest in the format expected by the Redux slice
+      const manifest = {
+        app_info: {
+          app_name: "UgFlix Shop",
+          app_version: "1.0.0",
+          support_email: "support@ugflix.com",
+          support_phone: "+256700000000"
+        },
+        categories: categories, // Categories for dropdown
+        delivery_locations: [
+          { id: 1, name: "Kampala", delivery_fee: 5000 },
+          { id: 2, name: "Entebbe", delivery_fee: 8000 },
+          { id: 3, name: "Jinja", delivery_fee: 12000 }
+        ],
+        settings: {
+          app_theme: "light",
+          currency: "UGX",
+          language: "en",
+          notifications_enabled: true
+        },
+        features: {
+          shop_enabled: true,
+          movies_enabled: true,
+          job_seeker_enabled: true,
+          vendor_registration_enabled: true
+        },
+        counts: {
+          total_products: homepageManifest.topProducts.length,
+          total_categories: categories.length,
+          total_orders: 0,
+          total_users: 0,
+          total_vendors: 0,
+          active_vendors: 0,
+          total_delivery_locations: 3,
+          active_promotions: 0,
+          wishlist_count: 0,
+          cart_count: 0,
+          notifications_count: 0,
+          unread_messages_count: 0,
+          pending_orders: 0,
+          completed_orders: 0,
+          cancelled_orders: 0,
+          processing_orders: 0,
+          recent_orders_this_week: 0,
+          orders_today: 0,
+          orders_this_month: 0
+        },
+        user: null,
+        is_authenticated: false,
+        featured_products: homepageManifest.topProducts,
+        recent_products: [],
+        recent_orders: [],
+        recent_search_suggestions: [],
+        wishlist: []
+      };
+      
+      return manifest;
     } catch (error: any) {
       // Use offline fallback for network errors
       if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {

@@ -105,6 +105,28 @@ const productsPageStyles = `
     border-color: var(--ugflix-primary);
   }
 
+  .search-input {
+    border: 1px solid var(--ugflix-border);
+    border-radius: 6px;
+    background-color: var(--ugflix-bg-card);
+    color: var(--ugflix-text-primary);
+    font-size: 14px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--ugflix-primary);
+    box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.2);
+    background-color: var(--ugflix-bg-card);
+    color: var(--ugflix-text-primary);
+  }
+
+  .search-input::placeholder {
+    color: var(--ugflix-text-muted);
+    font-size: 14px;
+  }
+
   .filters-sidebar {
     padding: 0;
     background: transparent;
@@ -459,10 +481,11 @@ const productsPageStyles = `
     }
   }
 
+  /* Keep 2 items per row on all mobile screens */
   @media (max-width: 480px) {
     .products-grid {
-      grid-template-columns: 1fr;
-      gap: 8px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
     }
   }
 
@@ -526,9 +549,12 @@ const ProductsPage: React.FC = () => {
   >();
   const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const [showFilters, setShowFilters] = useState(false); // Mobile filter collapse state
+  const [searchTerm, setSearchTerm] = useState(""); // Frontend search state
 
   // Check if mobile screen size
   const [isMobile, setIsMobile] = useState(false);
+
+  const ITEMS_PER_PAGE = 24;
 
   useEffect(() => {
     const checkMobile = () => {
@@ -550,35 +576,102 @@ const ProductsPage: React.FC = () => {
     const sort_order = searchParams.get("sort_order") || "desc";
     const min_price = searchParams.get("min_price") || "";
     const max_price = searchParams.get("max_price") || "";
+    const search = searchParams.get("search") || "";
 
     setCurrentPage(page);
     setSortBy(sort_by);
     setSortOrder(sort_order);
     setSelectedCategory(category ? parseInt(category) : undefined);
     setPriceRange({ min: min_price, max: max_price });
+    setSearchTerm(search);
   }, [searchParams]);
 
-  // Fetch products with current filters
+  // Load all products for frontend filtering (load more items to enable frontend filtering)
   const {
     data: productsData,
     isLoading,
     error,
   } = useGetProductsQuery({
-    page: currentPage,
-    limit: 24, // Changed to 24 for better grid layout (3x8 or 4x6)
-    category: selectedCategory,
-    sort_by: sortBy,
-    sort_order: sortOrder,
-    min_price: priceRange.min ? parseFloat(priceRange.min) : undefined,
-    max_price: priceRange.max ? parseFloat(priceRange.max) : undefined,
-    search: searchParams.get("search") || undefined,
+    page: 1,
+    limit: 200, // Load more products for frontend filtering
+    // Only use basic filtering at API level for performance
+    category: undefined, // We'll filter categories on frontend
+    sort_by: "created_at",
+    sort_order: "desc",
+    search: undefined, // We'll handle search on frontend
   });
 
   // Fetch categories for filter from manifest
   const categories = useManifestCategories();
 
-  const products = productsData?.data || [];
-  const totalPages = productsData?.last_page || 1;
+  const allProducts = productsData?.data || [];
+
+  // Frontend filtering and sorting logic
+  const getFilteredProducts = () => {
+    let filtered = [...allProducts];
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(product => 
+        product.name?.toLowerCase().includes(searchLower) ||
+        product.description?.toLowerCase().includes(searchLower) ||
+        product.category?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(product => product.category_id === selectedCategory);
+    }
+
+    // Filter by price range
+    if (priceRange.min) {
+      const minPrice = parseFloat(priceRange.min);
+      filtered = filtered.filter(product => parseFloat(product.price || "0") >= minPrice);
+    }
+    if (priceRange.max) {
+      const maxPrice = parseFloat(priceRange.max);
+      filtered = filtered.filter(product => parseFloat(product.price || "0") <= maxPrice);
+    }
+
+    // Sort products
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case "price":
+          aValue = parseFloat(a.price || "0");
+          bValue = parseFloat(b.price || "0");
+          break;
+        case "name":
+          aValue = a.name?.toLowerCase() || "";
+          bValue = b.name?.toLowerCase() || "";
+          break;
+        case "created_at":
+        default:
+          aValue = new Date(a.created_at || "").getTime();
+          bValue = new Date(b.created_at || "").getTime();
+          break;
+      }
+
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  };
+
+  const filteredProducts = getFilteredProducts();
+  
+  // Pagination logic for filtered products
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const products = filteredProducts.slice(startIndex, endIndex);
 
   // Update URL params when filters change
   const updateSearchParams = (
@@ -634,9 +727,16 @@ const ProductsPage: React.FC = () => {
     });
   };
 
+  const handleSearchChange = (searchValue: string) => {
+    setSearchTerm(searchValue);
+    setCurrentPage(1);
+    updateSearchParams({ search: searchValue, page: 1 });
+  };
+
   const clearFilters = () => {
     setSelectedCategory(undefined);
     setPriceRange({ min: "", max: "" });
+    setSearchTerm("");
     setSortBy("created_at");
     setSortOrder("desc");
     setCurrentPage(1);
@@ -794,10 +894,21 @@ const ProductsPage: React.FC = () => {
                   </div>
 
                   {/* Active Filters */}
-                  {(selectedCategory || priceRange.min || priceRange.max) && (
+                  {(selectedCategory || priceRange.min || priceRange.max || searchTerm) && (
                     <div className="active-filters">
                       <label className="filter-label">Active Filters</label>
                       <div className="filter-tags">
+                        {searchTerm && (
+                          <Badge
+                            bg="primary"
+                            className="filter-tag"
+                            onClick={() => handleSearchChange("")}
+                            role="button"
+                          >
+                            Search: "{searchTerm}"
+                            <span className="filter-tag-remove">×</span>
+                          </Badge>
+                        )}
                         {selectedCategory && categories && (
                           <Badge
                             bg="primary"
@@ -846,19 +957,36 @@ const ProductsPage: React.FC = () => {
                 {/* Enhanced Products Header */}
                 <div className="products-header">
                   <Row className="align-items-center">
-                    <Col md={8}>
+                    <Col md={6}>
                       <div className="page-title-section text-start">
                         <h1 className="page-title">{getPageTitle()}</h1>
-                        {productsData && (
+                        {filteredProducts && (
                           <p className="products-count">
                             <i className="bi bi-grid-3x3-gap me-2"></i>
-                            {productsData.total.toLocaleString()} product
-                            {productsData.total !== 1 ? "s" : ""} found
+                            {filteredProducts.length.toLocaleString()} product
+                            {filteredProducts.length !== 1 ? "s" : ""} found
+                            {allProducts.length > 0 && filteredProducts.length !== allProducts.length && (
+                              <span className="ms-1 text-muted">
+                                (filtered from {allProducts.length.toLocaleString()})
+                              </span>
+                            )}
                           </p>
                         )}
                       </div>
                     </Col>
-                    <Col md={4}>
+                    <Col md={3}>
+                      <div className="search-section">
+                        <Form.Control
+                          type="text"
+                          size="sm"
+                          placeholder="Search products..."
+                          className="search-input"
+                          value={searchTerm}
+                          onChange={(e) => handleSearchChange(e.target.value)}
+                        />
+                      </div>
+                    </Col>
+                    <Col md={3}>
                       <div className="sort-controls text-end">
                         <Form.Select
                           size="sm"
@@ -872,10 +1000,10 @@ const ProductsPage: React.FC = () => {
                         >
                           <option value="created_at_desc">Newest First</option>
                           <option value="created_at_asc">Oldest First</option>
-                          <option value="price_1_asc">
+                          <option value="price_asc">
                             Price: Low to High
                           </option>
-                          <option value="price_1_desc">
+                          <option value="price_desc">
                             Price: High to Low
                           </option>
                           <option value="name_asc">Name: A to Z</option>
@@ -938,12 +1066,17 @@ const ProductsPage: React.FC = () => {
                       <div className="pagination-section">
                         <div className="pagination-info">
                           <span className="pagination-text">
-                            Showing {(currentPage - 1) * 24 + 1} to{" "}
+                            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
                             {Math.min(
-                              currentPage * 24,
-                              productsData?.total || 0
+                              currentPage * ITEMS_PER_PAGE,
+                              filteredProducts.length
                             )}{" "}
-                            of {productsData?.total || 0} products
+                            of {filteredProducts.length} products
+                            {allProducts.length > 0 && filteredProducts.length !== allProducts.length && (
+                              <span className="ms-1 text-muted">
+                                (filtered from {allProducts.length} total)
+                              </span>
+                            )}
                           </span>
                         </div>
                         <div className="pagination-controls">

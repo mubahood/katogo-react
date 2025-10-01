@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import AppRoutes from "./routing/AppRoutes";
 import ScrollToTop from "./components/Layout/ScrollToTop";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
+import AppAuthWrapper from "./components/Auth/AppAuthWrapper";
 import { restoreAuthState, selectIsAuthenticated, selectUser } from "./store/slices/authSlice";
 import { CacheApiService } from "./services/CacheApiService";
 import AnalyticsService from "./services/AnalyticsService";
@@ -18,6 +19,7 @@ import "./styles/toast.css";
 
 // Import auth debugger for development
 import "./utils/authDebugger";
+import "./utils/testAuthFlow";
 
 const App: React.FC = () => {
   const dispatch = useDispatch();
@@ -55,7 +57,9 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <ScrollToTop />
-      <AppRoutes />
+      <AppAuthWrapper>
+        <AppRoutes />
+      </AppAuthWrapper>
       <ToastContainer
         position="top-center"
         autoClose={5000}
