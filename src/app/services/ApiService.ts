@@ -652,7 +652,8 @@ export class ApiService {
   }> {
     try {
       // Use the movies endpoint with comprehensive search parameter
-      const response = await http_get(`movies?search=${encodeURIComponent(query)}&per_page=${limit}`);
+      // Add live_search=1 to enable 25 result limit on backend
+      const response = await http_get(`movies?search=${encodeURIComponent(query)}&per_page=${limit}&live_search=1`);
       
       if (!response || response.code !== 1) {
         throw new Error('API request failed');

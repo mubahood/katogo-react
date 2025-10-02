@@ -230,12 +230,14 @@ const MovieCard: React.FC<MovieCardProps> = ({
           onError={handleImageError}
         />
         
-        {/* Premium Badge */}
-        {movie.is_premium && (
-          <div className="premium-badge">
-            <Award size={12} />
-          </div>
-        )}
+        {/* Add to Watchlist Button */}
+        <button 
+          className="watchlist-btn"
+          onClick={handleAddClick}
+          aria-label="Add to watchlist"
+        >
+          <Plus size={16} />
+        </button>
         
         {/* Progress Bar */}
         {showProgress && progressPercentage > 0 && (
@@ -298,20 +300,29 @@ const MovieCard: React.FC<MovieCardProps> = ({
           object-fit: cover;
         }
 
-        .premium-badge {
+        .watchlist-btn {
           position: absolute;
-          top: 0;
-          right: 0;
-          background: linear-gradient(135deg, #ffd700, #ffed4e);
-          color: #000;
-          padding: 6px 10px;
-          border-radius: 0;
-          font-size: 10px;
-          font-weight: 600;
+          top: 8px;
+          right: 8px;
+          background: rgba(0, 0, 0, 0.7);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
-          gap: 2px;
-          z-index: 3;
+          justify-content: center;
+          color: #fff;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          z-index: 5;
+          backdrop-filter: blur(10px);
+        }
+
+        .watchlist-btn:hover {
+          background: var(--ugflix-primary, #ff6b35);
+          border-color: var(--ugflix-primary, #ff6b35);
+          transform: scale(1.1);
         }
 
         .progress-container {
@@ -345,11 +356,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
           bottom: 0;
           left: 0;
           width: 100%;
-          height: 60px;
+          height: 80px;
           background: linear-gradient(
             transparent 0%,
-            rgba(0, 0, 0, 0.1) 30%,
-            rgba(0, 0, 0, 0.4) 100%
+            rgba(0, 0, 0, 0.5) 40%,
+            rgba(0, 0, 0, 0.85) 100%
           );
         }
 

@@ -11,7 +11,13 @@
   background: var(--ugflix-bg-secondary, #1a1a1a);
   /* border-bottom: 1px solid var(--ugflix-border, #333333); */
   position: relative;
-  overflow: visible;
+  overflow: visible !important;
+  z-index: 1000;
+}
+
+/* Ensure nav container allows dropdown overflow */
+.main-nav-wrapper nav {
+  overflow: visible !important;
 }
 
 /* Responsive Header Container Styles */
@@ -520,7 +526,122 @@
 }
 
 /* ===================================================================
-   Enhanced Action Icons
+   Main Menu Icon Links with Text
+   =================================================================== */
+
+.main-menu-links {
+  display: flex;
+  align-items: center;
+  gap: 24px; /* Gap between menu items */
+  margin-left: 30px;
+  margin-right: auto; /* Push top menu to the right */
+  flex-wrap: nowrap; /* Prevent wrapping */
+}
+
+.main-menu-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: var(--ugflix-text-secondary, #cccccc);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 6px 8px;
+  transition: all 0.3s ease;
+  border: none;
+  background: transparent;
+  white-space: nowrap; /* Prevent text from wrapping */
+  flex-shrink: 0; /* Prevent shrinking */
+  gap: 4px; /* Gap between icon and text */
+}
+
+.main-menu-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.main-menu-icon {
+  font-size: 22px;
+  color: var(--ugflix-text-secondary, #cccccc);
+  transition: all 0.3s ease;
+}
+
+.main-menu-link span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.main-menu-link:hover {
+  color: var(--ugflix-primary, #ff6b35);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.main-menu-link:hover .main-menu-icon {
+  color: var(--ugflix-primary, #ff6b35);
+  transform: scale(1.1);
+}
+
+/* Active state for main menu links */
+.main-menu-link.active {
+  color: var(--ugflix-primary, #ff6b35);
+  position: relative;
+}
+
+.main-menu-link.active .main-menu-icon {
+  color: var(--ugflix-primary, #ff6b35);
+}
+
+.main-menu-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: var(--ugflix-primary, #ff6b35);
+  border-radius: 2px 2px 0 0;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 24px;
+    opacity: 1;
+  }
+}
+
+/* Notification dot for main menu */
+.main-menu-icon-wrapper .notification-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: var(--ugflix-primary, #B71C1C);
+  border-radius: 50%;
+  border: 2px solid var(--ugflix-bg-secondary, #1a1a1a);
+  animation: pulse 2s infinite;
+}
+
+/* ===================================================================
+   Top Menu - Action Icons
    =================================================================== */
 
 .action-icons {
@@ -535,14 +656,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px; /* Extremely minimal gap between icon and text */
+  gap: 0px; /* No gap - icon and text touching */
   color: var(--ugflix-text-secondary, #cccccc);
   text-decoration: none;
   font-size: 0.75rem;
   font-weight: 500;
-  line-height: 1;
+  line-height: 0.9; /* Tighter line height */
   transition: all 0.2s ease;
-  padding: 6px 8px;
+  padding: 2px 8px; /* Reduced vertical padding */
   border-radius: 0;
   position: relative;
   min-width: auto;
@@ -798,10 +919,24 @@
 }
 
 .nav-links a:hover {
-  color: var(--ugflix-primary, #B71C1C);
+  color: var(--ugflix-primary, #ff6b35);
   background: rgba(255, 107, 53, 0.08);
   text-decoration: none;
   padding-left: 25px;
+}
+
+/* Active state for mobile off-canvas menu links */
+.nav-links a.active {
+  color: var(--ugflix-primary, #ff6b35);
+  background: rgba(255, 107, 53, 0.12);
+  border-left: 3px solid var(--ugflix-primary, #ff6b35);
+  padding-left: 22px;
+  font-weight: 600;
+}
+
+.nav-links a.active i {
+  color: var(--ugflix-primary, #ff6b35);
+  transform: scale(1.1);
 }
 
 .nav-links a i {
@@ -813,7 +948,7 @@
 }
 
 .nav-links a:hover i {
-  color: var(--ugflix-primary, #B71C1C);
+  color: var(--ugflix-primary, #ff6b35);
   transform: scale(1.1);
 }
 
@@ -1245,6 +1380,25 @@
 
 .desktop-search-wrapper .live-search-box .search-input::placeholder {
   color: var(--ugflix-text-secondary, #cccccc);
+}
+
+/* CRITICAL: Ensure search dropdown appears above everything */
+.live-search-box .livesearch-dropdown,
+.desktop-search-box .livesearch-dropdown,
+.search-form .livesearch-dropdown {
+  position: absolute !important;
+  z-index: 9999 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure parent containers don't hide dropdown */
+.search-form,
+.desktop-search-box,
+.live-search-box {
+  position: relative !important;
+  overflow: visible !important;
 }
 
 /* Desktop Search Box Integration */

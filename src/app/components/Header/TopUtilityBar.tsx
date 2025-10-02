@@ -6,14 +6,14 @@ const TopUtilityBar: React.FC = () => {
   return (
     // Outer div for full-width background, hidden on mobile
     <div className="top-utility-bar-wrapper d-none d-lg-block">
-      {/* Inner div to constrain content */}
-      <div className="container d-flex justify-content-end align-items-center py-1">
-        <Link to="/upload-content" className="utility-link">Upload Content</Link>
-        <Link to="/about" className="utility-link">About UgFlix</Link>
-        <Link to="/contact" className="utility-link">Contact Support</Link>
-        <Link to="/help" className="utility-link">Help Center</Link>
+      {/* Inner div to constrain content - matching main nav width */}
+      <div className="container-fluid d-flex justify-content-end align-items-center py-1" style={{paddingLeft: '60px', paddingRight: '60px'}}>
+        <Link to="/account/post-product" className="utility-link">Post Product</Link>
+        <Link to="/account/watchlist" className="utility-link">My Watch List</Link>
+        <Link to="/account/watched" className="utility-link">Watched Movies</Link>
+        <Link to="/help" className="utility-link">Help And Support</Link>
+        <Link to="/account/subscription" className="utility-link">My Subscription</Link>
         <Link to="/mobile-apps" className="utility-link"><i className="bi bi-phone me-1"></i>Mobile Apps</Link>
-        <Link to="/premium" className="utility-link"><i className="bi bi-star me-1"></i>Go Premium</Link>
       </div>
     </div>
   );

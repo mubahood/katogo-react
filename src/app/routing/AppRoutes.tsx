@@ -15,7 +15,7 @@ import PublicOnlyRoute from "../components/Auth/PublicOnlyRoute";
 const HomePage = React.lazy(() => import("../pages/HomePage"));
 const ProductDetailPageWrapper = React.lazy(() => import("../pages/ProductDetailPage/ProductDetailPageWrapper"));
 const ProductsPage = React.lazy(() => import("../pages/ProductsPage"));
-const MoviesPage = React.lazy(() => import("../pages/MoviesPage"));
+const MoviesPage = React.lazy(() => import("../pages/Movies/MoviesPage"));
 const WatchPage = React.lazy(() => import("../pages/WatchPage"));
 const CategoryPage = React.lazy(() => import("../pages/CategoryPage"));
 const CartPage = React.lazy(() => import("../pages/CartPage"));
@@ -132,17 +132,33 @@ const AppRoutes: React.FC = () => {
             } 
           />
           
-          {/* Movies - Protected */}
+          {/* Movies & Series - Protected */}
           <Route 
             path="movies" 
             element={
               <ProtectedRoute>
-                <MoviesPage />
+                <MoviesPage contentType="Movie" />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="series" 
+            element={
+              <ProtectedRoute>
+                <MoviesPage contentType="Series" />
               </ProtectedRoute>
             } 
           />
           <Route 
             path="movies/:id" 
+            element={
+              <ProtectedRoute>
+                <WatchPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="series/:id" 
             element={
               <ProtectedRoute>
                 <WatchPage />

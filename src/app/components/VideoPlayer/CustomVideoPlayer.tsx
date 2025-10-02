@@ -24,6 +24,7 @@ interface CustomVideoPlayerProps {
   autoPlay?: boolean;
   onNext?: () => void;
   onPrevious?: () => void;
+  onEnded?: () => void;
   poster?: string;
   relatedMovies?: Array<{ id: number; title: string; image: string }>; // optional UI enhancement
 }
@@ -60,6 +61,7 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
   autoPlay = true,
   onNext,
   onPrevious,
+  onEnded,
   poster,
   relatedMovies = []
 }) => {
@@ -633,15 +635,52 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
         .progress-handle { position:absolute; top:50%; width:14px; height:14px; background: var(--accent); border:2px solid white; border-radius:50%; transform: translateY(-50%); opacity:0; transition: all .2s ease; }
         .progress-bar:hover .progress-handle { opacity:1; }
 
-        .bottom-controls { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
-        .controls-left, .controls-right { display:flex; align-items:center; gap:.75rem; }
-        .control-btn { background:none; border:none; color:#fff; cursor:pointer; padding:.5rem; display:flex; align-items:center; gap:.25rem; transition: all .2s ease; }
+        .bottom-controls { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+        .controls-left, .controls-right { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+        .control-btn { background:none; border:none; color:#fff; cursor:pointer; padding:.5rem; display:flex; align-items:center; gap:.25rem; transition: all .2s ease; min-width:36px; min-height:36px; justify-content:center; }
         .control-btn:hover { background: rgba(255,255,255,0.2); color: var(--accent); }
         .control-btn:active { transform: scale(0.95); }
         .skip-text { font-size:10px; font-weight:600; }
         .volume-control { display:flex; align-items:center; gap:.5rem; }
         .volume-slider { width:80px; height:4px; background: rgba(255,255,255,0.3); border-radius:2px; outline:none; cursor:pointer; -webkit-appearance:none; }
         .time-display { color:#fff; font-size:14px; font-weight:500; min-width:100px; text-align:center; }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+          .bottom-controls { gap:0.5rem; padding:0.5rem; }
+          .controls-left, .controls-right { gap:0.4rem; flex:1; justify-content:space-around; }
+          .controls-left { order:1; flex-basis:100%; justify-content:flex-start; }
+          .controls-right { order:2; flex-basis:100%; justify-content:flex-end; }
+          .control-btn { padding:.4rem; min-width:32px; min-height:32px; }
+          .control-btn svg { width:18px; height:18px; }
+          .volume-control { position:relative; }
+          .volume-slider { width:60px; }
+          .time-display { font-size:12px; min-width:80px; order:3; flex-basis:100%; text-align:center; margin-top:0.25rem; }
+          .speed-text { display:none; }
+          .progress-container { margin-bottom:0.5rem; }
+        }
+        
+        @media (max-width: 576px) {
+          .bottom-controls { gap:0.3rem; padding:0.3rem 0.5rem; }
+          .controls-left, .controls-right { gap:0.25rem; }
+          .control-btn { padding:.3rem; min-width:30px; min-height:30px; }
+          .control-btn svg { width:16px; height:16px; }
+          .skip-text { font-size:8px; }
+          .volume-control .volume-slider { display:none; }
+          .time-display { font-size:11px; min-width:70px; }
+          .speed-control { display:flex; }
+          .progress-bar { height:5px; }
+          .progress-bar:hover { height:6px; }
+          .progress-handle { width:12px; height:12px; }
+        }
+        
+        @media (max-width: 400px) {
+          .controls-left { gap:0.15rem; }
+          .controls-right { gap:0.15rem; }
+          .control-btn { padding:.25rem; min-width:28px; min-height:28px; }
+          .control-btn svg { width:14px; height:14px; }
+          .time-display { font-size:10px; min-width:65px; }
+        }
 
         .speed-control { position:relative; }
         .speed-text { font-size:12px; font-weight:600; margin-left:.25rem; }
@@ -694,6 +733,7 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
         onWaiting={handleWaiting}
         onPlaying={handlePlaying}
         onPause={handlePause}
+        onEnded={onEnded}
         className="video-element"
         preload="metadata"
         onDoubleClick={toggleFullscreen}

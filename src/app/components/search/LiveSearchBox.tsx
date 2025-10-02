@@ -123,20 +123,24 @@ const inlineStyles = `
     font-size: 18px;
   }
 
-  /* Search Dropdown - Ultra Compact */
+  /* Search Dropdown - Ultra Compact with Solid Black Background */
   .livesearch-dropdown {
-    position: absolute;
-    top: calc(100% + 1px);
-    left: 0;
-    right: 0;
-    background: var(--ugflix-bg-secondary, #1a1a1a);
-    border: 1px solid var(--ugflix-border-color, #2a2a2a);
-    border-radius: 3px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    z-index: 1050;
-    max-height: 260px;
-    overflow-y: auto;
-    animation: slideDown 0.1s ease-out;
+    position: absolute !important;
+    top: calc(100% + 1px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: #0a0a0a !important;
+    border: 1px solid #ff6b35 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9) !important;
+    z-index: 9999 !important;
+    max-height: 260px !important;
+    overflow-y: auto !important;
+    animation: slideDown 0.15s ease-out !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    backdrop-filter: blur(10px) !important;
   }
 
   @keyframes slideDown {
@@ -162,30 +166,31 @@ const inlineStyles = `
     display: flex;
     align-items: center;
     gap: 3px;
-    padding: 4px 8px 2px;
+    padding: 6px 10px 4px;
     font-size: 10px;
     font-weight: 600;
-    color: var(--ugflix-text-secondary, #cccccc);
+    color: #ffffff;
     text-transform: uppercase;
-    letter-spacing: 0.2px;
-    background: var(--ugflix-bg-primary, #0a0a0a);
-    border-bottom: 1px solid var(--ugflix-border-color, #2a2a2a);
+    letter-spacing: 0.5px;
+    background: rgba(255, 107, 53, 0.1);
+    border-bottom: 1px solid rgba(255, 107, 53, 0.3);
   }
 
   .livesearch-dropdown-header i {
     font-size: 10px;
-    color: #9ca3af;
+    color: #ff6b35;
   }
 
   .livesearch-dropdown-item {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 8px;
+    padding: 8px 10px;
     cursor: pointer;
-    transition: all 0.1s ease;
-    border-bottom: 1px solid var(--ugflix-border-color, #2a2a2a);
+    transition: all 0.15s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     position: relative;
+    background: transparent;
   }
 
   .livesearch-dropdown-item:last-child {
@@ -193,31 +198,36 @@ const inlineStyles = `
   }
 
   .livesearch-dropdown-item:hover {
-    background: var(--ugflix-primary, #ff6b35);
+    background: rgba(255, 107, 53, 0.2);
+    border-left: 3px solid #ff6b35;
+    padding-left: 7px;
   }
 
   .livesearch-dropdown-item i {
-    color: var(--ugflix-text-secondary, #cccccc);
+    color: #ffffff;
     font-size: 12px;
     flex-shrink: 0;
+    opacity: 0.7;
   }
 
   .livesearch-dropdown-item span {
     flex: 1;
-    font-size: 12px;
-    color: var(--ugflix-text-primary, #ffffff);
+    font-size: 13px;
+    color: #ffffff;
+    font-weight: 400;
   }
 
   .livesearch-item-action {
-    opacity: 0.3;
-    transition: opacity 0.1s ease;
-    color: var(--ugflix-text-secondary, #cccccc);
+    opacity: 0.5;
+    transition: all 0.15s ease;
+    color: #ffffff;
     font-size: 11px;
   }
 
   .livesearch-dropdown-item:hover .livesearch-item-action {
-    opacity: 0.8;
-    color: var(--ugflix-text-primary, #ffffff);
+    opacity: 1;
+    color: #ff6b35;
+    transform: scale(1.1);
   }
 
   /* Product Items - Ultra Compact */
@@ -275,10 +285,10 @@ const inlineStyles = `
   }
 
   .livesearch-product-name {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
-    color: #374151;
-    line-height: 1.1;
+    color: #ffffff;
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -288,7 +298,7 @@ const inlineStyles = `
   .livesearch-product-price {
     font-size: 10px;
     font-weight: 600;
-    color: #d7152a;
+    color: #ff6b35;
   }
 
   /* Loading State */
@@ -296,9 +306,10 @@ const inlineStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px;
-    color: #9ca3af;
-    font-size: 12px;
+    padding: 20px;
+    color: #ffffff;
+    font-size: 13px;
+    gap: 8px;
   }
 
   /* No Results */
@@ -306,92 +317,100 @@ const inlineStyles = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 8px;
+    gap: 8px;
+    padding: 24px;
     text-align: center;
-    color: #9ca3af;
+    color: #ffffff;
   }
 
   .livesearch-no-results i {
-    font-size: 16px;
-    opacity: 0.4;
+    font-size: 32px;
+    opacity: 0.3;
+    color: #ff6b35;
   }
 
   .livesearch-no-results span {
-    font-size: 12px;
+    font-size: 13px;
+    opacity: 0.8;
   }
 
   /* Footer */
   .livesearch-dropdown-footer {
-    padding: 4px 8px;
+    padding: 10px 12px;
     text-align: center;
-    background: #f9fafb;
+    background: rgba(255, 107, 53, 0.05);
+    border-top: 1px solid rgba(255, 107, 53, 0.2);
   }
 
   .livesearch-dropdown-footer .btn-link {
-    color: #d7152a;
+    color: #ff6b35;
     text-decoration: none;
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s ease;
   }
 
   .livesearch-dropdown-footer .btn-link:hover {
-    text-decoration: underline;
+    color: #ffffff;
+    text-decoration: none;
+    transform: scale(1.05);
   }
 
   /* Responsive - Mobile Ultra Compact */
   @media (max-width: 576px) {
     .livesearch-dropdown {
-      max-height: 200px;
+      max-height: 300px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.95) !important;
+      border-width: 2px !important;
     }
     
     .livesearch-dropdown-item {
-      padding: 3px 6px;
+      padding: 10px 12px;
     }
     
     .livesearch-dropdown-item.livesearch-product-item {
-      padding: 4px 6px;
-      gap: 4px;
+      padding: 10px 12px;
+      gap: 8px;
     }
     
     .livesearch-product-image {
-      width: 32px;
-      height: 44px;
+      width: 40px;
+      height: 56px;
     }
     
     .livesearch-product-name {
-      font-size: 10px;
-      line-height: 1.0;
+      font-size: 12px;
+      line-height: 1.2;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     
     .livesearch-product-price {
-      font-size: 9px;
+      font-size: 10px;
     }
     
     .livesearch-dropdown-header {
-      padding: 3px 6px 2px;
-      font-size: 9px;
+      padding: 8px 12px 6px;
+      font-size: 10px;
     }
 
     .live-search-box .search-input {
-      padding: 0 6px;
-      font-size: 12px;
+      padding: 0 8px;
+      font-size: 13px;
     }
 
     .live-search-box .search-input-group {
-      height: 28px;
+      height: 32px;
     }
 
     .live-search-box .btn-search {
-      width: 32px; /* Appropriate size for mobile */
+      width: 36px;
       flex-shrink: 0;
     }
 
     .live-search-box .btn-search i {
-      font-size: 13px;
+      font-size: 14px;
     }
   }
 `;
@@ -457,14 +476,26 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
       style.id = styleId;
       style.textContent = inlineStyles;
       document.head.appendChild(style);
+      console.log("✅ LiveSearchBox styles injected into head");
+    } else {
+      console.log("ℹ️ LiveSearchBox styles already exist");
     }
 
-    // Cleanup function to remove styles when component unmounts
-    return () => {
+    // Verify styles are in DOM after injection
+    setTimeout(() => {
       const existingStyle = document.getElementById(styleId);
       if (existingStyle) {
-        existingStyle.remove();
+        console.log("✅ Styles confirmed in DOM, length:", existingStyle.textContent?.length);
+      } else {
+        console.error("❌ Styles NOT found in DOM after injection!");
       }
+    }, 100);
+
+    // Cleanup function - DO NOT remove styles when component unmounts
+    // Keep styles in head for all instances
+    return () => {
+      // Don't remove styles - they're shared across all LiveSearchBox instances
+      console.log("⚠️ Component unmounting but keeping styles in head");
     };
   }, []);
 
@@ -499,7 +530,15 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
         console.log("🔍 Performing live search for:", searchQuery);
         const results = await CacheApiService.liveSearch(searchQuery, 6);
         console.log("🔍 Live search results:", results);
+        console.log("📊 Results data:", {
+          products: results?.products?.length || 0,
+          suggestions: results?.suggestions?.length || 0,
+          total: results?.total || 0
+        });
         setSearchResults(results);
+        // Ensure dropdown stays visible when results arrive
+        setShowDropdown(true);
+        console.log("✅ showDropdown set to TRUE after results");
       } catch (error) {
         console.error("❌ Live search failed:", error);
         setSearchResults(null);
@@ -514,12 +553,15 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
+    console.log("🔍 Input changed:", value, "Length:", value.trim().length);
 
     if (value.trim().length === 0) {
       setSearchResults(null);
       setShowDropdown(showRecentSearches && recentSearches.length > 0);
+      console.log("📝 Empty query - showDropdown:", showRecentSearches && recentSearches.length > 0);
     } else {
       setShowDropdown(true);
+      console.log("📝 Query entered - showDropdown set to TRUE");
       debouncedSearch(value);
     }
   };
@@ -563,7 +605,8 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
     if (onSearchSubmit) {
       onSearchSubmit(searchQuery);
     } else {
-      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+      // Navigate to movies page with search query
+      navigate(`/movies?search=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -656,11 +699,54 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
           </div>
 
           {/* Search Dropdown */}
+          {(() => {
+            console.log("🎨 Render check - showDropdown:", showDropdown, "searchResults:", searchResults, "isLoading:", isLoading);
+            if (showDropdown) {
+              console.log("✅ Dropdown SHOULD BE VISIBLE");
+              setTimeout(() => {
+                const dropdown = document.querySelector('.livesearch-dropdown');
+                if (dropdown) {
+                  const styles = window.getComputedStyle(dropdown);
+                  console.log("📐 Dropdown computed styles:", {
+                    display: styles.display,
+                    visibility: styles.visibility,
+                    opacity: styles.opacity,
+                    zIndex: styles.zIndex,
+                    position: styles.position,
+                    top: styles.top,
+                    left: styles.left,
+                    width: styles.width,
+                    height: styles.height
+                  });
+                } else {
+                  console.log("❌ Dropdown element NOT FOUND in DOM");
+                }
+              }, 100);
+            }
+            return null;
+          })()}
           {showDropdown && (
             <div
               ref={dropdownRef}
               className="livesearch-dropdown"
               onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 2px)',
+                left: '0',
+                right: '0',
+                backgroundColor: '#1a1a1a',
+                border: '2px solid #ff6b35',
+                borderRadius: '4px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                zIndex: 99999,
+                maxHeight: '400px',
+                overflowY: 'auto',
+                display: 'block',
+                visibility: 'visible',
+                opacity: 1,
+                minHeight: '50px'
+              }}
             >
               {/* Loading State */}
               {isLoading && (

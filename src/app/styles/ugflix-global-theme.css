@@ -150,22 +150,28 @@ body {
   background: var(--ugflix-bg-primary);
   border-bottom: 1px solid var(--ugflix-border);
   height: var(--ugflix-topbar-height);
-  font-size: 12px;
+  font-size: 11px; /* Reduced from 12px */
 }
 
 .utility-link {
   color: var(--ugflix-text-muted);
   text-decoration: none;
-  padding: 8px 12px;
+  padding: 6px 10px; /* Reduced padding for smaller appearance */
   transition: var(--ugflix-transition-fast);
   border-radius: var(--ugflix-border-radius);
   font-weight: 500;
+  font-size: 0.75rem; /* Smaller font size */
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
 .utility-link:hover {
   color: var(--ugflix-primary);
   background: var(--ugflix-bg-hover);
   text-decoration: none;
+}
+
+.utility-link i {
+  font-size: 0.7rem; /* Smaller icon size */
 }
 
 /* Main Navigation */

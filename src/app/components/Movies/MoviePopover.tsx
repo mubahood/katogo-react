@@ -79,16 +79,64 @@ const MoviePopover: React.FC<MoviePopoverProps> = ({
       '--pointer-left': '50%'
     };
 
-    const popoverWidth = 320;
-    const popoverHeight = 220;
-    const gap = 12; // Gap for callout pointer
-
-    // Position above the card by default
-    let left = targetRect.left + (targetRect.width / 2) - (popoverWidth / 2);
-    let top = targetRect.top - popoverHeight - gap;
-    let showPointerBelow = false;
+    const isMobile = window.innerWidth < 768;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 992;
     
-    const margin = 20;
+    // Smaller popover on mobile
+    const popoverWidth = isMobile ? Math.min(280, window.innerWidth - 40) : isTablet ? 300 : 320;
+    const popoverHeight = isMobile ? 180 : isTablet ? 200 : 220;
+    const gap = isMobile ? 8 : 12; // Gap for callout pointer
+    const margin = isMobile ? 10 : 20;
+
+    // Try to position to the right of the card on desktop
+    let left, top;
+    let showPointerBelow = false;
+    let showPointerOnSide = false;
+
+    if (!isMobile) {
+      // Desktop: Try to position to the right first, then left, then above/below
+      const rightSpace = window.innerWidth - targetRect.right;
+      const leftSpace = targetRect.left;
+      
+      if (rightSpace > popoverWidth + margin) {
+        // Position to the right
+        left = targetRect.right + gap;
+        top = targetRect.top + (targetRect.height / 2) - (popoverHeight / 2);
+        showPointerOnSide = true;
+      } else if (leftSpace > popoverWidth + margin) {
+        // Position to the left
+        left = targetRect.left - popoverWidth - gap;
+        top = targetRect.top + (targetRect.height / 2) - (popoverHeight / 2);
+        showPointerOnSide = true;
+      } else {
+        // Position above or below
+        left = targetRect.left + (targetRect.width / 2) - (popoverWidth / 2);
+        if (targetRect.top > popoverHeight + gap + margin) {
+          top = targetRect.top - popoverHeight - gap;
+          showPointerBelow = true;
+        } else {
+          top = targetRect.bottom + gap;
+          showPointerBelow = false;
+        }
+      }
+    } else {
+      // Mobile: Always position near the card, centered horizontally
+      left = targetRect.left + (targetRect.width / 2) - (popoverWidth / 2);
+      
+      // Check if we have more space above or below
+      const spaceAbove = targetRect.top;
+      const spaceBelow = window.innerHeight - targetRect.bottom;
+      
+      if (spaceAbove > popoverHeight + gap && spaceAbove > spaceBelow) {
+        // Position above
+        top = targetRect.top - popoverHeight - gap;
+        showPointerBelow = true;
+      } else {
+        // Position below
+        top = targetRect.bottom + gap;
+        showPointerBelow = false;
+      }
+    }
     
     // Adjust horizontal position if needed
     if (left < margin) {
@@ -98,26 +146,29 @@ const MoviePopover: React.FC<MoviePopoverProps> = ({
       left = window.innerWidth - popoverWidth - margin;
     }
     
+    // Adjust vertical position if needed
+    if (top < margin) {
+      top = margin;
+    }
+    if (top + popoverHeight > window.innerHeight - margin) {
+      top = window.innerHeight - popoverHeight - margin;
+    }
+    
     // Calculate pointer position relative to popover
     const cardCenter = targetRect.left + (targetRect.width / 2);
     const popoverLeft = left;
     const pointerLeft = ((cardCenter - popoverLeft) / popoverWidth) * 100;
-    
-    // If not enough space above, position below
-    if (top < margin) {
-      top = targetRect.bottom + gap;
-      showPointerBelow = false;
-    } else {
-      showPointerBelow = true;
-    }
 
     return {
       left: `${left}px`,
       top: `${top}px`,
+      width: `${popoverWidth}px`,
+      height: `${popoverHeight}px`,
       opacity: isVisible ? 1 : 0,
       transform: isVisible ? 'scale(1)' : 'scale(0.9)',
       '--pointer-left': `${Math.max(10, Math.min(90, pointerLeft))}%`,
-      '--show-pointer-below': showPointerBelow ? '1' : '0'
+      '--show-pointer-below': showPointerBelow ? '1' : '0',
+      '--show-pointer-side': showPointerOnSide ? '1' : '0'
     } as React.CSSProperties;
   };
 

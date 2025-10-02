@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../../store/store";
 import { selectIsAuthenticated, restoreAuthState } from "../../store/slices/authSlice";
@@ -41,6 +41,7 @@ import "./ModernMainNav.css";
 const ModernMainNav: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const location = useLocation();
   
   // Use manifest counts instead of individual state selectors
   const { cartCount } = useCart();
@@ -112,6 +113,56 @@ const ModernMainNav: React.FC = () => {
 
   const toggleMenu = () => setMenuOpen(!isMenuOpen);
   const hasNotifications = false; // This would come from notifications state
+
+  // Intelligent helper function to check if route is active
+  const isActive = (section: string) => {
+    const pathname = location.pathname;
+    const search = location.search;
+    
+    switch(section) {
+      case '/movies':
+        // Movies active for: /movies, /movies/*, /watch/*, search results with movies
+        return pathname === '/movies' || 
+               pathname.startsWith('/movies/') ||
+               pathname.startsWith('/watch/') ||
+               (pathname === '/search' && search.includes('type=movie'));
+      
+      case '/series':
+        // Series active for: /series, /series/*
+        return pathname === '/series' || pathname.startsWith('/series/');
+      
+      case '/products':
+        // Products active for: /products, /products/*, /product/*, /account/post-product
+        return pathname === '/products' || 
+               pathname.startsWith('/products/') ||
+               pathname.startsWith('/product/') ||
+               pathname === '/account/post-product';
+      
+      case '/connect':
+        // Connect active for: /connect, /connect/*
+        return pathname === '/connect' || pathname.startsWith('/connect/');
+      
+      case '/account/chats':
+        // Chats active for: /account/chats, /account/chats/*, /account/chat/*
+        return pathname === '/account/chats' || 
+               pathname.startsWith('/account/chats/') ||
+               pathname.startsWith('/account/chat/');
+      
+      case '/account':
+        // Account active for: /account but NOT chats (chats has its own tab)
+        return pathname === '/account' || 
+               (pathname.startsWith('/account/') && 
+                !pathname.startsWith('/account/chat') &&
+                pathname !== '/account/post-product');
+      
+      case '/auth/login':
+        // Login active for: /auth/login, /auth/register, /auth/*
+        return pathname.startsWith('/auth/');
+      
+      default:
+        return pathname === section || pathname.startsWith(section + '/');
+    }
+  };
 
   // Helper function to render Feather icons based on icon name
   const renderFeatherIcon = (iconName: string, size = 16, className = '') => {
@@ -343,69 +394,61 @@ const ModernMainNav: React.FC = () => {
             />
           </div>
 
-          {/* Enhanced Action Icons */}
-          <div className="action-icons">
-            <Link to="/movies" className="action-link">
-              <div className="action-icon-wrapper">
-                <Film size={18} className="action-icon" />
+          {/* Main Menu - Icon Links with Text (Navigation) */}
+          <div className="main-menu-links">
+            <Link to="/movies" className={`main-menu-link ${isActive('/movies') ? 'active' : ''}`}>
+              <div className="main-menu-icon-wrapper">
+                <Film size={20} className="main-menu-icon" />
               </div>
-              <div className="action-text">Movies</div>
+              <span>Movies</span>
             </Link>
-
-            <Link to="/series" className="action-link">
-              <div className="action-icon-wrapper">
-                <Tv size={18} className="action-icon" />
+            <Link to="/series" className={`main-menu-link ${isActive('/series') ? 'active' : ''}`}>
+              <div className="main-menu-icon-wrapper">
+                <Tv size={20} className="main-menu-icon" />
               </div>
-              <div className="action-text">Series</div>
+              <span>Series</span>
             </Link>
-
-            <Link to="/music" className="action-link">
-              <div className="action-icon-wrapper">
-                <Mic size={18} className="action-icon" />
+            <Link to="/products" className={`main-menu-link ${isActive('/products') ? 'active' : ''}`}>
+              <div className="main-menu-icon-wrapper">
+                <ShoppingCart size={20} className="main-menu-icon" />
               </div>
-              <div className="action-text">Music</div>
+              <span>Buy And Sell</span>
             </Link>
-
-            <Link to="/live-tv" className="action-link">
-              <div className="action-icon-wrapper">
-                <PlayCircle size={18} className="action-icon" />
+            <Link to="/connect" className={`main-menu-link ${isActive('/connect') ? 'active' : ''}`}>
+              <div className="main-menu-icon-wrapper">
+                <Globe size={20} className="main-menu-icon" />
               </div>
-              <div className="action-text">Live TV</div>
+              <span>Connect</span>
             </Link>
-
-            <Link to="/products" className="action-link">
-              <div className="action-icon-wrapper">
-                <ShoppingCart size={18} className="action-icon" />
+            <Link to="/account/chats" className={`main-menu-link ${isActive('/account/chats') ? 'active' : ''}`}>
+              <div className="main-menu-icon-wrapper">
+                <FileText size={20} className="main-menu-icon" />
               </div>
-              <div className="action-text">Shop</div>
+              <span>Chats</span>
             </Link>
-            
             {authState.isLoading ? (
-              // Show loading state while authentication is being restored
-              <div className="action-link">
-                <div className="action-icon-wrapper">
+              <div className="main-menu-link">
+                <div className="main-menu-icon-wrapper">
                   <div className="spinner-border spinner-border-sm" role="status">
                     <span className="visually-hidden">Loading...</span>
                   </div>
                 </div>
-                <div className="action-text">Loading...</div>
+                <span>...</span>
               </div>
             ) : (isAuthenticated || (authState.user && authState.token)) ? (
-              // Show My Account if authenticated OR if user and token exist in state
-              <Link to="/account" className="action-link">
-                <div className="action-icon-wrapper">
-                  <User size={18} className="action-icon" />
+              <Link to="/account" className={`main-menu-link ${isActive('/account') ? 'active' : ''}`}>
+                <div className="main-menu-icon-wrapper">
+                  <User size={20} className="main-menu-icon" />
                   {hasNotifications && <span className="notification-dot"></span>}
                 </div>
-                <div className="action-text">My Account</div>
+                <span>Account</span>
               </Link>
             ) : (
-              // Show Login if not authenticated
-              <Link to="/auth/login" className="action-link">
-                <div className="action-icon-wrapper">
-                  <LogIn size={18} className="action-icon" />
+              <Link to="/auth/login" className={`main-menu-link ${isActive('/auth/login') ? 'active' : ''}`}>
+                <div className="main-menu-icon-wrapper">
+                  <LogIn size={20} className="main-menu-icon" />
                 </div>
-                <div className="action-text">Login</div>
+                <span>Login</span>
               </Link>
             )}
           </div>
@@ -441,168 +484,135 @@ const ModernMainNav: React.FC = () => {
         </div>
 
         <div className="offcanvas-body">
-          {/* Mobile Navigation Links */}
+          {/* Mobile Main Menu Section */}
           <div className="mobile-nav-section">
-            <h6 className="mobile-nav-heading">Browse Content</h6>
+            <h6 className="mobile-nav-heading">Main Menu</h6>
             <ul className="nav-links">
               <li>
-                <Link to="/movies" onClick={toggleMenu}>
-                  <Film size={18} />
+                <Link to="/movies" onClick={toggleMenu} className={isActive('/movies') ? 'active' : ''}>
+                  <Film size={20} />
                   <span>Movies</span>
                   <ChevronRight size={16} />
                 </Link>
               </li>
               <li>
-                <Link to="/series" onClick={toggleMenu}>
-                  <Tv size={18} />
+                <Link to="/series" onClick={toggleMenu} className={isActive('/series') ? 'active' : ''}>
+                  <Tv size={20} />
                   <span>Series</span>
                   <ChevronRight size={16} />
                 </Link>
               </li>
               <li>
-                <Link to="/music" onClick={toggleMenu}>
-                  <Mic size={18} />
-                  <span>Music</span>
+                <Link to="/products" onClick={toggleMenu} className={isActive('/products') ? 'active' : ''}>
+                  <ShoppingCart size={20} />
+                  <span>Buy And Sell</span>
                   <ChevronRight size={16} />
                 </Link>
               </li>
               <li>
-                <Link to="/live-tv" onClick={toggleMenu}>
-                  <PlayCircle size={18} />
-                  <span>Live TV</span>
+                <Link to="/connect" onClick={toggleMenu} className={isActive('/connect') ? 'active' : ''}>
+                  <Globe size={20} />
+                  <span>Connect</span>
                   <ChevronRight size={16} />
                 </Link>
               </li>
               <li>
-                <Link to="/products" onClick={toggleMenu}>
-                  <ShoppingCart size={18} />
-                  <span>Shop</span>
+                <Link to="/account/chats" onClick={toggleMenu} className={isActive('/account/chats') ? 'active' : ''}>
+                  <FileText size={20} />
+                  <span>Chats</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/account" onClick={toggleMenu} className={isActive('/account') ? 'active' : ''}>
+                  <User size={20} />
+                  <span>Account</span>
                   <ChevronRight size={16} />
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Mobile VJ Links - All VJs */}
+          {/* Mobile Top Menu Section */}
           <div className="mobile-nav-section">
-            <h6 className="mobile-nav-heading">All VJs</h6>
-            <ul className="nav-links mobile-vj-links">
-              {vjList.flat().map((vjName) => (
-                <li key={vjName}>
-                  <Link to={`/movies?search=${encodeURIComponent(vjName.replace('Vj ', ''))}`} onClick={toggleMenu}>
-                    <span>{vjName}</span>
-                    <ChevronRight size={16} />
-                  </Link>
-                </li>
-              ))}
+            <h6 className="mobile-nav-heading">Quick Actions</h6>
+            <ul className="nav-links">
+              <li>
+                <Link to="/account/post-product" onClick={toggleMenu}>
+                  <FileText size={20} />
+                  <span>Post Product</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/account/watchlist" onClick={toggleMenu}>
+                  <Heart size={20} />
+                  <span>My Watch List</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/account/watched" onClick={toggleMenu}>
+                  <Eye size={20} />
+                  <span>Watched Movies</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" onClick={toggleMenu}>
+                  <FileText size={20} />
+                  <span>Help And Support</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/account/subscription" onClick={toggleMenu}>
+                  <Star size={20} />
+                  <span>My Subscription</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
+              <li>
+                <Link to="/mobile-apps" onClick={toggleMenu}>
+                  <i className="bi bi-phone" style={{fontSize: '20px'}}></i>
+                  <span>Mobile Apps</span>
+                  <ChevronRight size={16} />
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Mobile Account Actions */}
+          {/* Authentication Section */}
           {authState.isLoading ? (
             <div className="mobile-nav-section">
               <h6 className="mobile-nav-heading">Loading...</h6>
               <div className="d-flex justify-content-center py-3">
                 <div className="spinner-border spinner-border-sm" role="status">
-                  <span className="visually-hidden">Loading authentication...</span>
+                  <span className="visually-hidden">Loading...</span>
                 </div>
               </div>
             </div>
-          ) : (isAuthenticated || (authState.user && authState.token)) ? (
+          ) : !(isAuthenticated || (authState.user && authState.token)) ? (
             <div className="mobile-nav-section">
-              <h6 className="mobile-nav-heading">
-                Welcome back!
-              </h6>
-              <ul className="nav-links">
-                <li>
-                  <Link to="/account" onClick={toggleMenu}>
-                    <User size={18} />
-                    <span>My Account</span>
-                    {hasNotifications && <span className="mobile-notification-dot"></span>}
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/downloads" onClick={toggleMenu}>
-                    <Download size={18} />
-                    <span>My Downloads</span>
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/premium" onClick={toggleMenu}>
-                    <Star size={18} />
-                    <span>Premium Plans</span>
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          ) : (
-            <div className="mobile-nav-section">
-              <h6 className="mobile-nav-heading">Account</h6>
+              <h6 className="mobile-nav-heading">Get Started</h6>
               <ul className="nav-links">
                 <li>
                   <Link to="/auth/login" onClick={toggleMenu}>
-                    <LogIn size={18} className="text-primary" />
+                    <LogIn size={20} />
                     <span>Login</span>
+                    <ChevronRight size={16} />
                   </Link>
                 </li>
                 <li>
                   <Link to="/auth/register" onClick={toggleMenu}>
-                    <UserPlus size={18} className="text-success" />
+                    <UserPlus size={20} />
                     <span>Create Account</span>
+                    <ChevronRight size={16} />
                   </Link>
                 </li>
               </ul>
             </div>
-          )}
-
-          {/* Mobile Quick Links */}
-          <div className="mobile-nav-section">
-            <h6 className="mobile-nav-heading">Quick Links</h6>
-            <ul className="nav-links">
-              <li>
-                <Link to="/movies" onClick={toggleMenu}>
-                  <i className="bi bi-film text-primary"></i>
-                  <span>Browse All Movies</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/movies?filter=trending" onClick={toggleMenu}>
-                  <i className="bi bi-graph-up-arrow text-warning"></i>
-                  <span>Trending Movies</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/movies?filter=new" onClick={toggleMenu}>
-                  <i className="bi bi-star text-info"></i>
-                  <span>New Releases</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/music?filter=trending" onClick={toggleMenu}>
-                  <i className="bi bi-music-note text-success"></i>
-                  <span>Trending Music</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/live-tv" onClick={toggleMenu}>
-                  <i className="bi bi-broadcast text-danger"></i>
-                  <span>Live TV Channels</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/premium" onClick={toggleMenu}>
-                  <i className="bi bi-gem text-warning"></i>
-                  <span>Premium Content</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/help" onClick={toggleMenu}>
-                  <i className="bi bi-headset"></i>
-                  <span>Help & Support</span>
-                </Link>
-              </li>
-            </ul>
-          </div>
+          ) : null}
         </div>
       </div>
     </>

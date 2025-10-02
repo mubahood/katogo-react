@@ -1,0 +1,335 @@
+/* src/app/pages/Movies/components/Pagination.css */
+
+.pagination-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+  margin-top: 40px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+}
+
+.pagination-info {
+  text-align: center;
+}
+
+.pagination-text {
+  color: var(--ugflix-text-secondary, #bbb);
+  font-size: 14px;
+}
+
+.pagination-text strong {
+  color: var(--ugflix-text-primary, #fff);
+  font-weight: 600;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.pagination-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 2px solid var(--ugflix-border, #444) !important;
+  background: transparent !important;
+  color: var(--ugflix-text-primary, #fff) !important;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--ugflix-bg-hover, #2a2a2a) !important;
+  border-color: var(--ugflix-primary, #ff6b35) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+}
+
+.pagination-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-btn.active {
+  background: var(--ugflix-primary, #ff6b35) !important;
+  border-color: var(--ugflix-primary, #ff6b35) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.pagination-btn-page {
+  min-width: 40px;
+  padding: 8px;
+}
+
+.pagination-btn-prev,
+.pagination-btn-next {
+  padding: 8px 16px;
+}
+
+.pagination-btn-first,
+.pagination-btn-last {
+  min-width: 40px;
+  padding: 8px;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-ellipsis {
+  color: var(--ugflix-text-muted, #666);
+  padding: 0 4px;
+  user-select: none;
+}
+
+.pagination-mobile-info {
+  color: var(--ugflix-text-secondary, #bbb);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 767.98px) {
+  .pagination-wrapper {
+    padding: 16px 12px;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  
+  .pagination-info {
+    font-size: 13px;
+  }
+  
+  .pagination-text {
+    font-size: 13px;
+  }
+  
+  .pagination-controls {
+    gap: 6px;
+    width: 100%;
+  }
+  
+  .pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .pagination-btn-page {
+    min-width: 36px;
+    padding: 6px;
+  }
+  
+  .pagination-btn-prev,
+  .pagination-btn-next {
+    padding: 6px 12px;
+    flex: 1;
+    max-width: 120px;
+  }
+  
+  .pagination-pages {
+    gap: 4px;
+  }
+  
+  .pagination-mobile-info {
+    font-size: 12px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 375px) {
+  .pagination-wrapper {
+    padding: 12px 10px;
+  }
+  
+  .pagination-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .pagination-btn-page {
+    min-width: 32px;
+    padding: 4px;
+  }
+  
+  .pagination-btn-prev,
+  .pagination-btn-next {
+    padding: 4px 10px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .pagination-wrapper {
+    padding: 20px 16px;
+  }
+  
+  .pagination-controls {
+    gap: 10px;
+  }
+  
+  .pagination-pages {
+    gap: 6px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 992px) {
+  .pagination-wrapper {
+    padding: 28px 24px;
+    gap: 20px;
+  }
+  
+  .pagination-text {
+    font-size: 15px;
+  }
+  
+  .pagination-controls {
+    gap: 10px;
+  }
+  
+  .pagination-btn {
+    min-width: 44px;
+    height: 44px;
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+  
+  .pagination-btn-page {
+    min-width: 44px;
+    padding: 10px;
+  }
+  
+  .pagination-btn-prev,
+  .pagination-btn-next {
+    padding: 10px 18px;
+  }
+  
+  .pagination-btn-first,
+  .pagination-btn-last {
+    min-width: 44px;
+    padding: 10px;
+  }
+  
+  .pagination-pages {
+    gap: 8px;
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1400px) {
+  .pagination-wrapper {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Touch Devices */
+@media (hover: none) and (pointer: coarse) {
+  .pagination-btn:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+  
+  /* Larger touch targets for mobile */
+  .pagination-btn {
+    min-height: 44px;
+  }
+}
+
+/* Loading State */
+.pagination-wrapper.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.pagination-btn.loading {
+  position: relative;
+}
+
+.pagination-btn.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ugflix-text-muted, #666);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Accessibility */
+.pagination-btn:focus-visible {
+  outline: 2px solid var(--ugflix-primary, #ff6b35);
+  outline-offset: 2px;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .pagination-wrapper {
+    background: #0d0d0d;
+    border-color: #1a1a1a;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .pagination-btn {
+    border-width: 3px !important;
+  }
+  
+  .pagination-btn.active {
+    border-width: 3px !important;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .pagination-btn {
+    transition: none;
+  }
+  
+  .pagination-btn:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Print */
+@media print {
+  .pagination-wrapper {
+    display: none;
+  }
+}
