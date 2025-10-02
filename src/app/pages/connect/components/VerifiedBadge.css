@@ -1,0 +1,12 @@
+/* src/app/pages/connect/components/VerifiedBadge.css */
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e90ff;
+}
+
+.verified-badge svg {
+  fill: #1e90ff;
+}
