@@ -225,47 +225,53 @@ export class AccountApiService {
     }
   }
 
-  // ===== WATCHLIST =====
+  // ===== MOVIE WISHLIST =====
   
   /**
-   * Get user's watchlist
+   * Get user's movie wishlist (from movie_wishlists table)
+   * Returns movies that user has wishlisted
    */
-  static async getWatchlist(page: number = 1): Promise<{ data: WatchlistItem[]; total: number; currentPage: number }> {
+  static async getMovieWishlist(page: number = 1, perPage: number = 12): Promise<{ 
+    wishlists: any[]; 
+    total: number; 
+    current_page: number;
+    per_page: number;
+    last_page: number;
+  }> {
     try {
-      const response = await http_get(`account/watchlist?page=${page}`);
+      const response = await http_get(`account/wishlist?page=${page}&per_page=${perPage}`);
       return response.data;
     } catch (error) {
-      console.error("Failed to fetch watchlist:", error);
-      ToastService.error("Failed to load watchlist");
+      console.error("Failed to fetch movie wishlist:", error);
+      ToastService.error("Failed to load wishlist");
       throw error;
     }
   }
 
   /**
-   * Add item to watchlist
+   * Toggle movie wishlist (add/remove) - Uses movie_wishlists table
    */
-  static async addToWatchlist(productId: number): Promise<WatchlistItem> {
+  static async toggleMovieWishlist(movieId: number): Promise<{ wishlisted: boolean; wishlist_count: number }> {
     try {
-      const response = await http_post("account/watchlist", { product_id: productId });
-      ToastService.success("Added to watchlist");
+      const response = await http_post("account/wishlist/toggle", { movie_id: movieId });
       return response.data;
     } catch (error) {
-      console.error("Failed to add to watchlist:", error);
-      ToastService.error("Failed to add to watchlist");
+      console.error("Failed to toggle movie wishlist:", error);
       throw error;
     }
   }
 
   /**
-   * Remove item from watchlist
+   * Remove movie from wishlist by wishlist ID
    */
-  static async removeFromWatchlist(itemId: number): Promise<void> {
+  static async removeFromMovieWishlist(wishlistId: number): Promise<void> {
     try {
-      await http_post(`account/watchlist/${itemId}`, { _method: 'DELETE' });
-      ToastService.success("Removed from watchlist");
+      // Delete by wishlist ID directly
+      await http_post(`account/wishlist/${wishlistId}`, { _method: 'DELETE' });
+      ToastService.success("Removed from wishlist");
     } catch (error) {
-      console.error("Failed to remove from watchlist:", error);
-      ToastService.error("Failed to remove from watchlist");
+      console.error("Failed to remove from wishlist:", error);
+      ToastService.error("Failed to remove from wishlist");
       throw error;
     }
   }

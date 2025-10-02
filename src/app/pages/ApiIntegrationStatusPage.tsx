@@ -1,7 +1,7 @@
 // src/app/pages/ApiIntegrationStatusPage.tsx
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Alert, Button, Badge, Table } from 'react-bootstrap';
-import { useGetProductsQuery, useGetCategoriesQuery, useGetVendorsQuery } from '../services/realProductsApi';
+import { useGetProductsQuery, useGetVendorsQuery } from '../services/realProductsApi';
 import { CartService } from '../services/CartService';
 
 const ApiIntegrationStatusPage: React.FC = () => {
@@ -14,11 +14,10 @@ const ApiIntegrationStatusPage: React.FC = () => {
     error: productsError 
   } = useGetProductsQuery({ page: 1, limit: 5 });
 
-  const { 
-    data: categories, 
-    isLoading: categoriesLoading, 
-    error: categoriesError 
-  } = useGetCategoriesQuery();
+  // Categories are cached in ManifestService - don't fetch them here
+  const categories: any[] = [];
+  const categoriesLoading = false;
+  const categoriesError = null;
 
   const { 
     data: vendors, 

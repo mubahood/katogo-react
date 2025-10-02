@@ -22,6 +22,7 @@ interface MovieData {
   url: string;
   views_count: number;
   likes_count: number;
+  wishlist_count?: number;
   type: 'Movie' | 'Series';
   episode_number?: number;
   category?: string;
@@ -32,6 +33,7 @@ interface ApiMovieResponse {
   related_movies: MovieData[];
   user_interactions: {
     has_liked: boolean;
+    has_wishlisted: boolean;
     has_viewed: boolean;
   };
 }
@@ -1097,12 +1099,20 @@ const WatchPage: React.FC = () => {
 
 
   const [liked, setLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [isLiking, setIsLiking] = useState(false);
   const [watchlisted, setWatchlisted] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [isWishlisting, setIsWishlisting] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
 
+  // Update liked status, likes count, and wishlist status when movieData changes
   useEffect(() => {
     if (movieData) {
       setLiked(movieData.user_interactions.has_liked);
+      setLikesCount(movieData.movie.likes_count || 0);
+      setWatchlisted(movieData.user_interactions.has_wishlisted || false);
+      setWishlistCount(movieData.movie.wishlist_count || 0);
     }
   }, [movieData]);
 
@@ -1117,28 +1127,85 @@ const WatchPage: React.FC = () => {
   };
 
   const handleLike = async () => {
-    if (!movieData) return;
+    if (!movieData || isLiking) return;
+    
+    // Optimistic UI update
+    const previousLiked = liked;
+    const previousCount = likesCount;
+    
+    setLiked(!liked);
+    setLikesCount(prev => liked ? Math.max(0, prev - 1) : prev + 1);
+    setIsLiking(true);
     
     try {
-      setLiked(!liked);
-      // TODO: Implement API call to like/unlike movie
-      console.log('Like movie:', movieData.movie.id);
-    } catch (error) {
-      console.error('Error liking movie:', error);
-      setLiked(liked); // Revert on error
+      const result = await ApiService.toggleMovieLike(movieData.movie.id);
+      
+      // Update with server response
+      setLiked(result.liked);
+      setLikesCount(result.likes_count);
+      
+      // Update movieData to keep it in sync
+      if (movieData) {
+        movieData.user_interactions.has_liked = result.liked;
+        movieData.movie.likes_count = result.likes_count;
+      }
+      
+    } catch (error: any) {
+      console.error('Error toggling like:', error);
+      
+      // Revert optimistic update on error
+      setLiked(previousLiked);
+      setLikesCount(previousCount);
+      
+      // Error toast is already shown by ApiService
+      // If authentication error, could redirect to login
+      if (error?.message === 'Authentication required') {
+        // Optionally redirect to login page
+        // navigate('/login', { state: { from: location.pathname } });
+      }
+    } finally {
+      setIsLiking(false);
     }
   };
 
   const handleWatchlist = async () => {
-    if (!movieData) return;
+    if (!movieData || isWishlisting) return;
+    
+    // Optimistic UI update
+    const previousWatchlisted = watchlisted;
+    const previousCount = wishlistCount;
+    
+    setWatchlisted(!watchlisted);
+    setWishlistCount(prev => watchlisted ? Math.max(0, prev - 1) : prev + 1);
+    setIsWishlisting(true);
     
     try {
-      setWatchlisted(!watchlisted);
-      // TODO: Implement API call to add/remove from watchlist
-      console.log('Toggle watchlist:', movieData.movie.id);
-    } catch (error) {
-      console.error('Error toggling watchlist:', error);
-      setWatchlisted(watchlisted); // Revert on error
+      const result = await ApiService.toggleMovieWishlist(movieData.movie.id);
+      
+      // Update with server response
+      setWatchlisted(result.wishlisted);
+      setWishlistCount(result.wishlist_count);
+      
+      // Update movieData to keep it in sync
+      if (movieData) {
+        movieData.user_interactions.has_wishlisted = result.wishlisted;
+        movieData.movie.wishlist_count = result.wishlist_count;
+      }
+      
+    } catch (error: any) {
+      console.error('Error toggling wishlist:', error);
+      
+      // Revert optimistic update on error
+      setWatchlisted(previousWatchlisted);
+      setWishlistCount(previousCount);
+      
+      // Error toast is already shown by ApiService
+      if (error?.message === 'Authentication required') {
+        // Optionally redirect to login page
+        // navigate('/login', { state: { from: location.pathname } });
+      }
+    } finally {
+      setIsWishlisting(false);
     }
   };
 
@@ -1236,7 +1303,7 @@ const WatchPage: React.FC = () => {
                   </span>
                   <span className="stat-item">
                     <Heart size={13} />
-                    {formatNumber(movie.likes_count)}
+                    {formatNumber(likesCount)}
                   </span>
                 </div>
 
@@ -1245,6 +1312,7 @@ const WatchPage: React.FC = () => {
                   <button 
                     className={`action-btn like-btn ${liked ? 'active' : ''}`}
                     onClick={handleLike}
+                    disabled={isLiking}
                   >
                     <Heart size={14} fill={liked ? 'currentColor' : 'none'} />
                     Like
@@ -1252,6 +1320,7 @@ const WatchPage: React.FC = () => {
                   <button 
                     className={`action-btn watchlist-btn ${watchlisted ? 'active' : ''}`}
                     onClick={handleWatchlist}
+                    disabled={isWishlisting}
                   >
                     <Star size={14} fill={watchlisted ? 'currentColor' : 'none'} />
                     Watchlist

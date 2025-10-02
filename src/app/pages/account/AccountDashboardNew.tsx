@@ -109,15 +109,7 @@ const AccountDashboardNew: React.FC = () => {
       icon: <FiShoppingBag />,
       link: '/account/products',
       color: '#2196F3'
-    },
-    {
-      id: 'orders',
-      title: 'My Orders',
-      description: 'Track your purchases',
-      icon: <FiPackage />,
-      link: '/account/orders',
-      color: '#4CAF50'
-    },
+    }, 
     {
       id: 'messages',
       title: 'Messages',

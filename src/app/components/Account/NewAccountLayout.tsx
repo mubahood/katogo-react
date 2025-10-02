@@ -229,18 +229,71 @@ const NewAccountLayout: React.FC = () => {
 
   return (
     <div className="new-account-layout">
-      {/* Mobile Header */}
+      {/* Mobile Header - Toggle Icon Only (Below Main Nav, Right Side) */}
       {isMobile && (
-        <div className="account-mobile-header">
+        <div className="account-mobile-header" style={{ 
+          position: 'fixed',
+          top: '120px', // Below main nav header (60px) + search bar (42px) + extra spacing
+          right: 0,
+          zIndex: 1039, // Below main nav (1030) but above content
+          padding: '8px 16px',
+          background: 'none',
+          backdropFilter: 'none',
+          WebkitBackdropFilter: 'none',
+          borderBottom: 'none',
+          display: 'flex',
+          justifyContent: 'flex-end',
+          pointerEvents: 'none'
+        }}>
           <button
-            className="mobile-menu-toggle"
+            className="mobile-menu-toggle account-toggle-animated"
             onClick={toggleSidebar}
             aria-label="Toggle menu"
+            style={{
+              background: 'rgba(183, 28, 28, 0.9)',
+              border: '3px solid #FFD700',
+              borderRadius: '50%',
+              padding: '10px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+              outline: 'none',
+              pointerEvents: 'auto',
+              width: '50px',
+              height: '50px',
+              animation: 'pulseGlow 2s ease-in-out infinite'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(183, 28, 28, 1)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.animation = 'none';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(183, 28, 28, 0.9)';
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.animation = 'pulseGlow 2s ease-in-out infinite';
+            }}
           >
             {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <h1 className="mobile-page-title">{getCurrentPageTitle()}</h1>
-          <div className="mobile-header-spacer" />
+          <style>
+            {`
+              @keyframes pulseGlow {
+                0%, 100% {
+                  opacity: 1;
+                  filter: drop-shadow(0 0 2px rgba(183, 28, 28, 0.3));
+                }
+                50% {
+                  opacity: 0.7;
+                  filter: drop-shadow(0 0 8px rgba(183, 28, 28, 0.8));
+                }
+              }
+            `}
+          </style>
         </div>
       )}
 
@@ -257,7 +310,7 @@ const NewAccountLayout: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <div className="account-layout-container">
+      <div className="account-layout-container" style={isMobile ? { paddingTop: '30px' } : {}}>
         {/* Sidebar */}
         <motion.aside
           className={`account-sidebar ${isSidebarOpen ? 'open' : ''}`}

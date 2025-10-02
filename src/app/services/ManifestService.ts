@@ -228,8 +228,18 @@ export class ManifestService {
   /**
    * Load categories for display
    */
+  private cachedCategories: CategoryModel[] | null = null;
+  
   private async loadCategories(): Promise<CategoryModel[]> {
-    return await ApiService.getCategories();
+    // Return cached categories if available
+    if (this.cachedCategories && this.cachedCategories.length > 0) {
+      console.log('📦 Using cached categories from ManifestService');
+      return this.cachedCategories;
+    }
+    
+    console.log('🔄 Loading categories from API (first time only)');
+    this.cachedCategories = await ApiService.getCategories();
+    return this.cachedCategories;
   }
 
   /**
@@ -279,9 +289,11 @@ export class ManifestService {
   /**
    * Clear cache to force refresh
    */
-  clearCache(): void {
+  public clearCache(): void {
     this.cachedManifest = null;
+    this.cachedCategories = null;
     this.lastCacheTime = 0;
+    console.log('🧹 ManifestService cache cleared');
   }
 
   /**

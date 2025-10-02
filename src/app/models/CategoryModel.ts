@@ -101,9 +101,14 @@ export class CategoryModel {
     return this.is_parent === "Yes";
   }
 
-  /** Fetch all categories (GET /api/ProductCategory). */
+  /** 
+   * Fetch all categories (GET /api/ProductCategory). 
+   * ⚠️ WARNING: This makes a direct API call! Should only be called from ManifestService cache.
+   */
   static async fetchCategories(): Promise<CategoryModel[]> {
     try {
+      console.log('🔴 CategoryModel.fetchCategories() - Making API call to /api/ProductCategory');
+      
       // Mobile app uses /api/ProductCategory with is_not_private=1 parameter
       const response = await http_get("api/ProductCategory?is_not_private=1");
       
@@ -117,12 +122,14 @@ export class CategoryModel {
         throw new Error("Invalid response format for categories.");
       }
       
+      console.log(`✅ Categories fetched: ${categoriesData.length} items`);
       return categoriesData.map((item: any) => CategoryModel.fromJson(item));
     } catch (error: any) {
       // Provide better error context for network issues
       if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
         console.warn('🔧 Cannot reach API server for categories');
       }
+      console.error('❌ Category fetch failed:', error);
       throw error;
     }
   }

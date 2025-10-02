@@ -1,8 +1,10 @@
 // src/app/components/Movies/MovieCard.tsx
 import React, { useState, useCallback, memo, useRef, useEffect } from 'react';
-import { Play, Plus, Award } from 'react-feather';
+import { Play, Award } from 'react-feather';
 import LazyImage from './LazyImage';
 import MoviePopover from './MoviePopover';
+import WishlistButton from './WishlistButton';
+import LikeButton from './LikeButton';
 import type { Movie } from '../../services/manifest.service';
 
 interface MovieCardProps {
@@ -10,11 +12,13 @@ interface MovieCardProps {
   variant?: 'default' | 'large' | 'compact' | 'list';
   showPlayButton?: boolean;
   showAddButton?: boolean;
+  showLikeButton?: boolean;
   showProgress?: boolean;
   className?: string;
   onClick?: (movie: Movie) => void;
   onPlay?: (movie: Movie) => void;
   onAddToWatchlist?: (movie: Movie) => void;
+  onLikeToggle?: (liked: boolean) => void;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({
@@ -22,11 +26,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
   variant = 'default',
   showPlayButton = true,
   showAddButton = true,
+  showLikeButton = true,
   showProgress = false,
   className = '',
   onClick,
   onPlay,
-  onAddToWatchlist
+  onAddToWatchlist,
+  onLikeToggle
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -230,14 +236,52 @@ const MovieCard: React.FC<MovieCardProps> = ({
           onError={handleImageError}
         />
         
-        {/* Add to Watchlist Button */}
-        <button 
-          className="watchlist-btn"
-          onClick={handleAddClick}
-          aria-label="Add to watchlist"
-        >
-          <Plus size={16} />
-        </button>
+        {/* Action Buttons Container */}
+        <div className="movie-card-actions">
+          {/* Wishlist Button */}
+          {showAddButton && (
+            <div className="movie-card-wishlist-btn">
+              <WishlistButton
+                movieId={movie.id}
+                initialWishlisted={movie.has_wishlisted}
+                size="small"
+                variant="icon"
+                onToggle={(wishlisted, count) => {
+                  // Update movie object
+                  if (movie) {
+                    movie.has_wishlisted = wishlisted;
+                    movie.wishlist_count = count;
+                  }
+                  // Notify parent
+                  if (wishlisted) {
+                    onAddToWatchlist?.(movie);
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {/* Like Button */}
+          {showLikeButton && (
+            <div className="movie-card-like-btn">
+              <LikeButton
+                movieId={movie.id}
+                initialLiked={movie.has_liked}
+                size="small"
+                variant="icon"
+                onToggle={(liked, count) => {
+                  // Update movie object
+                  if (movie) {
+                    movie.has_liked = liked;
+                    movie.likes_count = count;
+                  }
+                  // Notify parent
+                  onLikeToggle?.(liked);
+                }}
+              />
+            </div>
+          )}
+        </div>
         
         {/* Progress Bar */}
         {showProgress && progressPercentage > 0 && (
@@ -300,29 +344,35 @@ const MovieCard: React.FC<MovieCardProps> = ({
           object-fit: cover;
         }
 
-        .watchlist-btn {
+        /* Action buttons container */
+        .movie-card-actions {
           position: absolute;
           top: 8px;
           right: 8px;
-          background: rgba(0, 0, 0, 0.7);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-          cursor: pointer;
-          transition: all 0.2s ease;
           z-index: 5;
-          backdrop-filter: blur(10px);
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          opacity: 0;
+          transform: translateY(-4px);
+          transition: all 0.2s ease;
         }
 
-        .watchlist-btn:hover {
-          background: var(--ugflix-primary, #ff6b35);
-          border-color: var(--ugflix-primary, #ff6b35);
-          transform: scale(1.1);
+        .movie-card:hover .movie-card-actions {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .movie-card-wishlist-btn,
+        .movie-card-like-btn {
+          display: flex;
+        }
+
+        /* Always show action buttons if movie is wishlisted or liked */
+        .movie-card-actions:has(.wishlist-button.active),
+        .movie-card-actions:has(.like-button.active) {
+          opacity: 1;
+          transform: translateY(0);
         }
 
         .progress-container {

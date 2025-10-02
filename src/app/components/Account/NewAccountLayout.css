@@ -351,8 +351,9 @@
     transform: translateX(-100%);
     background: rgba(0, 0, 0, 0.98);
     width: 280px;
-    top: 56px;
-    height: calc(100vh - 56px);
+    top: 0;
+    height: 100vh;
+    padding-top: 102px;
   }
 
   .account-sidebar.open {
@@ -360,15 +361,10 @@
   }
 
   .account-main-content {
-    margin-top: 56px;
-    height: calc(100vh - 56px);
-    padding: 8px;
-  }
-
-  .account-main-content {
+    margin-top: 0;
     margin-left: 0;
-    padding-top: 56px;
-    padding: 56px 8px 8px 8px;
+    padding: 0px 8px 8px 8px;
+    min-height: calc(100vh - 102px);
   }
 
   .account-page-content {

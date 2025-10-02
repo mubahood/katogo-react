@@ -31,11 +31,10 @@ const ApiTestPage: React.FC = () => {
     refetch: refetchProducts
   } = useGetProductsQuery({ page: 1, limit: 5 });
 
-  const { 
-    data: categories, 
-    isLoading: categoriesLoading, 
-    error: categoriesError 
-  } = useGetCategoriesQuery();
+  // Categories are now cached in ManifestService and don't need RTK Query
+  const [categories, setCategories] = React.useState<any[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = React.useState(false);
+  const [categoriesError, setCategoriesError] = React.useState<any>(null);
 
   const { 
     data: vendors, 

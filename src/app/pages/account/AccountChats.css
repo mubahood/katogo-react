@@ -469,13 +469,13 @@
 .chat-sidebar-toggle {
   display: none;
   position: fixed;
-  bottom: 20px;
+  bottom: 85px;
   left: 20px;
   width: 50px;
   height: 50px;
   border-radius: 50%;
   background: rgba(183, 28, 28, 0.9);
-  border: none;
+  border: 3px solid #FFD700;
   color: white;
   font-size: 20px;
   cursor: pointer;
@@ -513,7 +513,7 @@
   .chat-layout {
     grid-template-columns: 1fr;
     gap: 0;
-    height: calc(100vh - 150px);
+    height: calc(100vh - 270px);
   }
 
   /* Collapsible sidebar on mobile */

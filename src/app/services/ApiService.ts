@@ -93,9 +93,12 @@ export class ApiService {
   
   /**
    * Get all categories
+   * ⚠️ This makes an API call! Categories should be cached in ManifestService
    */
   static async getCategories(): Promise<CategoryModel[]> {
     try {
+      console.log('🔴 FETCHING CATEGORIES FROM API - This should be cached!');
+      console.trace('Category fetch trace:'); // Show stack trace to find caller
       return await CategoryModel.fetchCategories();
     } catch (error: any) {
       // Use offline fallback for network errors
@@ -446,6 +449,24 @@ export class ApiService {
       // Also get categories directly for the dropdown
       const categories = await this.getCategories();
       
+      // Convert CategoryModel instances to plain objects for Redux serialization
+      const plainCategories = categories.map(cat => ({
+        id: cat.id,
+        category: cat.category,
+        name: cat.category,
+        category_text: cat.category_text,
+        parent_id: cat.parent_id,
+        parent_text: cat.parent_text,
+        image: cat.image,
+        banner_image: cat.banner_image,
+        show_in_banner: cat.show_in_banner,
+        show_in_categories: cat.show_in_categories,
+        is_parent: cat.is_parent,
+        attributes: cat.attributes,
+        created_at: cat.created_at,
+        updated_at: cat.updated_at
+      }));
+      
       // Build manifest in the format expected by the Redux slice
       const manifest = {
         app_info: {
@@ -454,7 +475,7 @@ export class ApiService {
           support_email: "support@ugflix.com",
           support_phone: "+256700000000"
         },
-        categories: categories, // Categories for dropdown
+        categories: plainCategories, // Categories as plain objects for Redux
         delivery_locations: [
           { id: 1, name: "Kampala", delivery_fee: 5000 },
           { id: 2, name: "Entebbe", delivery_fee: 8000 },
@@ -600,18 +621,18 @@ export class ApiService {
   /**
    * Get user's watch history
    */
-  static async getWatchHistory(page = 1, limit = 20): Promise<any> {
+  static async getWatchHistory(page = 1, limit = 100): Promise<any> {
     try {
-      const response = await http_get(`watch-history?page=${page}&limit=${limit}`);
+      const response = await http_get(`account/watch-history?page=${page}&limit=${limit}`);
       
       if (response && response.code === 1) {
         return response.data;
       }
       
-      return { items: [], total: 0 };
+      return { items: [], total: 0, current_page: 1, last_page: 1, per_page: limit };
     } catch (error) {
       console.error('Error fetching watch history:', error);
-      return { items: [], total: 0 };
+      return { items: [], total: 0, current_page: 1, last_page: 1, per_page: limit };
     }
   }
 
@@ -897,6 +918,180 @@ export class ApiService {
       }
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || error?.message || "Failed to update profile";
+      ToastService.error(errorMessage);
+      throw error;
+    }
+  }
+
+  // ===== MOVIE LIKES =====
+
+  /**
+   * Toggle like/unlike for a movie
+   * @param movieId - The ID of the movie to like/unlike
+   * @returns Promise with like status and updated likes count
+   */
+  static async toggleMovieLike(movieId: number): Promise<{
+    liked: boolean;
+    action: 'liked' | 'unliked';
+    likes_count: number;
+    like_id?: number;
+  }> {
+    try {
+      const response = await http_post("account/likes/toggle", {
+        movie_id: movieId
+      });
+
+      if (response?.code === 1) {
+        const data = response.data;
+        
+        // Show appropriate toast message
+        if (data.action === 'liked') {
+          ToastService.success("Added to your liked movies! ❤️");
+        } else {
+          ToastService.info("Removed from liked movies");
+        }
+
+        return {
+          liked: data.liked,
+          action: data.action,
+          likes_count: data.likes_count,
+          like_id: data.like_id
+        };
+      } else {
+        throw new Error(response?.message || "Failed to toggle like");
+      }
+    } catch (error: any) {
+      // Handle authentication errors
+      if (error?.response?.status === 401) {
+        ToastService.error("Please log in to like movies");
+        throw new Error("Authentication required");
+      }
+      
+      // Handle forbidden errors (guest users)
+      if (error?.response?.status === 403) {
+        const message = error?.response?.data?.message || "Guest users cannot like movies. Please create an account.";
+        ToastService.warning(message);
+        throw new Error(message);
+      }
+      
+      // Show exact backend error message
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to toggle like";
+      ToastService.error(errorMessage);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user's liked movies (requires authentication)
+   * @param page - Page number for pagination
+   * @param perPage - Number of items per page
+   */
+  static async getLikedMovies(page = 1, perPage = 20): Promise<any> {
+    try {
+      const response = await http_get("account/likes", {
+        page,
+        per_page: perPage
+      });
+
+      if (response?.code === 1) {
+        return response.data;
+      } else {
+        throw new Error(response?.message || "Failed to fetch liked movies");
+      }
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        ToastService.error("Please log in to view liked movies");
+        throw new Error("Authentication required");
+      }
+      
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to fetch liked movies";
+      ToastService.error(errorMessage);
+      throw error;
+    }
+  }
+
+  /**
+   * Toggle movie wishlist (add/remove from wishlist)
+   * @param movieId - The ID of the movie to toggle wishlist
+   * @returns Promise with wishlist status and count
+   */
+  static async toggleMovieWishlist(movieId: number): Promise<{
+    wishlisted: boolean;
+    action: 'added' | 'removed';
+    wishlist_count: number;
+    wishlist_id?: number;
+  }> {
+    try {
+      const response = await http_post("account/wishlist/toggle", {
+        movie_id: movieId
+      });
+
+      if (response?.code === 1) {
+        const data = response.data;
+        
+        // Show appropriate toast message
+        if (data.action === 'added') {
+          ToastService.success("Added to your wishlist! 📌");
+        } else {
+          ToastService.info("Removed from wishlist");
+        }
+
+        return {
+          wishlisted: data.wishlisted,
+          action: data.action,
+          wishlist_count: data.wishlist_count,
+          wishlist_id: data.wishlist_id
+        };
+      } else {
+        throw new Error(response?.message || "Failed to toggle wishlist");
+      }
+    } catch (error: any) {
+      // Handle authentication errors (401)
+      if (error?.response?.status === 401) {
+        ToastService.error("Please log in to add movies to wishlist");
+        throw new Error("Authentication required");
+      }
+      
+      // Handle forbidden errors (403) - guest users
+      if (error?.response?.status === 403) {
+        const message = error?.response?.data?.message || 
+          "Guest users cannot add to wishlist. Please create an account.";
+        ToastService.warning(message);
+        throw new Error(message);
+      }
+      
+      // Show exact backend error message
+      const errorMessage = error?.response?.data?.message || 
+        error?.message || "Failed to toggle wishlist";
+      ToastService.error(errorMessage);
+      throw error;
+    }
+  }
+
+  /**
+   * Get user's wishlisted movies (requires authentication)
+   * @param page - Page number for pagination
+   * @param perPage - Number of items per page
+   */
+  static async getWishlistedMovies(page = 1, perPage = 20): Promise<any> {
+    try {
+      const response = await http_get("account/wishlist", {
+        page,
+        per_page: perPage
+      });
+
+      if (response?.code === 1) {
+        return response.data;
+      } else {
+        throw new Error(response?.message || "Failed to fetch wishlisted movies");
+      }
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        ToastService.error("Please log in to view wishlist");
+        throw new Error("Authentication required");
+      }
+      
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to fetch wishlist";
       ToastService.error(errorMessage);
       throw error;
     }

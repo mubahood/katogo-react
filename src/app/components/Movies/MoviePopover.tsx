@@ -1,6 +1,7 @@
 // src/app/components/Movies/MoviePopover.tsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX, Plus, Clock, Star, Eye } from 'react-feather';
+import { Play, Pause, Volume2, VolumeX, Clock, Star, Eye } from 'react-feather';
+import WishlistButton from './WishlistButton';
 import type { Movie } from '../../services/manifest.service';
 
 interface MoviePopoverProps {
@@ -284,13 +285,25 @@ const MoviePopover: React.FC<MoviePopoverProps> = ({
               <Play size={20} fill="currentColor" />
             </button>
             
-            <button 
-              className="control-btn add-btn"
-              onClick={handleAddToWatchlist}
-              aria-label={`Add ${movie.title} to watchlist`}
-            >
-              <Plus size={18} />
-            </button>
+            <div className="control-btn add-btn">
+              <WishlistButton
+                movieId={movie.id}
+                initialWishlisted={movie.has_wishlisted}
+                size="small"
+                variant="icon"
+                onToggle={(wishlisted, count) => {
+                  // Update movie object
+                  if (movie) {
+                    movie.has_wishlisted = wishlisted;
+                    movie.wishlist_count = count;
+                  }
+                  // Notify parent if adding to wishlist
+                  if (wishlisted) {
+                    onAddToWatchlist?.(movie);
+                  }
+                }}
+              />
+            </div>
             
             {movie.url && !hasError && (
               <button 

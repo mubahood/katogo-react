@@ -65,7 +65,8 @@ import AccountOrdersPage from "../pages/account/AccountOrdersPage";
 import AccountSettings from "../pages/account/AccountSettings";
 import AccountSubscriptions from "../pages/account/AccountSubscriptions";
 import AccountWatchHistory from "../pages/account/AccountWatchHistory";
-import AccountLikes from "../pages/account/AccountLikes";
+import AccountWatchlist from "../pages/account/AccountWatchlist";
+import AccountMovieLikes from "../pages/account/AccountMovieLikes";
 import AccountProducts from "../pages/account/AccountProducts";
 import AccountChats from "../pages/account/AccountChats";
 // Old chat modules removed - using AccountChats module now
@@ -273,8 +274,9 @@ const AppRoutes: React.FC = () => {
             <Route index element={<AccountDashboardNew />} />
             <Route path="profile" element={<AccountProfile />} />
             <Route path="subscriptions" element={<AccountSubscriptions />} />
+            <Route path="watchlist" element={<AccountWatchlist />} />
             <Route path="history" element={<AccountWatchHistory />} />
-            <Route path="likes" element={<AccountLikes />} />
+            <Route path="likes" element={<AccountMovieLikes />} />
             <Route path="products" element={<AccountProducts />} />
             <Route path="chats" element={<AccountChats />} />
             <Route path="orders" element={<AccountOrdersPage />} />

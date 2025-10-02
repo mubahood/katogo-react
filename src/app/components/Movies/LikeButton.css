@@ -1,0 +1,240 @@
+/* src/app/components/Movies/LikeButton.css */
+
+/**
+ * 🎬 LIKE BUTTON STYLES
+ * 
+ * Comprehensive styling for the like button component.
+ * Includes all states, variants, and responsive behavior.
+ */
+
+/* ===== BASE BUTTON STYLES ===== */
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.like-button:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.7);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.like-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.like-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ===== ACTIVE STATE (LIKED) ===== */
+.like-button.active {
+  background: rgba(220, 38, 38, 0.9);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: white;
+}
+
+.like-button.active:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 1);
+  border-color: rgba(220, 38, 38, 0.8);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.like-button.active .like-icon {
+  animation: like-add 0.4s ease-out;
+}
+
+/* ===== LOADING STATE ===== */
+.like-button.loading {
+  pointer-events: none;
+}
+
+.like-button.loading .like-icon {
+  animation: like-pulse 1s ease-in-out infinite;
+}
+
+/* ===== SIZE VARIANTS ===== */
+.like-button-small {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+  border-radius: 6px;
+}
+
+.like-button-medium {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  border-radius: 8px;
+}
+
+.like-button-large {
+  padding: 0.625rem 1.125rem;
+  font-size: 0.975rem;
+  border-radius: 10px;
+}
+
+/* ===== DISPLAY VARIANTS ===== */
+.like-button-icon {
+  padding: 0.5rem;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.like-button-icon.like-button-small {
+  padding: 0.375rem;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.like-button-icon.like-button-large {
+  padding: 0.625rem;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.like-button-text {
+  padding: 0.5rem 1rem;
+}
+
+.like-button-text .like-icon {
+  display: none;
+}
+
+/* ===== ICON STYLES ===== */
+.like-icon {
+  flex-shrink: 0;
+  stroke-width: 2;
+  transition: all 0.2s ease;
+}
+
+.like-button:hover:not(:disabled) .like-icon {
+  transform: scale(1.1);
+}
+
+.like-button.active .like-icon {
+  stroke-width: 1;
+}
+
+/* ===== TEXT STYLES ===== */
+.like-text {
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes like-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes like-add {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+@media (max-width: 768px) {
+  /* Hide text on mobile for icon-text variant */
+  .like-button-icon-text .like-text {
+    display: none;
+  }
+
+  .like-button-icon-text {
+    padding: 0.5rem;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .like-button-icon-text.like-button-small {
+    padding: 0.375rem;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .like-button-icon-text.like-button-large {
+    padding: 0.625rem;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.like-button:focus-visible {
+  outline: 2px solid rgba(220, 38, 38, 0.8);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .like-button,
+  .like-icon,
+  .like-text {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+  .like-button {
+    border-width: 2px;
+  }
+
+  .like-button.active {
+    border-color: #dc2626;
+    background: #b91c1c;
+  }
+}
+
+/* ===== DARK MODE ADJUSTMENTS ===== */
+@media (prefers-color-scheme: dark) {
+  .like-button {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .like-button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .like-button {
+    display: none;
+  }
+}

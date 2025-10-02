@@ -16,6 +16,10 @@ export interface Movie {
   category_id: number;
   category: string;
   views_time_count?: number;
+  has_wishlisted?: boolean;
+  wishlist_count?: number;
+  has_liked?: boolean;
+  likes_count?: number;
 }
 
 export interface MovieCategory {

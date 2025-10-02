@@ -552,9 +552,9 @@ const ModernMainNav: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/account/watched" onClick={toggleMenu}>
+                <Link to="/account/history" onClick={toggleMenu}>
                   <Eye size={20} />
-                  <span>Watched Movies</span>
+                  <span>Watch History</span>
                   <ChevronRight size={16} />
                 </Link>
               </li>
