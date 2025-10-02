@@ -1,0 +1,401 @@
+/* src/app/pages/connect/components/UserCard.css */
+
+.user-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* ========== LIST VARIANT ========== */
+.user-card-list {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #1a1a1a;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.user-card-list:hover {
+  background: #222;
+  transform: translateX(4px);
+}
+
+.user-card-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.user-card-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #333;
+}
+
+.avatar-online-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
+.user-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.user-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-card-age {
+  font-size: 14px;
+  color: #999;
+  font-weight: 400;
+}
+
+.user-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.user-card-occupation {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.user-card-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #999;
+}
+
+.user-card-status {
+  font-size: 12px;
+  color: #666;
+}
+
+.user-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #333;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: #ffd700;
+  color: #000;
+  transform: scale(1.1);
+}
+
+.chat-btn:hover {
+  background: #ffd700;
+}
+
+/* ========== GRID VARIANT ========== */
+.user-card-grid {
+  background: #1a1a1a;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.user-card-grid:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
+}
+
+.user-card-image-container {
+  position: relative;
+  width: 100%;
+  padding-top: 133%;
+  overflow: hidden;
+}
+
+.user-card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-card-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+  pointer-events: none;
+}
+
+.online-badge-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  padding: 6px;
+}
+
+.user-card-overlay-content {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+}
+
+.user-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.user-card-name-row .user-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.user-age-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(255, 215, 0, 0.2);
+  border: 1px solid #ffd700;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.user-card-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #999;
+}
+
+.info-row svg {
+  color: #ffd700;
+  flex-shrink: 0;
+}
+
+/* ========== SWIPE VARIANT ========== */
+.user-card-swipe {
+  width: 100%;
+  max-width: 400px;
+  height: 600px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #1a1a1a;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.swipe-card-image-container {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.swipe-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.swipe-card-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent);
+}
+
+.swipe-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  color: #fff;
+}
+
+.swipe-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.swipe-card-name {
+  font-size: 28px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.swipe-card-age {
+  font-size: 24px;
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.swipe-card-tagline {
+  font-size: 16px;
+  color: #ccc;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.swipe-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #ddd;
+}
+
+.detail-item svg {
+  color: #ffd700;
+}
+
+.swipe-card-actions {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  background: #1a1a1a;
+  border-top: 1px solid #333;
+}
+
+.swipe-action-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.pass-btn {
+  background: #ff4444;
+  color: #fff;
+}
+
+.pass-btn:hover {
+  background: #ff0000;
+  transform: scale(1.1);
+}
+
+.info-btn {
+  background: #4a90e2;
+  color: #fff;
+}
+
+.info-btn:hover {
+  background: #357abd;
+  transform: scale(1.1);
+}
+
+.like-btn {
+  background: #00c853;
+  color: #fff;
+}
+
+.like-btn:hover {
+  background: #00a843;
+  transform: scale(1.1);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .user-card-list {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .user-card-avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .user-card-name {
+    font-size: 14px;
+  }
+
+  .user-card-swipe {
+    max-width: 100%;
+    height: 500px;
+  }
+
+  .swipe-card-name {
+    font-size: 24px;
+  }
+
+  .swipe-action-btn {
+    width: 50px;
+    height: 50px;
+  }
+}

@@ -73,6 +73,10 @@ import AccountChats from "../pages/account/AccountChats";
 import OrderDetailsPage from "../pages/account/OrderDetailsPage";
 import Account from "../pages/account/Account";
 
+// Connect/Dating Pages
+import ConnectDiscover from "../pages/connect/ConnectDiscover";
+import ConnectProfile from "../pages/connect/ConnectProfile";
+
 // Error Pages
 const NotFoundPage = React.lazy(() => import("../pages/errors/NotFoundPage"));
 
@@ -283,6 +287,24 @@ const AppRoutes: React.FC = () => {
             <Route path="orders/:orderId" element={<OrderDetailsPage />} />
             <Route path="settings" element={<AccountSettings />} />
           </Route>
+          
+          {/* Connect/Dating - Protected Routes */}
+          <Route 
+            path="connect" 
+            element={
+              <ProtectedRoute>
+                <ConnectDiscover />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="connect/profile/:userId" 
+            element={
+              <ProtectedRoute>
+                <ConnectProfile />
+              </ProtectedRoute>
+            } 
+          />
           
           {/* Static Pages */}
           <Route path="about" element={<About />} />
