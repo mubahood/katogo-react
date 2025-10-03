@@ -26,6 +26,8 @@ import {
 import { RootState } from '../../store/store';
 import { logout } from '../../store/slices/authSlice';
 import ToastService from '../../services/ToastService';
+import { getImageUrl } from '../../utils/imageUtils';
+import ProfileCompletionBanner from './ProfileCompletionBanner';
 import './NewAccountLayout.css';
 
 // Menu item interface
@@ -330,8 +332,8 @@ const NewAccountLayout: React.FC = () => {
           {/* User Profile Section */}
           <div className="sidebar-user-profile">
             <div className="user-avatar">
-              {user?.photo ? (
-                <img src={user.photo} alt={user.name} />
+              {user?.avatar ? (
+                <img src={getImageUrl(user.avatar)} alt={user.name || 'User'} />
               ) : (
                 <FiUser size={32} />
               )}
@@ -437,6 +439,9 @@ const NewAccountLayout: React.FC = () => {
 
           {/* Page Content */}
           <div className="account-page-content">
+            {/* Profile Completion Banner */}
+            <ProfileCompletionBanner user={user} />
+            
             <Outlet />
           </div>
         </main>

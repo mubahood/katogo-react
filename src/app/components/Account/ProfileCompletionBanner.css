@@ -1,0 +1,286 @@
+/* src/app/components/Account/ProfileCompletionBanner.css */
+
+.profile-completion-banner {
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.15) 0%, 
+    rgba(255, 193, 7, 0.1) 50%,
+    rgba(255, 152, 0, 0.05) 100%
+  );
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-completion-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--brand-gold, #FFD700) 0%, 
+    var(--brand-gold-light, #FFE55C) 50%,
+    var(--brand-gold, #FFD700) 100%
+  );
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.banner-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand-gold, #FFD700), var(--brand-gold-light, #FFE55C));
+  border-radius: 50%;
+  color: var(--text-dark, #1A1A1A);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.banner-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.banner-text {
+  margin-bottom: 12px;
+}
+
+.banner-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary, #FFFFFF);
+  margin: 0 0 4px 0;
+}
+
+.banner-message {
+  font-size: 0.9rem;
+  color: var(--text-secondary, #B0B0B0);
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.missing-fields {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.missing-label {
+  color: var(--text-secondary, #B0B0B0);
+  font-weight: 500;
+}
+
+.missing-items {
+  color: var(--brand-gold, #FFD700);
+  font-weight: 500;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, 
+    var(--brand-gold, #FFD700) 0%, 
+    var(--brand-gold-light, #FFE55C) 100%
+  );
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brand-gold, #FFD700);
+  min-width: 42px;
+  text-align: right;
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.complete-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--brand-gold, #FFD700), var(--brand-gold-light, #FFE55C));
+  color: var(--text-dark, #1A1A1A);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.complete-profile-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+.complete-profile-btn:active {
+  transform: translateY(0);
+}
+
+.dismiss-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--text-secondary, #B0B0B0);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dismiss-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary, #FFFFFF);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-completion-banner {
+    padding: 16px;
+  }
+
+  .banner-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .banner-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .banner-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .banner-actions {
+    width: 100%;
+    flex-direction: column-reverse;
+  }
+
+  .complete-profile-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dismiss-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .progress-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .progress-text {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-title {
+    font-size: 1rem;
+  }
+
+  .banner-message {
+    font-size: 0.85rem;
+  }
+
+  .missing-fields {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .complete-profile-btn {
+    font-size: 0.85rem;
+    padding: 8px 16px;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .profile-completion-banner {
+    background: linear-gradient(135deg, 
+      rgba(255, 215, 0, 0.08) 0%, 
+      rgba(255, 193, 7, 0.05) 50%,
+      rgba(255, 152, 0, 0.03) 100%
+    );
+  }
+
+  .progress-bar {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Animation for entering */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

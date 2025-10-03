@@ -23,6 +23,7 @@ import ApiService from '../../services/ApiService';
 import ToastService from '../../services/ToastService';
 import ProfileService from '../../services/ProfileService';
 import './ProfileEdit.css';
+import Utils from '../../services/Utils';
 
 interface ProfileFormData {
   // Personal Information
@@ -355,8 +356,18 @@ const ProfileEdit: React.FC = () => {
       
       // Avatar - Following Flutter app's pattern for file uploads
       if (formData.avatar) {
+        console.log('🖼️ Avatar file details:', {
+          name: formData.avatar.name,
+          size: formData.avatar.size,
+          type: formData.avatar.type,
+          lastModified: formData.avatar.lastModified,
+          isFile: formData.avatar instanceof File
+        });
         apiFormData.append('temp_file_field', 'avatar'); // Tell backend which field to update
         apiFormData.append('photo', formData.avatar); // The actual file
+        console.log('✅ Avatar appended to FormData');
+      } else {
+        console.log('⚠️ No avatar file to upload');
       }
       
       // Location
@@ -577,7 +588,7 @@ const ProfileEdit: React.FC = () => {
               <div className="avatar-upload-section">
                 <div className="avatar-preview" onClick={triggerFileInput}>
                   {formData.avatarPreview ? (
-                    <img src={formData.avatarPreview} alt="Avatar" />
+                    <img src={Utils.img(formData.avatarPreview)} alt="Avatar" />
                   ) : (
                     <div className="avatar-placeholder">
                       <FiCamera size={32} />

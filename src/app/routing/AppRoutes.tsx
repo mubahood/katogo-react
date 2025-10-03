@@ -73,6 +73,8 @@ import AccountChats from "../pages/account/AccountChats";
 // Old chat modules removed - using AccountChats module now
 import OrderDetailsPage from "../pages/account/OrderDetailsPage";
 import Account from "../pages/account/Account";
+import ProductPost from "../pages/account/ProductPost";
+import MyProducts from "../pages/account/MyProducts";
 
 // Connect/Dating Pages
 import ConnectDiscover from "../pages/connect/ConnectDiscover";
@@ -283,7 +285,9 @@ const AppRoutes: React.FC = () => {
             <Route path="watchlist" element={<AccountWatchlist />} />
             <Route path="history" element={<AccountWatchHistory />} />
             <Route path="likes" element={<AccountMovieLikes />} />
-            <Route path="products" element={<AccountProducts />} />
+            <Route path="products" element={<MyProducts />} />
+            <Route path="products/new" element={<ProductPost />} />
+            <Route path="products/edit/:id" element={<ProductPost />} />
             <Route path="chats" element={<AccountChats />} />
             <Route path="orders" element={<AccountOrdersPage />} />
             <Route path="orders/:orderId" element={<OrderDetailsPage />} />

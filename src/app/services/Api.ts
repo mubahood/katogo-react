@@ -10,7 +10,8 @@ const api = axios.create({
   baseURL: API_CONFIG.API_URL, // Backend API base URL
   //get token
   headers: {
-    "Content-Type": "application/json",
+    // DON'T set Content-Type here - let each request set its own
+    // FormData needs multipart/form-data, JSON needs application/json
     "Accept": "application/json",
   },
   withCredentials: false, // Temporarily disable credentials to test CORS
@@ -263,7 +264,9 @@ api.interceptors.request.use(
       authorization: typeof config.headers['authorization'] === 'string' ? config.headers['authorization'].substring(0, 30) + '...' : 'NOT SET',
       Tok: typeof config.headers['Tok'] === 'string' ? config.headers['Tok'].substring(0, 30) + '...' : 'NOT SET',
       tok: typeof config.headers['tok'] === 'string' ? config.headers['tok'].substring(0, 30) + '...' : 'NOT SET',
-      logged_in_user_id: config.headers['logged_in_user_id']
+      logged_in_user_id: config.headers['logged_in_user_id'],
+      ContentType: config.headers['Content-Type'] || 'NOT SET',
+      isFormData: config.data instanceof FormData
     });
     
     // Add platform type to body for POST requests (like mobile app)
@@ -360,11 +363,32 @@ export const http_post = async (path: string, params: Record<string, any> | Form
     // Check if params is already FormData
     if (params instanceof FormData) {
       formData = params;
+      
+      // Debug: Log FormData contents BEFORE adding user fields
+      console.log('📦 FormData contents BEFORE adding user fields:');
+      for (let pair of formData.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`  ${pair[0]}: File(${pair[1].name}, ${pair[1].size} bytes, ${pair[1].type})`);
+        } else {
+          console.log(`  ${pair[0]}: ${pair[1]}`);
+        }
+      }
+      
       // Add user identification to existing FormData
       if (u && u.id) {
         formData.append('user', u.id.toString());
         formData.append('User-Id', u.id.toString());
         formData.append('user_id', u.id.toString());
+      }
+      
+      // Debug: Log FormData contents AFTER adding user fields
+      console.log('📦 FormData contents AFTER adding user fields:');
+      for (let pair of formData.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`  ${pair[0]}: File(${pair[1].name}, ${pair[1].size} bytes, ${pair[1].type})`);
+        } else {
+          console.log(`  ${pair[0]}: ${pair[1]}`);
+        }
       }
     } else {
       // Add user identification to body parameters like Dart implementation
@@ -381,9 +405,25 @@ export const http_post = async (path: string, params: Record<string, any> | Form
       });
     }
     
-    // DON'T pass headers config here - let interceptor handle ALL headers
-    // Passing headers here can override interceptor headers!
-    const response = await api.post(path, formData);
+    // CRITICAL: Handle Content-Type properly for FormData vs JSON
+    const config: any = {};
+    
+    if (params instanceof FormData) {
+      // For FormData, MUST delete Content-Type to let browser set it with boundary
+      // Browser will automatically set: multipart/form-data; boundary=----WebKitFormBoundary...
+      config.headers = {
+        'Content-Type': undefined // This tells axios to remove the header
+      };
+      console.log('🗂️ Sending FormData - Content-Type will be set by browser');
+    } else {
+      // For regular objects, use JSON
+      config.headers = {
+        'Content-Type': 'application/json'
+      };
+      console.log('📄 Sending JSON - Content-Type: application/json');
+    }
+    
+    const response = await api.post(path, formData, config);
     
     console.log(`✅ POST ${path} response:`, response.status, response.statusText);
     return handleResponse(response);
