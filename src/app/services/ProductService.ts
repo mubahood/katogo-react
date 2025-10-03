@@ -17,6 +17,7 @@
 
 import { http_post, http_get } from './Api';
 import ToastService from './ToastService';
+import { Product, ProductImage } from '../models/ProductModels';
 
 export interface ProductFormData {
   // Basic Info
@@ -44,50 +45,6 @@ export interface ProductFormData {
   // Additional
   data?: string; // JSON string for category attributes
   url?: string;
-}
-
-export interface ProductImage {
-  id?: number;
-  src: string;
-  thumbnail?: string;
-  product_id?: number;
-  parent_local_id?: string;
-  type: 'Product';
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  feature_photo: string;
-  price_1: string;
-  price_2: string;
-  category: string;
-  user: number;
-  supplier: number;
-  local_id: string;
-  has_sizes: 'Yes' | 'No';
-  has_colors: 'Yes' | 'No';
-  sizes?: string;
-  colors?: string;
-  p_type: 'Yes' | 'No';
-  keywords?: string;
-  summary?: string;
-  status: number;
-  in_stock: number;
-  rates: number;
-  metric: number;
-  currency: number;
-  date_added: string;
-  date_updated: string;
-  created_at: string;
-  updated_at: string;
-  
-  // Relationships
-  images?: ProductImage[];
-  category_text?: string;
-  category_data?: any;
-  user_data?: any;
 }
 
 class ProductServiceClass {

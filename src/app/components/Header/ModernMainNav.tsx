@@ -542,7 +542,7 @@ const ModernMainNav: React.FC = () => {
             <h6 className="mobile-nav-heading">Quick Actions</h6>
             <ul className="nav-links">
               <li>
-                <Link to="/account/post-product" onClick={toggleMenu}>
+                <Link to="/account/products/new" onClick={toggleMenu}>
                   <FileText size={20} />
                   <span>Post Product</span>
                   <ChevronRight size={16} />

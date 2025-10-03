@@ -33,6 +33,7 @@ import {
   FiShoppingBag,
   FiAlertCircle,
   FiCheckCircle,
+  FiX,
 } from 'react-icons/fi';
 import ProductService from '../../services/ProductService';
 import { Product, ProductCategory, formatProductPrice, calculateDiscount, getProductStatusLabel, getProductStatusColor } from '../../models/ProductModels';
@@ -56,6 +57,10 @@ const MyProducts: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState(false);
+  
+  // Image viewer state
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [viewerImage, setViewerImage] = useState<string>('');
 
   // Fetch products on mount
   useEffect(() => {
@@ -144,6 +149,22 @@ const MyProducts: React.FC = () => {
    */
   const handleEdit = (productId: number) => {
     navigate(`/account/products/edit/${productId}`);
+  };
+
+  /**
+   * Open image viewer
+   */
+  const handleImageClick = (imageUrl: string) => {
+    setViewerImage(imageUrl);
+    setShowImageViewer(true);
+  };
+
+  /**
+   * Close image viewer
+   */
+  const closeImageViewer = () => {
+    setShowImageViewer(false);
+    setViewerImage('');
   };
 
   // Get unique categories from products
@@ -265,6 +286,7 @@ const MyProducts: React.FC = () => {
                 viewMode={viewMode}
                 onEdit={handleEdit}
                 onDelete={handleDeleteClick}
+                onImageClick={handleImageClick}
               />
             ))}
           </div>
@@ -312,6 +334,18 @@ const MyProducts: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Image Viewer Modal */}
+      {showImageViewer && (
+        <div className="image-viewer-overlay" onClick={closeImageViewer}>
+          <button className="image-viewer-close" onClick={closeImageViewer} aria-label="Close">
+            <FiX size={32} />
+          </button>
+          <div className="image-viewer-content" onClick={(e) => e.stopPropagation()}>
+            <img src={viewerImage} alt="Product" className="viewer-image" />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -324,9 +358,10 @@ interface ProductCardProps {
   viewMode: ViewMode;
   onEdit: (productId: number) => void;
   onDelete: (product: Product) => void;
+  onImageClick?: (imageUrl: string) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode, onEdit, onDelete }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode, onEdit, onDelete, onImageClick }) => {
   const discount = calculateDiscount(product.price_2, product.price_1);
   const statusColor = getProductStatusColor(product.status);
   const statusLabel = getProductStatusLabel(product.status);
@@ -334,7 +369,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode, onEdit, on
   if (viewMode === 'list') {
     return (
       <div className="product-card list-view">
-        <div className="product-image">
+        <div 
+          className="product-image" 
+          onClick={() => onImageClick && onImageClick(Utils.img(product.feature_photo))}
+          style={{ cursor: onImageClick ? 'pointer' : 'default' }}
+          title="Click to view full image"
+        >
           <img src={Utils.img(product.feature_photo)} alt={product.name} />
           {discount > 0 && (
             <span className="discount-badge">{discount}% OFF</span>
@@ -387,7 +427,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode, onEdit, on
   // Grid View
   return (
     <div className="product-card grid-view">
-      <div className="product-image">
+      <div 
+        className="product-image"
+        onClick={() => onImageClick && onImageClick(Utils.img(product.feature_photo))}
+        style={{ cursor: onImageClick ? 'pointer' : 'default' }}
+        title="Click to view full image"
+      >
         <img src={Utils.img(product.feature_photo)} alt={product.name} />
         {discount > 0 && (
           <span className="discount-badge">{discount}% OFF</span>

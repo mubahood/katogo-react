@@ -100,6 +100,10 @@ const ProductPost: React.FC = () => {
   // UI state
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dragActive, setDragActive] = useState(false);
+  
+  // Image viewer state
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [viewerImage, setViewerImage] = useState<string>('');
 
   // Local ID for tracking (generated once)
   const [localId] = useState(() => ProductService.generateLocalId());
@@ -236,6 +240,22 @@ const ProductPost: React.FC = () => {
       selectedImages: prev.selectedImages.filter((_, i) => i !== index),
       imagePreview: prev.imagePreview.filter((_, i) => i !== index),
     }));
+  };
+
+  /**
+   * Open image viewer
+   */
+  const handleImageClick = (imageUrl: string) => {
+    setViewerImage(imageUrl);
+    setShowImageViewer(true);
+  };
+
+  /**
+   * Close image viewer
+   */
+  const closeImageViewer = () => {
+    setShowImageViewer(false);
+    setViewerImage('');
   };
 
   /**
@@ -525,7 +545,13 @@ const ProductPost: React.FC = () => {
                 {formData.imagePreview.length > 0 && (
                   <div className="image-preview-grid">
                     {formData.imagePreview.map((preview, index) => (
-                      <div key={index} className="image-preview-item">
+                      <div 
+                        key={index} 
+                        className="image-preview-item"
+                        onClick={() => handleImageClick(preview)}
+                        style={{ cursor: 'pointer' }}
+                        title="Click to view full image"
+                      >
                         <img src={preview} alt={`Product ${index + 1}`} />
                         <button
                           type="button"
@@ -847,6 +873,18 @@ const ProductPost: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Viewer Modal */}
+      {showImageViewer && (
+        <div className="image-viewer-overlay" onClick={closeImageViewer}>
+          <button className="image-viewer-close" onClick={closeImageViewer} aria-label="Close">
+            <FiX size={32} />
+          </button>
+          <div className="image-viewer-content" onClick={(e) => e.stopPropagation()}>
+            <img src={viewerImage} alt="Product" className="viewer-image" />
           </div>
         </div>
       )}

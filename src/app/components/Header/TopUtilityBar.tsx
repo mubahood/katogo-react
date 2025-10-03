@@ -8,7 +8,7 @@ const TopUtilityBar: React.FC = () => {
     <div className="top-utility-bar-wrapper d-none d-lg-block">
       {/* Inner div to constrain content - matching main nav width */}
       <div className="container-fluid d-flex justify-content-end align-items-center py-1" style={{paddingLeft: '60px', paddingRight: '60px'}}>
-        <Link to="/account/post-product" className="utility-link">Post Product</Link>
+        <Link to="/account/products/new" className="utility-link">Post Product</Link>
         <Link to="/account/watchlist" className="utility-link">My Watch List</Link>
         <Link to="/account/history" className="utility-link">Watch History</Link>
         <Link to="/help" className="utility-link">Help And Support</Link>
