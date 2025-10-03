@@ -61,6 +61,7 @@ const LandingPage = React.lazy(() => import("../pages/auth/LandingPage"));
 import AccountDashboard from "../pages/account/AccountDashboard";
 import AccountDashboardNew from "../pages/account/AccountDashboardNew";
 import AccountProfile from "../pages/account/AccountProfile";
+import ProfileEdit from "../pages/account/ProfileEdit";
 import AccountOrdersPage from "../pages/account/AccountOrdersPage";
 import AccountSettings from "../pages/account/AccountSettings";
 import AccountSubscriptions from "../pages/account/AccountSubscriptions";
@@ -277,6 +278,7 @@ const AppRoutes: React.FC = () => {
           >
             <Route index element={<AccountDashboardNew />} />
             <Route path="profile" element={<AccountProfile />} />
+            <Route path="profile/edit" element={<ProfileEdit />} />
             <Route path="subscriptions" element={<AccountSubscriptions />} />
             <Route path="watchlist" element={<AccountWatchlist />} />
             <Route path="history" element={<AccountWatchHistory />} />

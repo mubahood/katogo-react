@@ -841,7 +841,31 @@ export class ApiService {
   // ===== USER PROFILE =====
 
   /**
-   * Update user profile
+   * Fetch current user profile from backend
+   * Use this to get the latest user data and sync with local storage
+   */
+  static async fetchUserProfile(): Promise<any> {
+    try {
+      console.log('🔄 Fetching latest user profile from backend...');
+      
+      const response = await http_get("me");
+      
+      if (response?.code === 1 && response?.data) {
+        console.log('✅ User profile fetched successfully');
+        return response.data;
+      } else {
+        throw new Error(response?.message || "Failed to fetch user profile");
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to fetch user profile:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to fetch user profile";
+      ToastService.error(errorMessage);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user profile (basic fields)
    */
   static async updateProfile(profileData: {
     first_name: string;
@@ -858,7 +882,7 @@ export class ApiService {
       const requestData: any = {
         first_name: profileData.first_name,
         last_name: profileData.last_name,
-        phone_number_1: profileData.phone_number, // Backend still expects phone_number_1
+        phone_number: profileData.phone_number,
       };
 
       if (profileData.email) {
@@ -866,15 +890,15 @@ export class ApiService {
       }
       
       if (profileData.dob) {
-        requestData.date_of_birth = profileData.dob; // Backend expects date_of_birth
+        requestData.dob = profileData.dob;
       }
       
       if (profileData.sex) {
-        requestData.gender = profileData.sex; // Backend expects 'gender'
+        requestData.sex = profileData.sex;
       }
       
       if (profileData.intro) {
-        requestData.bio = profileData.intro; // Backend expects 'bio'
+        requestData.bio = profileData.intro;
       }
       
       if (profileData.address) {
@@ -883,19 +907,34 @@ export class ApiService {
 
       console.log('Sending to backend:', requestData); // Debug log
 
-      const response = await http_post("update-profile", requestData);
+      const response = await http_post("api/User", requestData);
       
       if (response?.code === 1) {
         ToastService.success(response.message || "Profile updated successfully!");
-        
-        // Transform the response data to match frontend field names
-        const transformedData = response.data ? {
-          ...response.data,
-          phone_number_1: response.data.phone_number || response.data.phone_number_1,
-          date_of_birth: response.data.dob || response.data.date_of_birth
-        } : response.data;
-        
-        return transformedData;
+        return response.data;
+      } else {
+        throw new Error(response?.message || "Failed to update profile");
+      }
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Failed to update profile";
+      ToastService.error(errorMessage);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user profile comprehensively with all fields including file upload
+   * This method supports FormData for file uploads
+   */
+  static async updateProfileComprehensive(formData: FormData): Promise<any> {
+    try {
+      console.log('Sending comprehensive profile update to backend');
+
+      const response = await http_post("api/User", formData);
+      
+      if (response?.code === 1) {
+        ToastService.success(response.message || "Profile updated successfully!");
+        return response.data;
       } else {
         throw new Error(response?.message || "Failed to update profile");
       }

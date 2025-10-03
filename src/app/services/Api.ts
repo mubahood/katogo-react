@@ -344,7 +344,7 @@ api.interceptors.response.use(
 );
 
 // Function to make a POST request
-export const http_post = async (path: string, params: Record<string, any>) => {
+export const http_post = async (path: string, params: Record<string, any> | FormData) => {
   try {
     const u = Utils.loadFromDatabase(ugflix_user);
     const token = localStorage.getItem('ugflix_auth_token');
@@ -352,21 +352,34 @@ export const http_post = async (path: string, params: Record<string, any>) => {
     console.log(`📡 POST ${path}:`, {
       hasUser: !!u,
       userId: u?.id,
-      params: Object.keys(params)
+      isFormData: params instanceof FormData
     });
     
-    // Add user identification to body parameters like Dart implementation
-    if (u && u.id) {
-      params.user = u.id.toString();
-      params['User-Id'] = u.id.toString();
-      params.user_id = u.id.toString();
+    let formData: FormData;
+    
+    // Check if params is already FormData
+    if (params instanceof FormData) {
+      formData = params;
+      // Add user identification to existing FormData
+      if (u && u.id) {
+        formData.append('user', u.id.toString());
+        formData.append('User-Id', u.id.toString());
+        formData.append('user_id', u.id.toString());
+      }
+    } else {
+      // Add user identification to body parameters like Dart implementation
+      if (u && u.id) {
+        params.user = u.id.toString();
+        params['User-Id'] = u.id.toString();
+        params.user_id = u.id.toString();
+      }
+      
+      // Convert params object to FormData
+      formData = new FormData();
+      Object.keys(params).forEach(key => {
+        formData.append(key, params[key]);
+      });
     }
-    
-    // Use FormData like Dart implementation for consistency
-    const formData = new FormData();
-    Object.keys(params).forEach(key => {
-      formData.append(key, params[key]);
-    });
     
     // DON'T pass headers config here - let interceptor handle ALL headers
     // Passing headers here can override interceptor headers!

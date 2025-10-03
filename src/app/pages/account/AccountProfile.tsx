@@ -233,17 +233,16 @@ const AccountProfile: React.FC = () => {
             Manage your personal information and account settings
           </p>
         </div>
-        {!isEditing && (
-          <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
-            <button 
-              className="acc-btn acc-btn-outline"
-              onClick={handleEditClick}
-            >
-              <i className="bi bi-pencil" style={{ marginRight: '8px' }}></i>
-              Edit Profile
-            </button>
-          </div>
-        )}
+        <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+          <Link 
+            to="/account/profile/edit"
+            className="acc-btn acc-btn-outline"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-pencil" style={{ marginRight: '8px' }}></i>
+            Edit Profile
+          </Link>
+        </div>
       </div>
 
       {/* Success Alert */}

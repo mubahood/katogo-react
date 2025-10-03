@@ -95,6 +95,13 @@ const NewAccountLayout: React.FC = () => {
           icon: <FiUser />,
           path: '/account/profile',
           section: 'overview'
+        },
+        {
+          id: 'edit-profile',
+          label: 'Edit Profile',
+          icon: <FiSettings />,
+          path: '/account/profile/edit',
+          section: 'overview'
         }
       ]
     },
