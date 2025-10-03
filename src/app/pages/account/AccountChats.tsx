@@ -36,14 +36,28 @@ const AccountChats: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Handle product details from URL parameters
+  // Handle product details and initial messages from URL parameters
   useEffect(() => {
     const productId = searchParams.get('productId');
     const productName = searchParams.get('productName');
     const productPrice = searchParams.get('productPrice');
+    const initialMessage = searchParams.get('initialMessage');
 
-    // If product details are present, auto-fill message
-    if (productId && productName && selectedConversation) {
+    // Priority 1: If initial message is present (from Connect profile), use it
+    if (initialMessage && selectedConversation) {
+      const decodedMessage = decodeURIComponent(initialMessage);
+      setNewMessage(decodedMessage);
+      
+      // Focus on message input after a brief delay
+      setTimeout(() => {
+        messageInputRef.current?.focus();
+        // Move cursor to end of text
+        const textLength = decodedMessage.length;
+        messageInputRef.current?.setSelectionRange(textLength, textLength);
+      }, 500);
+    }
+    // Priority 2: If product details are present, auto-fill product message
+    else if (productId && productName && selectedConversation) {
       const priceText = productPrice ? ` - UGX ${productPrice}` : '';
       const productMessage = `Hi! I'm interested in this product:\n\nProduct: ${decodeURIComponent(productName)}${priceText}\nProduct ID: ${productId}\n\nCould you provide more details?`;
       

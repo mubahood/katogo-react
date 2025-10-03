@@ -3,41 +3,139 @@
 .user-card {
   cursor: pointer;
   transition: all 0.3s ease;
+  animation: fadeInUp 0.4s ease forwards;
+  opacity: 0;
 }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger animation for grid items */
+.user-card:nth-child(1) { animation-delay: 0.05s; }
+.user-card:nth-child(2) { animation-delay: 0.1s; }
+.user-card:nth-child(3) { animation-delay: 0.15s; }
+.user-card:nth-child(4) { animation-delay: 0.2s; }
+.user-card:nth-child(5) { animation-delay: 0.25s; }
+.user-card:nth-child(6) { animation-delay: 0.3s; }
+.user-card:nth-child(7) { animation-delay: 0.35s; }
+.user-card:nth-child(8) { animation-delay: 0.4s; }
+.user-card:nth-child(9) { animation-delay: 0.45s; }
+.user-card:nth-child(10) { animation-delay: 0.5s; }
+.user-card:nth-child(n+11) { animation-delay: 0.5s; }
 
 /* ========== LIST VARIANT ========== */
 .user-card-list {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
+  gap: 12px;
+  padding: 12px;
   background: #1a1a1a;
-  border-radius: 12px;
-  margin-bottom: 12px;
+  border: 1px solid #2a2a2a;
+  margin-bottom: 8px;
 }
 
 .user-card-list:hover {
   background: #222;
-  transform: translateX(4px);
+  border-color: rgba(255, 215, 0, 0.3);
 }
 
 .user-card-avatar-wrapper {
-  position: relative;
   flex-shrink: 0;
+  width: 56px;
+  height: 56px;
 }
 
-.user-card-avatar {
-  width: 60px;
-  height: 60px;
+/* List variant - always circular */
+.user-card-list .user-avatar {
+  width: 56px !important;
+  height: 56px !important;
+}
+
+.user-card-list .user-avatar-wrapper {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+}
+
+.user-card-list .user-avatar-placeholder {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+}
+
+.user-card-list .user-avatar-image {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 50% !important;
+}
+
+/* Grid variant avatar */
+.user-card-grid-avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.user-card-grid-avatar .user-avatar-wrapper {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px 12px 0 0;
+}
+
+/* Grid variant - make text avatars circular with better positioning */
+.user-card-grid-avatar .user-avatar-placeholder {
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #333;
+  margin: 30px auto;
+  width: 120px;
+  height: 120px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.avatar-online-dot {
+.user-card-grid-avatar .user-avatar-placeholder span {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px;
+}
+
+/* Swipe variant avatar */
+.swipe-card-avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.swipe-card-avatar .user-avatar-wrapper {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+}
+
+/* Swipe variant - make text avatars circular */
+.swipe-card-avatar .user-avatar-placeholder {
+  border-radius: 50%;
+  margin: 40px auto;
+  width: calc(100% - 80px);
+  height: 0;
+  padding-bottom: calc(100% - 80px);
+  position: relative;
+}
+
+.swipe-card-avatar .user-avatar-placeholder span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .user-card-content {
@@ -71,12 +169,30 @@
 .user-card-details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 4px;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.user-card-info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #999;
+}
+
+.user-card-tagline {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-card-occupation {
-  font-size: 14px;
+  font-size: 13px;
   color: #ccc;
 }
 
@@ -84,7 +200,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 12px;
   color: #999;
 }
 
@@ -99,11 +215,10 @@
 }
 
 .action-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: #333;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #2a2a2a;
+  background: #0f0f0f;
   color: #fff;
   display: flex;
   align-items: center;
@@ -115,40 +230,57 @@
 .action-btn:hover {
   background: #ffd700;
   color: #000;
-  transform: scale(1.1);
+  border-color: #ffd700;
 }
 
 .chat-btn:hover {
   background: #ffd700;
+  border-color: #ffd700;
 }
 
 /* ========== GRID VARIANT ========== */
 .user-card-grid {
   background: #1a1a1a;
-  border-radius: 16px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  border: 1px solid #2a2a2a;
 }
 
 .user-card-grid:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
+  border-color: rgba(255, 215, 0, 0.3);
+  background: #222;
 }
 
 .user-card-image-container {
   position: relative;
   width: 100%;
-  padding-top: 133%;
+  padding-top: 120%;
   overflow: hidden;
+  background: #0a0a0a;
 }
 
-.user-card-image {
+.user-card-grid-avatar {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+}
+
+.user-card-grid-avatar .user-avatar-wrapper {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.user-card-grid-avatar .user-avatar-image,
+.user-card-grid-avatar .user-avatar-placeholder {
+  border-radius: 0;
+}
+
+.user-card-grid-avatar .user-avatar-placeholder span {
+  font-size: 72px !important;
 }
 
 .user-card-gradient {
@@ -157,7 +289,7 @@
   left: 0;
   right: 0;
   height: 50%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
   pointer-events: none;
 }
 
@@ -165,9 +297,9 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.8);
   padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .user-card-overlay-content {
@@ -185,19 +317,19 @@
 }
 
 .user-card-name-row .user-name {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: #fff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.9);
+  letter-spacing: -0.3px;
 }
 
 .user-age-badge {
   display: inline-block;
-  padding: 2px 8px;
-  background: rgba(255, 215, 0, 0.2);
-  border: 1px solid #ffd700;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 4px 10px;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  font-size: 11px;
   color: #ffd700;
   font-weight: 600;
 }
@@ -206,15 +338,19 @@
   padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  background: #0f0f0f;
+  border-top: 1px solid #2a2a2a;
 }
 
 .info-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 12px;
   color: #999;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .info-row svg {
@@ -227,10 +363,9 @@
   width: 100%;
   max-width: 400px;
   height: 600px;
-  border-radius: 24px;
   overflow: hidden;
   background: #1a1a1a;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border: 1px solid #2a2a2a;
   display: flex;
   flex-direction: column;
 }
@@ -239,12 +374,28 @@
   position: relative;
   flex: 1;
   overflow: hidden;
+  background: #0a0a0a;
 }
 
-.swipe-card-image {
+.swipe-card-avatar {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+}
+
+.swipe-card-avatar .user-avatar-wrapper {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.swipe-card-avatar .user-avatar-image,
+.swipe-card-avatar .user-avatar-placeholder {
+  border-radius: 0;
+}
+
+.swipe-card-avatar .user-avatar-placeholder span {
+  font-size: 96px !important;
 }
 
 .swipe-card-gradient {
@@ -261,20 +412,20 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 24px;
+  padding: 20px;
   color: #fff;
 }
 
 .swipe-card-header {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 8px;
 }
 
 .swipe-card-name {
-  font-size: 28px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   color: #fff;
   margin: 0;
   display: flex;
@@ -284,30 +435,30 @@
 }
 
 .swipe-card-age {
-  font-size: 24px;
+  font-size: 20px;
   color: #ffd700;
   font-weight: 600;
 }
 
 .swipe-card-tagline {
-  font-size: 16px;
+  font-size: 14px;
   color: #ccc;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   line-height: 1.4;
 }
 
 .swipe-card-details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
 .detail-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 13px;
   color: #ddd;
 }
 
@@ -316,57 +467,59 @@
 }
 
 .swipe-card-actions {
-  padding: 20px;
+  padding: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
-  background: #1a1a1a;
-  border-top: 1px solid #333;
+  gap: 16px;
+  background: #0f0f0f;
+  border-top: 1px solid #2a2a2a;
 }
 
 .swipe-action-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: none;
+  width: 50px;
+  height: 50px;
+  border: 1px solid #2a2a2a;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 28px;
+  transition: all 0.2s ease;
+  font-size: 24px;
   font-weight: bold;
 }
 
 .pass-btn {
   background: #ff4444;
   color: #fff;
+  border-color: #ff4444;
 }
 
 .pass-btn:hover {
   background: #ff0000;
-  transform: scale(1.1);
+  border-color: #ff0000;
 }
 
 .info-btn {
   background: #4a90e2;
   color: #fff;
+  border-color: #4a90e2;
 }
 
 .info-btn:hover {
   background: #357abd;
-  transform: scale(1.1);
+  border-color: #357abd;
 }
 
 .like-btn {
   background: #00c853;
   color: #fff;
+  border-color: #00c853;
 }
 
 .like-btn:hover {
   background: #00a843;
-  transform: scale(1.1);
+  border-color: #00a843;
 }
 
 /* ========== RESPONSIVE ========== */

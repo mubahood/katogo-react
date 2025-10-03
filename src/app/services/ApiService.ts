@@ -96,22 +96,7 @@ export class ApiService {
    * ⚠️ This makes an API call! Categories should be cached in ManifestService
    */
   static async getCategories(): Promise<CategoryModel[]> {
-    try {
-      console.log('🔴 FETCHING CATEGORIES FROM API - This should be cached!');
-      console.trace('Category fetch trace:'); // Show stack trace to find caller
-      return await CategoryModel.fetchCategories();
-    } catch (error: any) {
-      // Use offline fallback for network errors
-      if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
-        console.warn("🔧 API server not reachable, using offline categories");
-        const { OfflineService } = await import('./OfflineService');
-        const offlineCategories = OfflineService.getDefaultCategories();
-        return offlineCategories.map((item: any) => CategoryModel.fromJson(item));
-      } else {
-        ToastService.error("Failed to load categories");
-      }
-      throw error;
-    }
+    return [];
   }
 
   /**
@@ -119,8 +104,7 @@ export class ApiService {
    */
   static async getBannerCategories(): Promise<CategoryModel[]> {
     try {
-      const categories = await CategoryModel.fetchCategories();
-      return categories.filter(cat => cat.isShownInBanner());
+      return [];
     } catch (error) {
       ToastService.error("Failed to load banner categories");
       throw error;
@@ -131,9 +115,8 @@ export class ApiService {
    * Get categories for navigation/listing
    */
   static async getNavigationCategories(): Promise<CategoryModel[]> {
-    try {
-      const categories = await CategoryModel.fetchCategories();
-      return categories.filter(cat => cat.isShownInCategories() && !cat.isParentCategory());
+    try { 
+      return [];
     } catch (error) {
       ToastService.error("Failed to load navigation categories");
       throw error;

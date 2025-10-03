@@ -34,7 +34,9 @@ import {
   Download,
   PlayCircle,
   UserPlus,
-  LogIn
+  LogIn,
+  MessageCircle,
+  Users
 } from "react-feather";
 import "./ModernMainNav.css";
 
@@ -191,6 +193,8 @@ const ModernMainNav: React.FC = () => {
       case 'User': return <User {...iconProps} />;
       case 'UserPlus': return <UserPlus {...iconProps} />;
       case 'LogIn': return <LogIn {...iconProps} />;
+      case 'MessageCircle': return <MessageCircle {...iconProps} />;
+      case 'Users': return <Users {...iconProps} />;
       case 'X': return <X {...iconProps} />;
       default: return <Film {...iconProps} />; // Fallback icon
     }
@@ -416,13 +420,13 @@ const ModernMainNav: React.FC = () => {
             </Link>
             <Link to="/connect" className={`main-menu-link ${isActive('/connect') ? 'active' : ''}`}>
               <div className="main-menu-icon-wrapper">
-                <Globe size={20} className="main-menu-icon" />
+                <Users size={20} className="main-menu-icon" />
               </div>
               <span>Connect</span>
             </Link>
             <Link to="/account/chats" className={`main-menu-link ${isActive('/account/chats') ? 'active' : ''}`}>
               <div className="main-menu-icon-wrapper">
-                <FileText size={20} className="main-menu-icon" />
+                <MessageCircle size={20} className="main-menu-icon" />
               </div>
               <span>Chats</span>
             </Link>
@@ -511,14 +515,14 @@ const ModernMainNav: React.FC = () => {
               </li>
               <li>
                 <Link to="/connect" onClick={toggleMenu} className={isActive('/connect') ? 'active' : ''}>
-                  <Globe size={20} />
+                  <Users size={20} />
                   <span>Connect</span>
                   <ChevronRight size={16} />
                 </Link>
               </li>
               <li>
                 <Link to="/account/chats" onClick={toggleMenu} className={isActive('/account/chats') ? 'active' : ''}>
-                  <FileText size={20} />
+                  <MessageCircle size={20} />
                   <span>Chats</span>
                   <ChevronRight size={16} />
                 </Link>

@@ -1,6 +1,6 @@
 // src/app/services/ConnectApiService.ts
 
-import ApiService from './ApiService';
+import { http_get, http_post } from './Api';
 import {
   ConnectUser,
   ConnectFilters,
@@ -19,8 +19,6 @@ import {
  * Handles all connect-related API calls
  */
 export class ConnectApiService {
-  private static readonly BASE_URL = '/api';
-
   /**
    * Get users list with filters and pagination
    */
@@ -50,7 +48,7 @@ export class ConnectApiService {
       if (filters.sort_by) params.sort_by = filters.sort_by;
       if (filters.sort_dir) params.sort_dir = filters.sort_dir;
 
-      const response = await ApiService.get(`${this.BASE_URL}/users-list`, params);
+      const response = await http_get('users-list', params);
 
       if (response.code !== 1) {
         throw new Error(response.message || 'Failed to fetch users');
@@ -78,21 +76,36 @@ export class ConnectApiService {
 
   /**
    * Get single user profile by ID
+   * CRITICAL FIX: Backend now properly supports filtering by id parameter
    */
   static async getUserProfile(userId: number): Promise<ConnectUser> {
     try {
-      const response = await ApiService.get(`${this.BASE_URL}/dynamic-list`, {
+      console.log('🔍 Fetching user profile for ID:', userId);
+      
+      const response = await http_get('dynamic-list', {
         model: 'User',
         id: userId.toString(),
+        per_page: '1',
       });
+
+      console.log('📦 Profile API Response:', response);
 
       if (response.code !== 1) {
         throw new Error(response.message || 'Failed to fetch user profile');
       }
 
-      return this.mapToConnectUser(response.data);
+      // The dynamic-list endpoint returns paginated data with items array
+      const userData = response.data?.items?.[0] || response.data;
+      
+      if (!userData) {
+        throw new Error('User not found');
+      }
+
+      console.log('✅ User data found:', userData);
+      
+      return this.mapToConnectUser(userData);
     } catch (error: any) {
-      console.error('Error fetching user profile:', error);
+      console.error('❌ Error fetching user profile:', error);
       throw new Error(error.message || 'Failed to load user profile');
     }
   }
@@ -102,7 +115,7 @@ export class ConnectApiService {
    */
   static async updateMyProfile(data: ProfileUpdateData): Promise<void> {
     try {
-      const response = await ApiService.post(`${this.BASE_URL}/dynamic-save`, {
+      const response = await http_post('dynamic-save', {
         model: 'User',
         ...data,
       });
@@ -121,7 +134,7 @@ export class ConnectApiService {
    */
   static async startChat(data: ChatStartData): Promise<{ chatId: number }> {
     try {
-      const response = await ApiService.post(`${this.BASE_URL}/chat-start`, {
+      const response = await http_post('chat-start', {
         receiver_id: data.receiverId.toString(),
       });
 
@@ -143,7 +156,7 @@ export class ConnectApiService {
    */
   static async blockUser(data: BlockData): Promise<void> {
     try {
-      const response = await ApiService.post(`${this.BASE_URL}/moderation/block-user`, {
+      const response = await http_post('moderation/block-user', {
         blocked_user_id: data.blockedUserId,
         reason: data.reason || 'No reason provided',
       });
@@ -162,7 +175,7 @@ export class ConnectApiService {
    */
   static async unblockUser(userId: number): Promise<void> {
     try {
-      const response = await ApiService.post(`${this.BASE_URL}/moderation/unblock-user`, {
+      const response = await http_post('moderation/unblock-user', {
         blocked_user_id: userId,
       });
 
@@ -180,7 +193,7 @@ export class ConnectApiService {
    */
   static async getBlockedUsers(): Promise<ConnectUser[]> {
     try {
-      const response = await ApiService.get(`${this.BASE_URL}/moderation/blocked-users`);
+      const response = await http_get('moderation/blocked-users');
 
       if (response.code !== 1) {
         throw new Error(response.message || 'Failed to fetch blocked users');
@@ -198,7 +211,7 @@ export class ConnectApiService {
    */
   static async reportUser(data: ReportData): Promise<void> {
     try {
-      const response = await ApiService.post(`${this.BASE_URL}/moderation/report-content`, {
+      const response = await http_post('moderation/report-content', {
         content_type: data.contentType,
         content_id: data.contentId,
         reason: data.reason,

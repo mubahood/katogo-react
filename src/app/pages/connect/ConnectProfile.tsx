@@ -5,20 +5,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   FiArrowLeft,
   FiMessageCircle,
-  FiFlag,
-  FiSlash,
-  FiMapPin,
-  FiUser,
-  FiBook,
   FiHeart,
+  FiMapPin,
+  FiMail,
   FiBriefcase,
   FiHome,
+  FiBook,
+  FiGlobe,
+  FiX,
+  FiCheck,
+  FiUser,
 } from 'react-icons/fi';
+import DynamicBreadcrumb from '../../components/shared/DynamicBreadcrumb';
 import { ConnectUser, getGenderIcon } from '../../models/ConnectModels';
 import ConnectApiService from '../../services/ConnectApiService';
-import OnlineIndicator from './components/OnlineIndicator';
-import VerifiedBadge from './components/VerifiedBadge';
-import Utils from '../../utils/Utils';
+import AccountApiService from '../../services/AccountApiService';
+import UserAvatar from './components/UserAvatar';
+import ToastService from '../../services/ToastService';
 import './ConnectProfile.css';
 
 const ConnectProfile: React.FC = () => {
@@ -26,6 +29,9 @@ const ConnectProfile: React.FC = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<ConnectUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [customMessage, setCustomMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -36,228 +42,388 @@ const ConnectProfile: React.FC = () => {
   const loadProfile = async (id: number) => {
     try {
       setLoading(true);
+      console.log('📥 Loading profile for user ID:', id);
       const userData = await ConnectApiService.getUserProfile(id);
+      console.log('✅ Profile loaded successfully:', userData);
       setUser(userData);
-    } catch (error) {
-      Utils.toast('Failed to load profile', 'error');
+    } catch (error: any) {
+      console.error('❌ Failed to load profile:', error);
+      ToastService.error(error.message || 'Failed to load profile');
       navigate('/connect');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStartChat = async () => {
+  const handleStartChat = () => {
     if (!user) return;
+
+    const token = localStorage.getItem('ugflix_auth_token');
+    const userStr = localStorage.getItem('ugflix_user');
+
+    if (!token || !userStr) {
+      ToastService.warning('Please login to start chat');
+      navigate('/auth/login');
+      return;
+    }
+
+    const currentUser = JSON.parse(userStr);
+    if (currentUser.id === user.id) {
+      ToastService.warning("You can't message yourself");
+      return;
+    }
+
+    setShowChatModal(true);
+  };
+
+  const sendChatMessage = async (message: string) => {
+    if (!user || isSending) return;
+
     try {
-      const { chatId } = await ConnectApiService.startChat({ receiverId: user.id });
-      Utils.toast('Opening chat...', 'success');
-      navigate(`/account/chats?chat=${chatId}`);
-    } catch (error) {
-      Utils.toast('Failed to start chat', 'error');
+      setIsSending(true);
+      console.log('🔄 Starting conversation with user:', user.id, 'Message:', message);
+      
+      // Start conversation using AccountApiService
+      const conversation = await AccountApiService.startConversation(user.id, message);
+      
+      console.log('✅ Conversation started successfully:', conversation);
+      
+      // Only navigate after successful conversation creation
+      if (conversation && conversation.id) {
+        // Pass the initial message via URL params (like product contact flow)
+        let chatUrl = `/account/chats?chatId=${conversation.id}`;
+        
+        // Add the message as URL parameter so it pre-fills the chat textarea
+        if (message && message.trim()) {
+          chatUrl += `&initialMessage=${encodeURIComponent(message)}`;
+        }
+        
+        // Add user info for context
+        if (user) {
+          chatUrl += `&userName=${encodeURIComponent(user.name)}`;
+          chatUrl += `&userId=${user.id}`;
+        }
+        
+        navigate(chatUrl);
+        ToastService.success('Chat started successfully');
+      } else {
+        throw new Error('Invalid conversation response');
+      }
+    } catch (error: any) {
+      console.error('❌ Error starting conversation:', error);
+      
+      // Show user-friendly error message
+      if (error?.message?.includes('not found')) {
+        ToastService.error('Unable to start chat: User not found');
+      } else if (error?.message?.includes('authenticated')) {
+        ToastService.error('Please login to start chat');
+        navigate('/auth/login');
+      } else {
+        ToastService.error('Failed to start chat. Please try again.');
+      }
+    } finally {
+      setIsSending(false);
+      setShowChatModal(false);
     }
   };
 
-  const handleReport = () => {
-    Utils.toast('Report feature coming soon', 'info');
+  const handleSuggestionClick = (message: string) => {
+    setShowChatModal(false);
+    sendChatMessage(message);
   };
 
-  const handleBlock = async () => {
-    if (!user) return;
-    if (confirm(`Block ${user.name}? They won't be able to contact you.`)) {
-      try {
-        await ConnectApiService.blockUser({ blockedUserId: user.id });
-        Utils.toast(`${user.name} has been blocked`, 'success');
-        navigate('/connect');
-      } catch (error) {
-        Utils.toast('Failed to block user', 'error');
-      }
+  const handleCustomMessage = () => {
+    if (customMessage.trim()) {
+      setShowChatModal(false);
+      sendChatMessage(customMessage.trim());
+      setCustomMessage('');
     }
   };
 
   if (loading) {
     return (
-      <div className="connect-profile loading">
-        <div className="spinner-large"></div>
+      <div className="profile-loading">
+        <div className="loading-spinner"></div>
+        <p>Loading profile...</p>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="connect-profile error">
-        <p>User not found</p>
-        <button onClick={() => navigate('/connect')}>Back to Connect</button>
+      <div className="profile-error">
+        <h2>User not found</h2>
+        <button className="back-home-btn" onClick={() => navigate('/connect')}>
+          <FiArrowLeft /> Back to Connect
+        </button>
       </div>
     );
   }
 
-  const avatarUrl = user.avatar ? Utils.getImageUrl(user.avatar) : '/default-avatar.png';
+  const chatSuggestions = [
+    `Hi ${user.name}! I'd love to connect with you 😊`,
+    `Hey! I saw your profile and thought we might have a lot in common`,
+    `Hi there! Your profile caught my attention. Would love to chat!`,
+    `Hello ${user.name}! I think we'd get along great. Want to talk?`,
+    `Hey! I'm interested in getting to know you better 💬`,
+    `Hi ${user.name}! Your profile really stood out to me 🌟`,
+    `Hello! I'd like to get to know you better. How are you today?`,
+    `Hey ${user.name}! I noticed we have similar interests. Let's chat!`,
+    `Hi! I'm looking forward to connecting with you 👋`,
+    `Hello ${user.name}! I'd love to learn more about you`,
+    `Hey there! Your profile is amazing. Would you like to chat?`,
+    `Hi ${user.name}! I think we could have great conversations together 💭`,
+  ];
+
   const location = [user.city, user.state, user.country].filter(Boolean).join(', ');
 
   return (
-    <div className="connect-profile">
-      {/* Hero Section */}
-      <div className="profile-hero">
-        <button className="back-btn" onClick={() => navigate('/connect')}>
-          <FiArrowLeft size={24} />
-        </button>
+    <div className="connect-profile-page">
+      {/* Breadcrumb Navigation */}
+      <DynamicBreadcrumb 
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Connect', href: '/connect' },
+          { label: user.name || 'User Profile', isActive: true }
+        ]}
+      />
 
-        <div className="hero-image">
-          <img src={avatarUrl} alt={user.name} />
-          <div className="hero-gradient" />
-        </div>
+      {/* Main Content */}
+      <div className="profile-main">
+        {/* Left Sidebar - Avatar & Quick Actions */}
+        <aside className="profile-sidebar">
+          <div className="sidebar-card">
+            <div className="profile-avatar-container">
+              <UserAvatar
+                name={user.name}
+                avatar={user.avatar}
+                size="xlarge"
+                isOnline={user.isOnline}
+              />
+            </div>
 
-        <div className="hero-content">
-          <h1 className="profile-name">
-            {user.name}
-            {user.isVerified && <VerifiedBadge isVerified size={24} />}
-          </h1>
-          {user.tagline && <p className="profile-tagline">{user.tagline}</p>}
-        </div>
-      </div>
+            <div className="profile-name-section">
+              <h2 className="profile-display-name">
+                {user.name}
+                {user.isVerified && (
+                  <span className="verified-icon" title="Verified">
+                    <FiCheck />
+                  </span>
+                )}
+              </h2>
+              <p className="profile-age">{user.age && user.age >= 10 ? `${user.age} years old` : 'Age: N/A'}</p>
+              {user.isOnline && (
+                <div className="online-status-badge">
+                  <span className="status-dot"></span>
+                  <span>Online Now</span>
+                </div>
+              )}
+            </div>
 
-      {/* Content */}
-      <div className="profile-content">
-        {/* Info Badges */}
-        <div className="info-badges">
-          {user.age > 0 && (
-            <div className="info-badge">
-              <span className="badge-icon">🎂</span>
-              <span>{user.age} Years</span>
+            <div className="quick-stats">
+              {user.sex && (
+                <div className="stat-item">
+                  <span className="stat-icon">{getGenderIcon(user.sex)}</span>
+                  <span className="stat-label">{user.sex}</span>
+                </div>
+              )}
+              {location && (
+                <div className="stat-item">
+                  <FiMapPin className="stat-icon" />
+                  <span className="stat-label">{location}</span>
+                </div>
+              )}
             </div>
-          )}
-          {location && (
-            <div className="info-badge">
-              <FiMapPin />
-              <span>{location}</span>
-            </div>
-          )}
-          {user.sex && (
-            <div className="info-badge">
-              <span className="badge-icon">{getGenderIcon(user.sex)}</span>
-              <span>{user.sex}</span>
-            </div>
-          )}
-          {user.isOnline && (
-            <div className="info-badge online">
-              <OnlineIndicator isOnline showText size="small" />
-            </div>
-          )}
-        </div>
 
-        {/* Bio */}
-        {user.bio && (
-          <section className="profile-section">
-            <h3 className="section-title">About Me</h3>
-            <div className="bio-card">
-              <p>{user.bio}</p>
+            <button className="primary-action-btn" onClick={handleStartChat}>
+              <FiMessageCircle size={20} />
+              <span>Send Message</span>
+            </button>
+          </div>
+        </aside>
+
+        {/* Right Content - Details */}
+        <main className="profile-content">
+          {/* About Section */}
+          <section className="content-card">
+            <div className="card-header">
+              <FiBook className="card-icon" />
+              <h3 className="card-title">About Me</h3>
+            </div>
+            <div className="card-body">
+              <p className="bio-text">{user.bio || 'N/A'}</p>
             </div>
           </section>
-        )}
 
-        {/* Details Grid */}
-        <section className="profile-section">
-          <h3 className="section-title">Details</h3>
-          <div className="details-grid">
-            {user.occupation && (
-              <DetailItem icon={<FiBriefcase />} label="Occupation" value={user.occupation} />
-            )}
-            {user.education_level && (
-              <DetailItem icon={<FiBook />} label="Education" value={user.education_level} />
-            )}
-            {user.height_cm && (
-              <DetailItem icon={<FiUser />} label="Height" value={`${user.height_cm} cm`} />
-            )}
-            {user.body_type && (
-              <DetailItem icon={<FiUser />} label="Body Type" value={user.body_type} />
-            )}
-            {user.looking_for && (
-              <DetailItem icon={<FiHeart />} label="Looking For" value={user.looking_for} />
-            )}
-            {user.interested_in && (
-              <DetailItem icon={<FiUser />} label="Interested In" value={user.interested_in} />
-            )}
-          </div>
-        </section>
+          {/* Tagline */}
+          <section className="content-card">
+            <div className="card-header">
+              <FiMessageCircle className="card-icon" />
+              <h3 className="card-title">Tagline</h3>
+            </div>
+            <div className="card-body">
+              <p className="bio-text">{user.tagline || 'N/A'}</p>
+            </div>
+          </section>
 
-        {/* Preferences */}
-        <section className="profile-section">
-          <h3 className="section-title">Lifestyle & Preferences</h3>
-          <div className="preferences-grid">
-            {user.smoking_habit && (
-              <PreferenceItem emoji="🚭" label="Smoking" value={user.smoking_habit} />
-            )}
-            {user.drinking_habit && (
-              <PreferenceItem emoji="🍷" label="Drinking" value={user.drinking_habit} />
-            )}
-            {user.pet_preference && (
-              <PreferenceItem emoji="🐾" label="Pets" value={user.pet_preference} />
-            )}
-            {user.religion && (
-              <PreferenceItem emoji="🙏" label="Religion" value={user.religion} />
-            )}
-            {user.political_views && (
-              <PreferenceItem emoji="🗳️" label="Politics" value={user.political_views} />
-            )}
-            {user.languages_spoken && (
-              <PreferenceItem emoji="💬" label="Languages" value={user.languages_spoken} />
-            )}
-          </div>
-        </section>
+          {/* Basic Information */}
+          <section className="content-card">
+            <div className="card-header">
+              <FiUser className="card-icon" />
+              <h3 className="card-title">Basic Information</h3>
+            </div>
+            <div className="card-body">
+              <div className="info-grid">
+                <div className="info-item">
+                  <FiBriefcase className="info-icon" />
+                  <div className="info-content">
+                    <span className="info-label">Occupation</span>
+                    <span className="info-value">{user.occupation || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <FiBook className="info-icon" />
+                  <div className="info-content">
+                    <span className="info-label">Education</span>
+                    <span className="info-value">{user.education_level || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <FiHeart className="info-icon" />
+                  <div className="info-content">
+                    <span className="info-label">Looking For</span>
+                    <span className="info-value">{user.looking_for || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <FiHome className="info-icon" />
+                  <div className="info-content">
+                    <span className="info-label">Location</span>
+                    <span className="info-value">{[user.city, user.state, user.country].filter(Boolean).join(', ') || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <FiGlobe className="info-icon" />
+                  <div className="info-content">
+                    <span className="info-label">Languages</span>
+                    <span className="info-value">{user.languages_spoken || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="info-item">
+                  <FiMail className="info-icon" />
+                  <div className="info-content">
+                    <span className="info-label">Email</span>
+                    <span className="info-value">{user.email || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
-        {/* Spacer for floating buttons */}
-        <div style={{ height: '100px' }} />
+          {/* Lifestyle & Preferences */}
+          <section className="content-card">
+            <div className="card-header">
+              <FiHeart className="card-icon" />
+              <h3 className="card-title">Lifestyle & Preferences</h3>
+            </div>
+            <div className="card-body">
+              <div className="preferences-list">
+                <div className="preference-item">
+                  <span className="pref-emoji">🚭</span>
+                  <div className="pref-content">
+                    <span className="pref-label">Smoking</span>
+                    <span className="pref-value">{user.smoking_habit || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="preference-item">
+                  <span className="pref-emoji">🍷</span>
+                  <div className="pref-content">
+                    <span className="pref-label">Drinking</span>
+                    <span className="pref-value">{user.drinking_habit || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="preference-item">
+                  <span className="pref-emoji">🐾</span>
+                  <div className="pref-content">
+                    <span className="pref-label">Pets</span>
+                    <span className="pref-value">{user.pet_preference || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="preference-item">
+                  <span className="pref-emoji">🙏</span>
+                  <div className="pref-content">
+                    <span className="pref-label">Religion</span>
+                    <span className="pref-value">{user.religion || 'N/A'}</span>
+                  </div>
+                </div>
+                <div className="preference-item">
+                  <span className="pref-emoji">🗳️</span>
+                  <div className="pref-content">
+                    <span className="pref-label">Political Views</span>
+                    <span className="pref-value">{user.political_views || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
 
-      {/* Action Buttons */}
-      <div className="profile-actions">
-        <button className="action-btn secondary" onClick={handleReport} title="Report">
-          <FiFlag size={20} />
-        </button>
-        <button className="action-btn secondary" onClick={handleBlock} title="Block">
-          <FiSlash size={20} />
-        </button>
-        <button className="action-btn primary" onClick={handleStartChat}>
-          <FiMessageCircle size={20} />
-          <span>Send Message</span>
-        </button>
-      </div>
+      {/* Chat Message Modal */}
+      {showChatModal && (
+        <div className="modal-overlay" onClick={() => setShowChatModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">Start a Conversation</h3>
+              <button className="modal-close" onClick={() => setShowChatModal(false)}>
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p className="modal-subtitle">Choose a message or write your own:</p>
+              <div className="suggestions-list">
+                {chatSuggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    className="suggestion-button"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    disabled={isSending}
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+
+              <div className="custom-message-section">
+                <textarea
+                  className="custom-message-textarea"
+                  placeholder="Or write your own message..."
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleCustomMessage();
+                    }
+                  }}
+                  disabled={isSending}
+                  rows={1}
+                />
+                <button
+                  className="send-message-btn"
+                  onClick={handleCustomMessage}
+                  disabled={!customMessage.trim() || isSending}
+                >
+                  {isSending ? 'Sending...' : 'Send'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-// Detail Item Component
-interface DetailItemProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}
-
-const DetailItem: React.FC<DetailItemProps> = ({ icon, label, value }) => (
-  <div className="detail-item">
-    <div className="detail-icon">{icon}</div>
-    <div className="detail-content">
-      <span className="detail-label">{label}</span>
-      <span className="detail-value">{value}</span>
-    </div>
-  </div>
-);
-
-// Preference Item Component
-interface PreferenceItemProps {
-  emoji: string;
-  label: string;
-  value: string;
-}
-
-const PreferenceItem: React.FC<PreferenceItemProps> = ({ emoji, label, value }) => (
-  <div className="preference-item">
-    <div className="preference-header">
-      <span className="preference-emoji">{emoji}</span>
-      <span className="preference-label">{label}</span>
-    </div>
-    <span className="preference-value">{value}</span>
-  </div>
-);
 
 export default ConnectProfile;

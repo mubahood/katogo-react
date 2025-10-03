@@ -6,7 +6,7 @@ import { FiMessageCircle, FiMapPin, FiUser, FiHeart } from 'react-icons/fi';
 import { ConnectUser } from '../../../models/ConnectModels';
 import OnlineIndicator from './OnlineIndicator';
 import VerifiedBadge from './VerifiedBadge';
-import Utils from '../../../utils/Utils';
+import UserAvatar from './UserAvatar';
 import './UserCard.css';
 
 interface UserCardProps {
@@ -40,19 +40,19 @@ const UserCard: React.FC<UserCardProps> = ({
     onLikeClick?.(user);
   };
 
-  const avatarUrl = user.avatar ? Utils.getImageUrl(user.avatar) : '/default-avatar.png';
   const displayName = user.name || user.username;
   const location = [user.city, user.state].filter(Boolean).join(', ') || user.country;
 
   if (variant === 'list') {
     return (
       <div className={`user-card user-card-list ${className}`} onClick={handleCardClick}>
-        <div className="user-card-avatar-wrapper">
-          <img src={avatarUrl} alt={displayName} className="user-card-avatar" />
-          {user.isOnline && (
-            <OnlineIndicator isOnline={true} size="medium" className="avatar-online-dot" />
-          )}
-        </div>
+        <UserAvatar
+          name={displayName}
+          avatar={user.avatar}
+          size="medium"
+          isOnline={user.isOnline}
+          className="user-card-avatar-wrapper"
+        />
 
         <div className="user-card-content">
           <div className="user-card-header">
@@ -60,24 +60,25 @@ const UserCard: React.FC<UserCardProps> = ({
               {displayName}
               {user.isVerified && <VerifiedBadge isVerified={true} size={16} />}
             </h3>
-            {user.age > 0 && <span className="user-card-age">{user.age}</span>}
+            <span className="user-card-age">{user.age && user.age >= 10 ? `${user.age} yrs` : 'N/A'}</span>
           </div>
 
           <div className="user-card-details">
-            {user.occupation && (
-              <span className="user-card-occupation">{user.occupation}</span>
-            )}
-            {location && (
-              <span className="user-card-location">
-                <FiMapPin size={12} />
-                {location}
-              </span>
-            )}
+            <span className="user-card-info-item">
+              <FiUser size={12} />
+              {user.occupation || 'Not specified'}
+            </span>
+            <span className="user-card-info-item">
+              <FiMapPin size={12} />
+              {location || 'Location not set'}
+            </span>
           </div>
 
-          <div className="user-card-status">
-            <span className="status-text">{user.online_status}</span>
-          </div>
+          {user.tagline && (
+            <div className="user-card-tagline">
+              {user.tagline}
+            </div>
+          )}
         </div>
 
         <div className="user-card-actions">
@@ -86,7 +87,7 @@ const UserCard: React.FC<UserCardProps> = ({
             onClick={handleChatClick}
             aria-label="Send message"
           >
-            <FiMessageCircle size={20} />
+            <FiMessageCircle size={18} />
           </button>
         </div>
       </div>
@@ -97,39 +98,33 @@ const UserCard: React.FC<UserCardProps> = ({
     return (
       <div className={`user-card user-card-grid ${className}`} onClick={handleCardClick}>
         <div className="user-card-image-container">
-          <img src={avatarUrl} alt={displayName} className="user-card-image" />
+          <UserAvatar
+            name={displayName}
+            avatar={user.avatar}
+            size="xlarge"
+            isOnline={user.isOnline}
+            className="user-card-grid-avatar"
+          />
           <div className="user-card-gradient" />
-          
-          {user.isOnline && (
-            <div className="online-badge-overlay">
-              <OnlineIndicator isOnline={true} size="small" />
-            </div>
-          )}
 
           <div className="user-card-overlay-content">
             <div className="user-card-name-row">
               <span className="user-name">{displayName}</span>
               {user.isVerified && <VerifiedBadge isVerified={true} size={14} />}
             </div>
-            {user.age > 0 && (
-              <span className="user-age-badge">{user.age} years</span>
-            )}
+            <span className="user-age-badge">{user.age && user.age >= 10 ? `${user.age} yrs` : 'N/A'}</span>
           </div>
         </div>
 
         <div className="user-card-info">
-          {location && (
-            <div className="info-row">
-              <FiMapPin size={12} />
-              <span>{location}</span>
-            </div>
-          )}
-          {user.occupation && (
-            <div className="info-row">
-              <FiUser size={12} />
-              <span>{user.occupation}</span>
-            </div>
-          )}
+          <div className="info-row">
+            <FiMapPin size={12} />
+            <span>{location || 'Location not set'}</span>
+          </div>
+          <div className="info-row">
+            <FiUser size={12} />
+            <span>{user.occupation || 'Not specified'}</span>
+          </div>
         </div>
       </div>
     );
@@ -139,7 +134,13 @@ const UserCard: React.FC<UserCardProps> = ({
   return (
     <div className={`user-card user-card-swipe ${className}`}>
       <div className="swipe-card-image-container">
-        <img src={avatarUrl} alt={displayName} className="swipe-card-image" />
+        <UserAvatar
+          name={displayName}
+          avatar={user.avatar}
+          size="xlarge"
+          isOnline={user.isOnline}
+          className="swipe-card-avatar"
+        />
         <div className="swipe-card-gradient" />
 
         <div className="swipe-card-content">
@@ -148,7 +149,7 @@ const UserCard: React.FC<UserCardProps> = ({
               {displayName}
               {user.isVerified && <VerifiedBadge isVerified={true} size={20} />}
             </h2>
-            {user.age > 0 && <span className="swipe-card-age">{user.age}</span>}
+            <span className="swipe-card-age">{user.age && user.age >= 10 ? user.age : 'N/A'}</span>
           </div>
 
           {user.tagline && (
@@ -156,18 +157,14 @@ const UserCard: React.FC<UserCardProps> = ({
           )}
 
           <div className="swipe-card-details">
-            {location && (
-              <div className="detail-item">
-                <FiMapPin size={16} />
-                <span>{location}</span>
-              </div>
-            )}
-            {user.occupation && (
-              <div className="detail-item">
-                <FiUser size={16} />
-                <span>{user.occupation}</span>
-              </div>
-            )}
+            <div className="detail-item">
+              <FiMapPin size={16} />
+              <span>{location || 'Location not set'}</span>
+            </div>
+            <div className="detail-item">
+              <FiUser size={16} />
+              <span>{user.occupation || 'Not specified'}</span>
+            </div>
           </div>
 
           {user.isOnline && (

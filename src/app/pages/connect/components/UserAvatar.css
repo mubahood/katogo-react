@@ -1,0 +1,241 @@
+/* src/app/pages/connect/components/UserAvatar.css */
+
+.user-avatar {
+  position: relative;
+  display: inline-block;
+}
+
+.user-avatar-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Size Variants - Precise Pixel Sizes */
+.user-avatar-small {
+  width: 40px;
+  height: 40px;
+}
+
+.user-avatar-small .user-avatar-wrapper {
+  width: 40px;
+  height: 40px;
+}
+
+.user-avatar-medium {
+  width: 56px;
+  height: 56px;
+}
+
+.user-avatar-medium .user-avatar-wrapper {
+  width: 56px;
+  height: 56px;
+}
+
+.user-avatar-large {
+  width: 80px;
+  height: 80px;
+}
+
+.user-avatar-large .user-avatar-wrapper {
+  width: 80px;
+  height: 80px;
+}
+
+.user-avatar-xlarge {
+  width: 120px;
+  height: 120px;
+}
+
+.user-avatar-xlarge .user-avatar-wrapper {
+  width: 120px;
+  height: 120px;
+}
+
+/* Avatar Image */
+.user-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-avatar-image.loading {
+  opacity: 0;
+}
+
+.user-avatar-image.loaded {
+  opacity: 1;
+}
+
+/* Letter-based Placeholder */
+.user-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+/* Add subtle pattern overlay */
+.user-avatar-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.user-avatar-placeholder span {
+  position: relative;
+  z-index: 1;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Font sizes for initials */
+.user-avatar-small .user-avatar-placeholder span {
+  font-size: 16px;
+}
+
+.user-avatar-medium .user-avatar-placeholder span {
+  font-size: 22px;
+}
+
+.user-avatar-large .user-avatar-placeholder span {
+  font-size: 32px;
+}
+
+.user-avatar-xlarge .user-avatar-placeholder span {
+  font-size: 48px;
+}
+
+/* Online Indicator - Precise Pixel Sizes */
+.user-avatar-small .user-avatar-online-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #00ff88;
+  border: 1.5px solid #000;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 255, 136, 0.4);
+}
+
+.user-avatar-medium .user-avatar-online-dot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 10px;
+  height: 10px;
+  background: #00ff88;
+  border: 1.5px solid #000;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 255, 136, 0.4);
+}
+
+.user-avatar-large .user-avatar-online-dot {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 14px;
+  height: 14px;
+  background: #00ff88;
+  border: 2px solid #000;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0, 255, 136, 0.4);
+}
+
+.user-avatar-xlarge .user-avatar-online-dot {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  background: #00ff88;
+  border: 2px solid #000;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0, 255, 136, 0.4);
+}
+
+/* Pulsing animation for online status */
+.online-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: inherit;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Hover effect */
+.user-avatar-wrapper:hover {
+  transition: box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+/* Grid and List specific adjustments */
+.user-card-grid .user-avatar-wrapper,
+.user-card-list .user-avatar-wrapper {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure crisp rendering */
+.user-avatar-image,
+.user-avatar-placeholder {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Loading shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.user-avatar-image.loading + .user-avatar-placeholder {
+  animation: shimmer 2s infinite;
+  background-size: 200% 100%;
+}
