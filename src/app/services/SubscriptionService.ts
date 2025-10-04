@@ -62,6 +62,7 @@ export interface Subscription {
 
 export interface SubscriptionStatus {
   has_subscription: boolean;
+  has_active_subscription: boolean; // Backend returns this key
   status: string;
   is_active: boolean;
   days_remaining: number;

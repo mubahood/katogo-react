@@ -40,7 +40,8 @@ const AccountDashboardContent: React.FC = () => {
         active_subscriptions: 3,
         liked_content: 89,
         chat_messages: 12,
-        my_products: 5
+        my_products: 5,
+        watchlist_items: 15
       });
     } finally {
       setIsLoadingStats(false);

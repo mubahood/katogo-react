@@ -336,7 +336,7 @@ const HomePage: React.FC = () => {
       <div className="ugflix-home">
         <style>{streamingStyles}</style>
         <div className="loading-spinner" style={{ height: '100vh' }}>
-          <Spinner animation="border" variant="warning" size="lg" />
+          <Spinner animation="border" variant="warning" style={{ width: '3rem', height: '3rem' }} />
         </div>
       </div>
     );
@@ -349,7 +349,7 @@ const HomePage: React.FC = () => {
 
   return (
     <>
-      <SEOHead {...generateHomePageMetaTags()} />
+      <SEOHead config={generateHomePageMetaTags()} />
       <div className="ugflix-home">
         <style>{streamingStyles}</style>
         
@@ -452,7 +452,7 @@ const HomePage: React.FC = () => {
           {/* Loading State */}
           {loading && !error && (
             <div className="loading-spinner">
-              <Spinner animation="border" variant="warning" size="lg" />
+              <Spinner animation="border" variant="warning" style={{ width: '3rem', height: '3rem' }} />
             </div>
           )}
 

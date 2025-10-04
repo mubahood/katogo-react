@@ -379,11 +379,11 @@ const AccountWatchlist: React.FC = () => {
             Movies and shows you add to your watchlist will appear here
           </p>
           <div className="d-flex gap-3 justify-content-center">
-            <Button as={Link} to="/movies" variant="primary">
+            <Button onClick={() => window.location.href = '/movies'} variant="primary">
               <i className="bi bi-film me-2"></i>
               Browse Movies
             </Button>
-            <Button as={Link} to="/series" variant="outline-primary">
+            <Button onClick={() => window.location.href = '/series'} variant="outline-primary">
               <i className="bi bi-tv me-2"></i>
               Browse Series
             </Button>

@@ -318,13 +318,13 @@ export class CacheApiService {
 
   static async createOrder(orderData: {
     products: Array<{
-      product_id: number;
+      id: number;
       quantity: number;
-      variant?: Record<string, string>;
+      price: number;
     }>;
-    shipping_address: any;
+    shipping_address: string;
     payment_method: string;
-    notes?: string;
+    total_amount: number;
   }): Promise<any> {
     return ApiService.createOrder(orderData);
   }

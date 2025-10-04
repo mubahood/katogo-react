@@ -12,13 +12,13 @@ export * from "../../Constants";
 // ===================================================================
 
 /* 
-  BASE_URL: "http://localhost:8888/katogo",
+ BASE_URL: "http://localhost:8888/katogo",
   API_URL: "http://localhost:8888/katogo/api",
 */
 
 export const API_CONFIG = {
-  BASE_URL: "http://localhost:8888/katogo",
-  API_URL: "http://localhost:8888/katogo/api",
+  BASE_URL: "https://katogo.schooldynamics.ug",
+  API_URL: "https://katogo.schooldynamics.ug/api",
   TIMEOUT: 5000,
   MAX_RETRIES: 3,
 } as const;
@@ -31,7 +31,7 @@ export const APP_CONFIG = {
   NAME: "UgFlix",
   CURRENCY: "UGX",
   DATE_FORMAT: "YYYY-MM-DD",
-  LOGO: "http://localhost:8888/katogo/storage/images/logo.png",
+  LOGO: "https://katogo.schooldynamics.ug/storage/images/logo.png",
 } as const;
 
 // ===================================================================

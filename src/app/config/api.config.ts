@@ -1,7 +1,7 @@
 // API Configuration for UgFlix Streaming Platform
 export const API_ENDPOINTS = {
   // Base URL for Laravel backend API
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8888/katogo/api',
+  BASE_URL: import.meta.env.VITE_API_URL || 'https://katogo.schooldynamics.ug',
   
   // Authentication endpoints
   AUTH: {

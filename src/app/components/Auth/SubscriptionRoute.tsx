@@ -40,10 +40,10 @@ const SubscriptionRoute: React.FC<SubscriptionRouteProps> = ({
       // Check if user has active subscription
       if (allowGracePeriod) {
         // Allow access if active OR in grace period
-        setHasSubscription(status.has_active_subscription || status.is_in_grace_period);
+        setHasSubscription(status.has_subscription || status.is_in_grace_period);
       } else {
         // Only allow if active (no grace period)
-        setHasSubscription(status.has_active_subscription && !status.is_in_grace_period);
+        setHasSubscription(status.has_subscription && !status.is_in_grace_period);
       }
     } catch (error) {
       console.error('Failed to check subscription:', error);

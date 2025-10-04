@@ -447,7 +447,7 @@ const PaymentResult: React.FC = () => {
               <button 
                 className="btn-primary" 
                 onClick={handleManualCheck}
-                disabled={status === 'verifying'}
+                disabled={isVerifyingRef.current}
               >
                 <FaRedo />
                 <span>Check Status Now</span>

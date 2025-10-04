@@ -173,8 +173,7 @@ const AccountLikes: React.FC = () => {
                   <Card.Footer className="bg-transparent border-0 pt-0">
                     <div className="d-grid gap-2 d-md-flex">
                       <Button 
-                        as={Link}
-                        to={`/product/${item.product_id}`}
+                        onClick={() => window.location.href = `/product/${item.product_id}`}
                         variant="outline-primary" 
                         size="sm"
                         className="flex-grow-1"
@@ -234,11 +233,11 @@ const AccountLikes: React.FC = () => {
             Start liking movies, shows, and products to see them here.
           </p>
           <div className="d-flex gap-3 justify-content-center">
-            <Button as={Link} to="/movies" variant="primary">
+            <Button onClick={() => window.location.href = '/movies'} variant="primary">
               <i className="bi bi-play-circle me-2"></i>
               Browse Movies
             </Button>
-            <Button as={Link} to="/products" variant="outline-primary">
+            <Button onClick={() => window.location.href = '/products'} variant="outline-primary">
               <i className="bi bi-bag me-2"></i>
               Browse Products
             </Button>

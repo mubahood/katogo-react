@@ -616,23 +616,23 @@ const ProductsPage: React.FC = () => {
       filtered = filtered.filter(product => 
         product.name?.toLowerCase().includes(searchLower) ||
         product.description?.toLowerCase().includes(searchLower) ||
-        product.category?.toLowerCase().includes(searchLower)
+        product.category_text?.toLowerCase().includes(searchLower)
       );
     }
 
     // Filter by category
     if (selectedCategory) {
-      filtered = filtered.filter(product => product.category_id === selectedCategory);
+      filtered = filtered.filter(product => product.category === selectedCategory);
     }
 
     // Filter by price range
     if (priceRange.min) {
       const minPrice = parseFloat(priceRange.min);
-      filtered = filtered.filter(product => parseFloat(product.price || "0") >= minPrice);
+      filtered = filtered.filter(product => parseFloat(product.price_1 || "0") >= minPrice);
     }
     if (priceRange.max) {
       const maxPrice = parseFloat(priceRange.max);
-      filtered = filtered.filter(product => parseFloat(product.price || "0") <= maxPrice);
+      filtered = filtered.filter(product => parseFloat(product.price_1 || "0") <= maxPrice);
     }
 
     // Sort products
@@ -641,8 +641,8 @@ const ProductsPage: React.FC = () => {
       
       switch (sortBy) {
         case "price":
-          aValue = parseFloat(a.price || "0");
-          bValue = parseFloat(b.price || "0");
+          aValue = parseFloat(a.price_1 || "0");
+          bValue = parseFloat(b.price_1 || "0");
           break;
         case "name":
           aValue = a.name?.toLowerCase() || "";

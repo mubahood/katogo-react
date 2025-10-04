@@ -121,13 +121,13 @@ const SubscriptionWidget: React.FC = () => {
         </div>
       </div>
 
-      {status.has_active_subscription && status.current_plan && (
+      {status.has_active_subscription && status.plan && (
         <div className="widget-details">
           <div className="widget-plan">
             <FaCrown className="plan-icon" />
             <div className="plan-info">
-              <p className="plan-name">{status.current_plan.name}</p>
-              <p className="plan-duration">{status.current_plan.duration_text}</p>
+              <p className="plan-name">{status.plan.name}</p>
+              <p className="plan-duration">{status.plan.duration_text}</p>
             </div>
           </div>
 
@@ -139,7 +139,7 @@ const SubscriptionWidget: React.FC = () => {
             <div className="stat-item">
               <span className="stat-label">Expires On</span>
               <span className="stat-value">
-                {SubscriptionService.formatDate(status.end_date_time)}
+                {status.formatted_end_date || (status.end_date ? SubscriptionService.formatDate(status.end_date) : 'N/A')}
               </span>
             </div>
           </div>
@@ -185,15 +185,6 @@ const SubscriptionWidget: React.FC = () => {
           </button>
         )}
       </div>
-
-      {status.has_pending_subscription && (
-        <div className="pending-subscription-notice">
-          <p>⏳ You have a pending payment. Please complete it to activate your subscription.</p>
-          <button className="check-payment-btn" onClick={handleSubscribe}>
-            Check Payment Status
-          </button>
-        </div>
-      )}
     </div>
   );
 };

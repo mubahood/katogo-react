@@ -13,33 +13,12 @@ import {
   FaCalendarAlt
 } from 'react-icons/fa';
 
-interface Subscription {
-  id: number;
-  plan: {
-    name: string;
-    currency: string;
-    actual_price: number;
-    duration_text: string;
-    duration_days: number;
-  };
-  status: string;
-  payment_status: string;
-  start_date_time: string;
-  end_date_time: string;
-  days_remaining: number;
-  is_active: boolean;
-  is_in_grace_period: boolean;
-  is_expired: boolean;
-  merchant_reference: string;
-  is_extension: boolean;
-  created_at: string;
-}
+// Use the interface from SubscriptionService to avoid type mismatches
+import type { Subscription as ServiceSubscription, SubscriptionHistory } from '../services/SubscriptionService';
 
-interface SubscriptionHistoryData {
-  subscriptions: Subscription[];
-  total_spent: number;
-  currency: string;
-}
+// Extend or alias for clarity
+type Subscription = ServiceSubscription;
+type SubscriptionHistoryData = SubscriptionHistory;
 
 /**
  * My Subscriptions Page
@@ -319,8 +298,8 @@ const MySubscriptions: React.FC = () => {
               {/* Card Header */}
               <div className="card-header">
                 <div className="plan-info">
-                  <h3 className="plan-name">{sub.plan.name}</h3>
-                  <p className="plan-duration">{sub.plan.duration_text}</p>
+                  <h3 className="plan-name">{sub.plan?.name || 'Unknown Plan'}</h3>
+                  <p className="plan-duration">{sub.plan?.duration_text || ''}</p>
                 </div>
                 <div className="status-badges">
                   <span className={`status-badge ${getStatusClass(sub.status)}`}>
@@ -335,7 +314,7 @@ const MySubscriptions: React.FC = () => {
                 <div className="info-row">
                   <span className="info-label">Amount Paid:</span>
                   <span className="info-value price">
-                    {sub.plan.currency} {Math.round(sub.plan.actual_price).toLocaleString()}
+                    {sub.currency} {Math.round(sub.amount_paid).toLocaleString()}
                   </span>
                 </div>
                 <div className="info-row">
@@ -347,13 +326,13 @@ const MySubscriptions: React.FC = () => {
                 <div className="info-row">
                   <span className="info-label">Start Date:</span>
                   <span className="info-value">
-                    {SubscriptionService.formatDate(sub.start_date_time)}
+                    {SubscriptionService.formatDate(sub.start_date)}
                   </span>
                 </div>
                 <div className="info-row">
                   <span className="info-label">End Date:</span>
                   <span className="info-value">
-                    {SubscriptionService.formatDate(sub.end_date_time)}
+                    {SubscriptionService.formatDate(sub.end_date)}
                   </span>
                 </div>
                 
@@ -369,15 +348,6 @@ const MySubscriptions: React.FC = () => {
                 {sub.is_in_grace_period && (
                   <div className="grace-period-notice">
                     <FaExclamationTriangle /> Grace Period Active
-                  </div>
-                )}
-
-                {sub.merchant_reference && (
-                  <div className="info-row">
-                    <span className="info-label">Reference:</span>
-                    <span className="info-value reference">
-                      {sub.merchant_reference}
-                    </span>
                   </div>
                 )}
               </div>
