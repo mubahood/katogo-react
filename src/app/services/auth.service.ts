@@ -70,6 +70,15 @@ class AuthService {
       console.log('🔐 Attempting login with centralized http_post...');
       const data = await http_post('auth/login', loginData) as AuthResponse;
 
+      console.log('🔍 Login API response:', {
+        code: data.code,
+        message: data.message,
+        hasData: !!data.data,
+        hasUser: !!data.data?.user,
+        hasToken: !!(data.data?.user?.token || data.data?.user?.remember_token)
+      });
+
+      // Check if login was successful (code === 1)
       if (data.code !== 1) {
         // Handle validation errors
         if (data.errors) {
@@ -79,19 +88,32 @@ class AuthService {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Store auth token using the same key as mobile app expects
+      // Login successful! Now store auth token
       // Backend returns token in user.token or user.remember_token field
-      const token = data.data?.user?.token || data.data?.user?.remember_token;
-      if (token) {
-        localStorage.setItem('ugflix_auth_token', token);
-        localStorage.setItem('ugflix_user', JSON.stringify(data.data.user));
+      try {
+        const token = data.data?.user?.token || data.data?.user?.remember_token;
+        if (token) {
+          localStorage.setItem('ugflix_auth_token', token);
+          console.log('✅ Token stored successfully');
+        } else {
+          console.warn('⚠️ No token found in response, but code=1');
+        }
+        
+        if (data.data?.user) {
+          localStorage.setItem('ugflix_user', JSON.stringify(data.data.user));
+          console.log('✅ User data stored successfully');
+        }
         
         if (data.data?.company) {
           localStorage.setItem('ugflix_company', JSON.stringify(data.data.company));
+          console.log('✅ Company data stored successfully');
         }
+      } catch (storageError) {
+        console.error('⚠️ Error storing auth data:', storageError);
+        // Don't throw - we still want to return success since API succeeded
       }
 
-      console.log('✅ Login successful');
+      console.log('✅ Login successful, returning response');
       return {
         success: true,
         code: data.code,
@@ -120,6 +142,15 @@ class AuthService {
       console.log('📝 Attempting registration with centralized http_post...');
       const data = await http_post('auth/register', registerData) as AuthResponse;
 
+      console.log('🔍 Register API response:', {
+        code: data.code,
+        message: data.message,
+        hasData: !!data.data,
+        hasUser: !!data.data?.user,
+        hasToken: !!(data.data?.user?.token || data.data?.user?.remember_token)
+      });
+
+      // Check if registration was successful (code === 1)
       if (data.code !== 1) {
         // Handle validation errors
         if (data.errors) {
@@ -129,19 +160,32 @@ class AuthService {
         throw new Error(data.message || 'Registration failed');
       }
 
-      // Store auth token using the same key as mobile app expects
+      // Registration successful! Now store auth token
       // Backend returns token in user.token or user.remember_token field
-      const token = data.data?.user?.token || data.data?.user?.remember_token;
-      if (token) {
-        localStorage.setItem('ugflix_auth_token', token);
-        localStorage.setItem('ugflix_user', JSON.stringify(data.data.user));
+      try {
+        const token = data.data?.user?.token || data.data?.user?.remember_token;
+        if (token) {
+          localStorage.setItem('ugflix_auth_token', token);
+          console.log('✅ Token stored successfully');
+        } else {
+          console.warn('⚠️ No token found in response, but code=1');
+        }
+        
+        if (data.data?.user) {
+          localStorage.setItem('ugflix_user', JSON.stringify(data.data.user));
+          console.log('✅ User data stored successfully');
+        }
         
         if (data.data?.company) {
           localStorage.setItem('ugflix_company', JSON.stringify(data.data.company));
+          console.log('✅ Company data stored successfully');
         }
+      } catch (storageError) {
+        console.error('⚠️ Error storing auth data:', storageError);
+        // Don't throw - we still want to return success since API succeeded
       }
 
-      console.log('✅ Registration successful');
+      console.log('✅ Registration successful, returning response');
       return {
         success: true,
         code: data.code,

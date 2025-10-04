@@ -3,7 +3,7 @@ import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstr
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
 import AuthGuard from '../../components/Auth/AuthGuard';
-import { APP_CONFIG } from '../../constants';
+import { APP_CONFIG, COMPANY_INFO } from '../../constants';
 import { MovieBackground } from '../../components/MovieBackground';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -123,7 +123,8 @@ const RegisterPage: React.FC = () => {
         password: formData.password,
       });
 
-      if (registerResponse.success) {
+      // Check if registration succeeded (code === 1 means success)
+      if (registerResponse.success && registerResponse.code === 1) {
         console.log('✅ Registration API call successful:', registerResponse.data.user);
         
         // Step 2: Now login the user with the same credentials
@@ -136,52 +137,38 @@ const RegisterPage: React.FC = () => {
             remember: false,
           });
 
-          if (loginResponse.success) {
-            console.log('✅ Login after registration successful:', loginResponse.data.user);
-            
-            // Small delay to ensure localStorage is updated
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Verify that the user is actually authenticated
-            const isUserAuthenticated = authService.isAuthenticated();
-            const currentUser = authService.getCurrentUser();
-            const authToken = authService.getAuthToken();
-            
-            console.log('🔍 Final authentication verification:', {
-              isAuthenticated: isUserAuthenticated,
-              hasUser: !!currentUser,
-              hasToken: !!authToken,
-              userId: currentUser?.id,
-              userEmail: currentUser?.email
-            });
+          console.log('🔍 Login response received:', {
+            success: loginResponse.success,
+            code: loginResponse.code,
+            message: loginResponse.message
+          });
 
-            if (isUserAuthenticated && currentUser && authToken) {
-              console.log('🎉 User successfully registered and logged in:', currentUser.name);
-              console.log('🔄 Redirecting to home page...');
-              
-              // Clear any errors and keep loading state
-              setServerError("");
-              
-              // Immediate redirect without delay to prevent error display
-              window.location.href = "/";
-              
-              // Prevent further code execution
-              return;
-              
-            } else {
-              console.error('❌ Login verification failed after successful login response');
-              setServerError("Registration completed but login verification failed. Please try logging in manually.");
-              setIsLoading(false);
-            }
+          // Check if login succeeded (code === 1 means success)
+          if (loginResponse.success && loginResponse.code === 1) {
+            console.log('✅ Login successful! Code=1, redirecting immediately...');
+            
+            // Clear any errors
+            setServerError("");
+            
+            // Small delay to ensure localStorage is fully written
+            await new Promise(resolve => setTimeout(resolve, 150));
+            
+            // Redirect immediately - don't check anything else
+            console.log('🚀 Redirecting to home page...');
+            window.location.href = "/";
+            
+            // Prevent further code execution
+            return;
           } else {
-            console.error('❌ Login after registration failed:', loginResponse.message);
+            console.error('❌ Login failed, code:', loginResponse.code);
             setServerError("Registration completed but login failed. Please try logging in manually.");
             setIsLoading(false);
           }
         } catch (loginError: any) {
           console.error('❌ Login exception after registration:', loginError);
+          
           // Check if user is actually logged in despite the error
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 150));
           const isUserAuthenticated = authService.isAuthenticated();
           
           if (isUserAuthenticated) {
@@ -195,7 +182,7 @@ const RegisterPage: React.FC = () => {
           }
         }
       } else {
-        console.error('❌ Registration failed:', registerResponse.message);
+        console.error('❌ Registration failed, code:', registerResponse.code);
         setServerError(registerResponse.message || "Registration failed. Please try again.");
         setIsLoading(false);
       }
@@ -216,20 +203,20 @@ const RegisterPage: React.FC = () => {
 
   return (
     <AuthGuard requireAuth={false}>
-      <div className="split-auth-layout">
-        {/* Movie Background Side */}
-        <div className="auth-movie-side">
+      <div className="fullscreen-auth-layout">
+        {/* Full Background Video */}
+        <div className="auth-background-video">
           <MovieBackground 
             showOverlay={true}
-            overlayOpacity={0.8}
+            overlayOpacity={0.75}
             showMovieInfo={false}
             muted={false}
             showControls={false}
           />
         </div>
 
-        {/* Form Side */}
-        <div className="auth-form-side register-form-side">
+        {/* Centered Form Overlay */}
+        <div className="auth-form-overlay">
           <div className="auth-form-container register-container">
             {/* Form Content */}
             <div className="auth-form-content register-content">
@@ -491,53 +478,71 @@ const RegisterPage: React.FC = () => {
           </div>
         </div>
 
+        {/* WhatsApp Help Button */}
+        <a 
+          href={`https://wa.me/${COMPANY_INFO.WHATSAPP.replace(/[^0-9]/g, '')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="whatsapp-help-button"
+          title="Need help? Chat with us on WhatsApp"
+        >
+          <i className="bi bi-whatsapp"></i>
+          <span className="help-text">Help</span>
+        </a>
+
         {/* Register-specific Styles */}
         <style>{`
-          /* Base Auth Layout Styles (same as Login) */
-          .split-auth-layout {
-            display: flex;
+          /* Full Screen Background Video Layout */
+          .fullscreen-auth-layout {
+            position: relative;
             min-height: 100vh;
+            width: 100%;
+            overflow: hidden;
             background: #000;
           }
           
-          .auth-movie-side {
-            flex: 1;
-            position: relative;
-            min-height: 100vh;
-            display: none;
+          .auth-background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
           }
           
-          .auth-form-side {
-            flex: 1;
+          .auth-form-overlay {
+            position: relative;
+            z-index: 10;
             min-height: 100vh;
-            background: #1a1a1a;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 2rem 1rem;
+            overflow-y: auto;
           }
           
           .auth-form-container {
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             position: relative;
           }
           
           .auth-form-content {
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            padding: 2rem 0;
-            box-shadow: none;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(183, 28, 28, 0.3);
+            border-radius: 8px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
           }
           
           .auth-form-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.75rem;
           }
           
           .auth-logo-container {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
           }
           
           .auth-logo-link {
@@ -551,11 +556,14 @@ const RegisterPage: React.FC = () => {
           }
           
           .auth-logo {
-            height: 60px;
+            height: 55px;
             width: auto;
             margin-bottom: 0.5rem;
             transition: all 0.3s ease;
-          }          .auth-logo-text {
+            filter: drop-shadow(0 2px 8px rgba(183, 28, 28, 0.5));
+          }
+          
+          .auth-logo-text {
             font-size: 1.8rem;
             font-weight: 700;
             color: #B71C1C;
@@ -779,36 +787,61 @@ const RegisterPage: React.FC = () => {
             color: #B71C1C;
           }
           
-          /* Desktop: Show split layout */
-          @media (min-width: 1024px) {
-            .auth-movie-side {
-              display: block;
-            }
-            
-            .auth-form-side {
-              flex: 0 0 55%;
-            }
+          /* WhatsApp Help Button */
+          .whatsapp-help-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #25D366;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+            transition: all 0.3s ease;
+            border: none;
+          }
+          
+          .whatsapp-help-button:hover {
+            background: #20BA5A;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
+          }
+          
+          .whatsapp-help-button i {
+            font-size: 1.5rem;
+          }
+          
+          .whatsapp-help-button .help-text {
+            display: inline-block;
           }
           
           /* Tablet adjustments */
           @media (max-width: 1023px) {
-            .auth-form-side {
+            .auth-form-overlay {
               padding: 1.5rem;
             }
             
             .auth-form-content {
-              padding: 1.5rem 0;
+              padding: 2rem 1.5rem;
             }
           }
           
           /* Mobile adjustments */
           @media (max-width: 768px) {
-            .auth-form-side {
+            .auth-form-overlay {
               padding: 1rem;
             }
             
             .auth-form-content {
-              padding: 1rem 0;
+              padding: 2rem 1.25rem;
             }
             
             .auth-form-title {
@@ -819,12 +852,26 @@ const RegisterPage: React.FC = () => {
               flex-direction: column;
               gap: 0;
             }
+            
+            .whatsapp-help-button {
+              bottom: 20px;
+              right: 20px;
+              padding: 12px 16px;
+            }
+            
+            .whatsapp-help-button .help-text {
+              display: none;
+            }
+            
+            .whatsapp-help-button i {
+              font-size: 1.75rem;
+            }
           }
           
           /* Small mobile */
           @media (max-width: 480px) {
             .auth-form-content {
-              padding: 1.25rem;
+              padding: 1.75rem 1rem;
             }
             
             .auth-form-title {
@@ -834,16 +881,22 @@ const RegisterPage: React.FC = () => {
             .checkbox-label {
               font-size: 0.8rem;
             }
+            
+            .whatsapp-help-button {
+              bottom: 16px;
+              right: 16px;
+              padding: 12px;
+            }
           }
           
           /* Height adjustments for register form */
           @media (max-height: 800px) {
-            .register-form-side {
+            .auth-form-overlay {
               padding: 1rem;
             }
             
-            .register-content {
-              padding: 1.5rem;
+            .auth-form-content {
+              padding: 1.5rem 1.25rem;
             }
             
             .auth-form-group {
@@ -851,7 +904,11 @@ const RegisterPage: React.FC = () => {
             }
             
             .auth-logo {
-              height: 50px;
+              height: 45px;
+            }
+            
+            .auth-form-header {
+              margin-bottom: 1.25rem;
             }
           }
         `}</style>
