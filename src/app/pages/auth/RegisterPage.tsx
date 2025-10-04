@@ -129,65 +129,79 @@ const RegisterPage: React.FC = () => {
         // Step 2: Now login the user with the same credentials
         console.log('🔐 Now logging in the newly registered user...');
         
-        const loginResponse = await authService.login({
-          email: formData.email,
-          password: formData.password,
-          remember: false,
-        });
-
-        if (loginResponse.success) {
-          console.log('✅ Login after registration successful:', loginResponse.data.user);
-          
-          // Verify that the user is actually authenticated
-          const isUserAuthenticated = authService.isAuthenticated();
-          const currentUser = authService.getCurrentUser();
-          const authToken = authService.getAuthToken();
-          
-          console.log('🔍 Final authentication verification:', {
-            isAuthenticated: isUserAuthenticated,
-            hasUser: !!currentUser,
-            hasToken: !!authToken,
-            userId: currentUser?.id,
-            userEmail: currentUser?.email
+        try {
+          const loginResponse = await authService.login({
+            email: formData.email,
+            password: formData.password,
+            remember: false,
           });
 
-          if (isUserAuthenticated && currentUser && authToken) {
-            console.log('🎉 User successfully registered and logged in:', currentUser.name);
-            console.log('🔄 Performing full page refresh to home page...');
+          if (loginResponse.success) {
+            console.log('✅ Login after registration successful:', loginResponse.data.user);
             
-            // Clear any errors
-            setServerError("");
-            setIsLoading(false);
+            // Small delay to ensure localStorage is updated
+            await new Promise(resolve => setTimeout(resolve, 100));
             
-            // Use window.location.href for full page refresh redirect
-            // This ensures all state is properly reset and user sees the authenticated app
-            setTimeout(() => {
+            // Verify that the user is actually authenticated
+            const isUserAuthenticated = authService.isAuthenticated();
+            const currentUser = authService.getCurrentUser();
+            const authToken = authService.getAuthToken();
+            
+            console.log('🔍 Final authentication verification:', {
+              isAuthenticated: isUserAuthenticated,
+              hasUser: !!currentUser,
+              hasToken: !!authToken,
+              userId: currentUser?.id,
+              userEmail: currentUser?.email
+            });
+
+            if (isUserAuthenticated && currentUser && authToken) {
+              console.log('🎉 User successfully registered and logged in:', currentUser.name);
+              console.log('🔄 Redirecting to home page...');
+              
+              // Clear any errors and keep loading state
+              setServerError("");
+              
+              // Immediate redirect without delay to prevent error display
               window.location.href = "/";
-            }, 500);
-            
-            // Prevent further code execution
-            return;
-            
+              
+              // Prevent further code execution
+              return;
+              
+            } else {
+              console.error('❌ Login verification failed after successful login response');
+              setServerError("Registration completed but login verification failed. Please try logging in manually.");
+              setIsLoading(false);
+            }
           } else {
-            console.error('❌ Login verification failed after successful login response');
-            setServerError("Registration completed but login verification failed. Please try logging in manually.");
+            console.error('❌ Login after registration failed:', loginResponse.message);
+            setServerError("Registration completed but login failed. Please try logging in manually.");
+            setIsLoading(false);
           }
-        } else {
-          console.error('❌ Login after registration failed:', loginResponse.message);
-          setServerError("Registration completed but login failed. Please try logging in manually.");
+        } catch (loginError: any) {
+          console.error('❌ Login exception after registration:', loginError);
+          // Check if user is actually logged in despite the error
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const isUserAuthenticated = authService.isAuthenticated();
+          
+          if (isUserAuthenticated) {
+            console.log('🎉 User is authenticated despite error, redirecting...');
+            setServerError("");
+            window.location.href = "/";
+            return;
+          } else {
+            setServerError("Registration completed but login failed. Please try logging in manually.");
+            setIsLoading(false);
+          }
         }
       } else {
         console.error('❌ Registration failed:', registerResponse.message);
         setServerError(registerResponse.message || "Registration failed. Please try again.");
+        setIsLoading(false);
       }
     } catch (error: any) {
-      console.error('❌ Registration/Login exception:', error);
-      if (error.message && error.message.includes('Registration completed')) {
-        setServerError("Registration completed but login failed. Please try logging in manually.");
-      } else {
-        setServerError(error.message || "Registration failed. Please try again.");
-      }
-    } finally {
+      console.error('❌ Registration exception:', error);
+      setServerError(error.message || "Registration failed. Please try again.");
       setIsLoading(false);
     }
   };
@@ -209,7 +223,7 @@ const RegisterPage: React.FC = () => {
             showOverlay={true}
             overlayOpacity={0.8}
             showMovieInfo={false}
-            muted={true}
+            muted={false}
             showControls={false}
           />
         </div>
