@@ -139,29 +139,30 @@ const LoginPage: React.FC = () => {
 
         {/* Form Side */}
         <div className="auth-form-side">
-          <div className="auth-form-container">
+          <div className="auth-form-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '2rem 1rem' }}>
             {/* Form Content */}
-            <div className="auth-form-content">
-              <div className="auth-form-header">
-                <div className="auth-logo-container">
+            <div className="auth-form-content" style={{ width: '100%', maxWidth: '450px' }}>
+              <div className="auth-form-header" style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                <div className="auth-logo-container" style={{ marginBottom: '1.5rem' }}>
                   <Link to="/" className="auth-logo-link">
                     <img 
                       src={APP_CONFIG.LOGO}
                       alt={APP_CONFIG.NAME}
                       className="auth-logo"
+                      style={{ height: '50px', width: 'auto' }}
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                         const textLogo = e.currentTarget.nextElementSibling as HTMLElement;
                         if (textLogo) textLogo.style.display = 'block';
                       }}
                     />
-                    <h2 className="auth-logo-text" style={{ display: 'none' }}>
+                    <h2 className="auth-logo-text" style={{ display: 'none', color: '#B71C1C', fontSize: '1.75rem', fontWeight: 'bold' }}>
                       {APP_CONFIG.NAME}
                     </h2>
                   </Link>
                 </div>
-                <h1 className="auth-form-title">Login</h1>
-                <p className="auth-form-subtitle">
+                <h1 className="auth-form-title" style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Login</h1>
+                <p className="auth-form-subtitle" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem' }}>
                   Welcome back
                 </p>
               </div>
@@ -303,16 +304,17 @@ const LoginPage: React.FC = () => {
           
           .auth-form-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             position: relative;
           }
           
           .auth-form-content {
-            background: transparent;
-            border: none;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(183, 28, 28, 0.3);
             border-radius: 0;
-            padding: 2rem 0;
-            box-shadow: none;
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
           }
           
           .auth-form-header {
@@ -344,14 +346,14 @@ const LoginPage: React.FC = () => {
           .auth-logo-text {
             font-size: 1.8rem;
             font-weight: 700;
-            color: #4ecdc4;
+            color: #B71C1C;
             margin: 0;
           }
           
           .auth-form-title {
             font-size: 2rem;
             font-weight: 700;
-            color: #4ecdc4;
+            color: #B71C1C;
             margin-bottom: 0.5rem;
           }
           
@@ -363,8 +365,7 @@ const LoginPage: React.FC = () => {
           
           .auth-alert {
             background: rgba(220, 53, 69, 0.15);
-            border: none;
-            border-left: 4px solid #ff6b6b;
+            border: 2px solid #B71C1C;
             border-radius: 0;
             padding: 1rem;
             margin-bottom: 1.5rem;
@@ -378,7 +379,7 @@ const LoginPage: React.FC = () => {
           }
           
           .auth-form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
           }
           
           .auth-form-label {
@@ -387,16 +388,15 @@ const LoginPage: React.FC = () => {
             gap: 0.5rem;
             color: rgba(255, 255, 255, 0.9);
             font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
           }
           
           .auth-form-input {
             background: rgba(255, 255, 255, 0.05);
-            border: none;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 0;
-            padding: 1rem 0;
+            padding: 1rem;
             color: white;
             font-size: 1rem;
             transition: all 0.3s ease;
@@ -404,8 +404,8 @@ const LoginPage: React.FC = () => {
           
                     .auth-form-input:focus {
             background: rgba(255, 255, 255, 0.08);
-            border-bottom-color: #4ecdc4;
-            box-shadow: none;
+            border-color: #B71C1C;
+            box-shadow: 0 0 0 2px rgba(183, 28, 28, 0.2);
             color: white;
             outline: none;
           }
@@ -419,6 +419,7 @@ const LoginPage: React.FC = () => {
           }
           
           .password-toggle {
+          .password-toggle {
             position: absolute;
             right: 1rem;
             top: 50%;
@@ -428,19 +429,19 @@ const LoginPage: React.FC = () => {
             color: rgba(255, 255, 255, 0.6);
             cursor: pointer;
             padding: 0.25rem;
-            border-radius: 4px;
+            border-radius: 0;
             transition: color 0.3s ease;
           }
           
           .password-toggle:hover {
-            color: rgba(255, 255, 255, 0.9);
+            color: #B71C1C;
           }
-          
           .auth-form-options {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
+            margin-top: 0.5rem;
           }
           
           .auth-checkbox-group {
@@ -464,24 +465,24 @@ const LoginPage: React.FC = () => {
           }
           
           .auth-checkbox input[type="checkbox"]:checked {
-            background: #4ecdc4;
-            border-color: #4ecdc4;
+            background: #B71C1C;
+            border-color: #B71C1C;
           }
           
           .auth-forgot-link {
-            color: #4ecdc4;
+            color: #B71C1C;
             text-decoration: none;
             font-size: 0.875rem;
             transition: color 0.3s ease;
           }
           
           .auth-forgot-link:hover {
-            color: #42b8b1;
+            color: #8B0000;
           }
           
           .auth-submit-button {
-            background: #4ecdc4;
-            border: none;
+            background: #B71C1C;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 0;
             padding: 1.2rem;
             width: 100%;
@@ -499,9 +500,9 @@ const LoginPage: React.FC = () => {
           }
           
           .auth-submit-button:hover:not(:disabled) {
-            background: #42b8b1;
-            transform: none;
-            box-shadow: none;
+            background: #8B0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4);
           }
           
           .auth-submit-button:disabled {
@@ -518,7 +519,7 @@ const LoginPage: React.FC = () => {
           }
           
           .auth-signup-link {
-            color: #4ecdc4;
+            color: #B71C1C;
             text-decoration: none;
             font-weight: 600;
             display: inline-flex;
@@ -528,11 +529,11 @@ const LoginPage: React.FC = () => {
           }
           
           .auth-signup-link:hover {
-            color: #42b8b1;
+            color: #8B0000;
           }
           
           .auth-form-error {
-            color: #ff6b6b;
+            color: #B71C1C;
             font-size: 0.875rem;
             margin-top: 0.25rem;
           }
@@ -576,16 +577,16 @@ const LoginPage: React.FC = () => {
             }
             
             .auth-form-content {
-              padding: 1.5rem;
-              border-radius: 15px;
+              padding: 2rem 1.5rem;
+              border-radius: 0;
             }
             
             .auth-form-title {
               font-size: 1.75rem;
             }
             
-            .auth-back-link {
-              top: -2.5rem;
+            .auth-form-container {
+              padding: 1rem !important;
             }
             
             .back-button {
@@ -597,11 +598,15 @@ const LoginPage: React.FC = () => {
           /* Small mobile */
           @media (max-width: 480px) {
             .auth-form-content {
-              padding: 1.25rem;
+              padding: 1.5rem 1.25rem;
             }
             
             .auth-form-title {
               font-size: 1.5rem;
+            }
+            
+            .auth-form-header {
+              margin-bottom: 1.5rem;
             }
           }
         `}</style>

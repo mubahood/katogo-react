@@ -102,6 +102,25 @@ export interface RecentOrder {
   created_at: string;
 }
 
+export interface SubscriptionInfo {
+  has_active_subscription: boolean;
+  days_remaining: number;
+  hours_remaining: number;
+  is_in_grace_period: boolean;
+  subscription_status: string;
+  end_date: string | null;
+  require_subscription: boolean;
+}
+
+export interface DashboardStats {
+  watchlist_count: number;
+  watch_history_count: number;
+  liked_movies_count: number;
+  products_count: number;
+  active_chats_count: number;
+  total_orders_count: number;
+}
+
 export interface ManifestData {
   app_info: AppInfo;
   categories: Category[];
@@ -116,6 +135,8 @@ export interface ManifestData {
   recent_orders?: RecentOrder[];
   recent_search_suggestions?: string[];
   wishlist?: any[]; // Include wishlist data in manifest
+  subscription?: SubscriptionInfo; // ✅ Add subscription data to manifest
+  dashboard_stats?: DashboardStats; // ✅ Add dashboard statistics
 }
 
 interface ManifestState {
@@ -200,10 +221,72 @@ const manifestSlice = createSlice({
       })
       .addCase(loadManifest.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.data = action.payload;
-        state.lastUpdated = Date.now();
-        state.initialized = true;
-        state.error = null;
+        
+        // ✅ STABILIZED: Validate payload structure
+        const payload = action.payload;
+        
+        if (!payload || typeof payload !== 'object') {
+          console.error('❌ Invalid manifest payload:', payload);
+          state.error = 'Invalid manifest data received';
+          state.initialized = true; // Mark as initialized to prevent infinite loading
+          return;
+        }
+
+        try {
+          // ✅ STABILIZED: Ensure subscription field always exists with safe defaults
+          if (!payload.subscription || typeof payload.subscription !== 'object') {
+            console.warn('⚠️ Manifest missing subscription field, adding safe defaults');
+            payload.subscription = {
+              has_active_subscription: false,
+              days_remaining: 0,
+              hours_remaining: 0,
+              is_in_grace_period: false,
+              subscription_status: 'Unknown',
+              end_date: null,
+              require_subscription: false
+            };
+          }
+
+          // ✅ STABILIZED: Convert ProductModel instances to plain objects
+          if (payload.featured_products && Array.isArray(payload.featured_products)) {
+            payload.featured_products = payload.featured_products.map((product: any) => 
+              product.toJSON ? product.toJSON() : product
+            );
+          }
+          if (payload.recent_products && Array.isArray(payload.recent_products)) {
+            payload.recent_products = payload.recent_products.map((product: any) => 
+              product.toJSON ? product.toJSON() : product
+            );
+          }
+          if (payload.wishlist && Array.isArray(payload.wishlist)) {
+            payload.wishlist = payload.wishlist.map((product: any) => 
+              product.toJSON ? product.toJSON() : product
+            );
+          }
+
+          // ✅ STABILIZED: Ensure required fields exist
+          const validatedPayload = {
+            ...payload,
+            is_authenticated: Boolean(payload.is_authenticated ?? false),
+            categories: Array.isArray(payload.categories) ? payload.categories : [],
+            delivery_locations: Array.isArray(payload.delivery_locations) ? payload.delivery_locations : [],
+            featured_products: Array.isArray(payload.featured_products) ? payload.featured_products : [],
+            recent_products: Array.isArray(payload.recent_products) ? payload.recent_products : [],
+            recent_orders: Array.isArray(payload.recent_orders) ? payload.recent_orders : [],
+            wishlist: Array.isArray(payload.wishlist) ? payload.wishlist : [],
+          };
+          
+          state.data = validatedPayload;
+          state.lastUpdated = Date.now();
+          state.initialized = true;
+          state.error = null;
+
+          console.log('✅ Manifest loaded and validated successfully');
+        } catch (error) {
+          console.error('❌ Error processing manifest data:', error);
+          state.error = 'Failed to process manifest data';
+          state.initialized = true; // Mark as initialized to prevent infinite loading
+        }
       })
       .addCase(loadManifest.rejected, (state, action) => {
         state.isLoading = false;
@@ -225,8 +308,8 @@ export const {
 // Selectors
 export const selectManifest = (state: { manifest: ManifestState }) => state.manifest.data;
 export const selectManifestLoading = (state: { manifest: ManifestState }) => state.manifest.isLoading;
-export const selectManifestError = (state: { manifest: ManifestState }) => state.manifest.error;
 export const selectManifestInitialized = (state: { manifest: ManifestState }) => state.manifest.initialized;
+export const selectManifestError = (state: { manifest: ManifestState }) => state.manifest.error;
 export const selectCategories = (state: { manifest: ManifestState }) => state.manifest.data?.categories || [];
 export const selectDeliveryLocations = (state: { manifest: ManifestState }) => state.manifest.data?.delivery_locations || [];
 export const selectAppCounts = (state: { manifest: ManifestState }) => state.manifest.data?.counts;
@@ -235,5 +318,6 @@ export const selectIsAuthenticated = (state: { manifest: ManifestState }) => sta
 export const selectFeaturedProducts = (state: { manifest: ManifestState }) => state.manifest.data?.featured_products || [];
 export const selectRecentProducts = (state: { manifest: ManifestState }) => state.manifest.data?.recent_products || [];
 export const selectRecentOrders = (state: { manifest: ManifestState }) => state.manifest.data?.recent_orders || [];
+export const selectSubscriptionInfo = (state: { manifest: ManifestState }) => state.manifest.data?.subscription || null;
 
 export default manifestSlice.reducer;

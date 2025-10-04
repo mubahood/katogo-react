@@ -8,6 +8,7 @@ import { useAppCounts, useMegaMenuCategories } from "../../hooks/useManifest";
 import { useManifest } from "../../hooks/useManifest";
 import LiveSearchBox from "../search/LiveSearchBox";
 import OptimizedLazyImage from "../shared/OptimizedLazyImage";
+import SubscriptionTimerWidget from "../subscription/SubscriptionTimerWidget";
 import { 
   Home, 
   Search, 
@@ -263,6 +264,13 @@ const ModernMainNav: React.FC = () => {
                 />
               </Link>
 
+              {/* Subscription Timer Widget - Mobile */}
+              {(isAuthenticated || (authState.user && authState.token)) && (
+                <div className="mobile-subscription-timer-wrapper">
+                  <SubscriptionTimerWidget />
+                </div>
+              )}
+
               {/* Action Icons */}
               <div className="mobile-action-icons">
                 <Link to="/movies" className="mobile-action-link">
@@ -397,6 +405,13 @@ const ModernMainNav: React.FC = () => {
               showRecentSearches={true}
             />
           </div>
+
+          {/* Subscription Timer Widget - Strategic Position */}
+          {(isAuthenticated || (authState.user && authState.token)) && (
+            <div className="subscription-timer-container me-3">
+              <SubscriptionTimerWidget />
+            </div>
+          )}
 
           {/* Main Menu - Icon Links with Text (Navigation) */}
           <div className="main-menu-links">

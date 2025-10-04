@@ -29,12 +29,10 @@ if (token) {
   api.defaults.headers.common['authorization'] = `Bearer ${token}`;
   api.defaults.headers.common['Tok'] = `Bearer ${token}`;
   api.defaults.headers.common['tok'] = `Bearer ${token}`;
-  console.log('🔒 Auth headers set on axios defaults');
 }
 
 if (user && user.id) {
   api.defaults.headers.common['logged_in_user_id'] = user.id.toString();
-  console.log('👤 User ID header set on axios defaults:', user.id);
 }
 
 // Expose debug function globally for browser console debugging
@@ -51,7 +49,6 @@ if (typeof window !== 'undefined') {
     });
     return { token, user: user ? JSON.parse(user) : null };
   };
-  console.log('💡 Debug helper installed! Run debugAuth() in console to check authentication state');
 }
 
 // Debug function to check token and user in localStorage
@@ -213,17 +210,6 @@ api.interceptors.request.use(
     const token = Utils.loadFromDatabase(ugflix_auth_token);
     const u = Utils.loadFromDatabase(ugflix_user);
     
-    console.log('🔧 Axios request interceptor BEFORE adding headers:', {
-      method: config.method?.toUpperCase(),
-      url: config.url,
-      baseURL: config.baseURL,
-      existingHeaders: config.headers ? Object.keys(config.headers) : [],
-      hasToken: !!token,
-      tokenPreview: token ? token.substring(0, 20) + '...' : 'NO TOKEN',
-      hasUser: !!u,
-      userId: u?.id || 'NO USER ID'
-    });
-    
     // CRITICAL FIX: Ensure headers object exists
     if (!config.headers) {
       config.headers = {} as any;
@@ -242,7 +228,6 @@ api.interceptors.request.use(
       config.headers['authorization'] = `Bearer ${token}`;
       config.headers['Tok'] = `Bearer ${token}`;
       config.headers['tok'] = `Bearer ${token}`;
-      console.log('✅ Added 4 token headers to BOTH defaults and request config');
     } else {
       console.warn('⚠️ NO TOKEN FOUND - Request will be sent without authentication headers!');
       console.warn('⚠️ Check localStorage for ugflix_auth_token');
@@ -252,22 +237,10 @@ api.interceptors.request.use(
       // Set on BOTH axios defaults AND request config
       api.defaults.headers.common['logged_in_user_id'] = u.id.toString();
       config.headers['logged_in_user_id'] = u.id.toString();
-      console.log('✅ Added logged_in_user_id header to BOTH defaults and request config:', u.id);
     } else {
       console.warn('⚠️ NO USER ID FOUND - Request will be sent without logged_in_user_id header!');
       console.warn('⚠️ Check localStorage for ugflix_user');
     }
-    
-    console.log('🔧 Axios request interceptor AFTER adding headers:', {
-      allHeaders: config.headers ? Object.keys(config.headers) : [],
-      Authorization: typeof config.headers['Authorization'] === 'string' ? config.headers['Authorization'].substring(0, 30) + '...' : 'NOT SET',
-      authorization: typeof config.headers['authorization'] === 'string' ? config.headers['authorization'].substring(0, 30) + '...' : 'NOT SET',
-      Tok: typeof config.headers['Tok'] === 'string' ? config.headers['Tok'].substring(0, 30) + '...' : 'NOT SET',
-      tok: typeof config.headers['tok'] === 'string' ? config.headers['tok'].substring(0, 30) + '...' : 'NOT SET',
-      logged_in_user_id: config.headers['logged_in_user_id'],
-      ContentType: config.headers['Content-Type'] || 'NOT SET',
-      isFormData: config.data instanceof FormData
-    });
     
     // Add platform type to body for POST requests (like mobile app)
     // Only add if data is not FormData (FormData is handled in http_post)
@@ -286,12 +259,6 @@ api.interceptors.request.use(
 // Handle response errors globally
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ Axios response interceptor:', {
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.keys(response.headers || {}),
-      hasData: !!response.data
-    });
     return response;
   },
   (error) => {
@@ -315,6 +282,24 @@ api.interceptors.response.use(
     if (error.response?.data?.message === 'Unauthenticated') {
       ToastService.error("You are not logged in.");
       // Utils.logout(); // Uncomment when logout function is available
+      return Promise.reject(error);
+    }
+    
+    // ===== SUBSCRIPTION ENFORCEMENT =====
+    // Backend returns 403 with require_subscription flag when user tries to access
+    // content that requires an active subscription (movies, downloads, premium features)
+    if (error.response?.status === 403 && error.response?.data?.data?.require_subscription) {
+      const message = error.response.data.message || 'Active subscription required';
+      console.warn('🔒 Api.ts: Subscription required (AUTO-REDIRECT DISABLED):', message);
+      console.log('🐛 DEBUG MODE: 403 error with require_subscription flag');
+      console.log('📊 Error Data:', error.response?.data);
+      
+      // DISABLED FOR DEBUGGING
+      // ToastService.error(message);
+      // setTimeout(() => {
+      //   window.location.href = '/subscription/plans';
+      // }, 1500);
+      
       return Promise.reject(error);
     }
     

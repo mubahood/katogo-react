@@ -1,0 +1,79 @@
+/* src/app/components/subscription/SubscriptionTimerWidget.css */
+/* Ultra-compact, minimalist header timer - Squared design, minimal padding */
+
+.subscription-timer-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid;
+  cursor: pointer;
+  user-select: none;
+  background: var(--dark-bg-tertiary, #2A2A2A);
+  font-size: 11px;
+  line-height: 1;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.subscription-timer-widget:hover {
+  background: var(--dark-bg-secondary, #1A1A1A);
+}
+
+/* State colors - minimal, squared */
+.subscription-timer-widget.normal {
+  border-color: var(--color-success, #4CAF50);
+  color: var(--color-success, #4CAF50);
+}
+
+.subscription-timer-widget.attention {
+  border-color: var(--brand-accent, #F9A825);
+  color: var(--brand-accent, #F9A825);
+}
+
+.subscription-timer-widget.warning {
+  border-color: #FF9800;
+  color: #FF9800;
+}
+
+.subscription-timer-widget.critical,
+.subscription-timer-widget.grace-period {
+  border-color: var(--brand-primary, #B71C1C);
+  color: var(--brand-primary, #B71C1C);
+}
+
+/* Icon */
+.subscription-timer-widget svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* Time display */
+.time-display {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--dark-text-primary, #FFFFFF);
+}
+
+/* Accessibility */
+.subscription-timer-widget:focus {
+  outline: 1px solid var(--brand-primary, #B71C1C);
+  outline-offset: 1px;
+}
+
+.subscription-timer-widget:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Responsive - keep minimal */
+@media (max-width: 767px) {
+  .subscription-timer-widget {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+  
+  .subscription-timer-widget svg {
+    width: 10px;
+    height: 10px;
+  }
+}

@@ -1,0 +1,172 @@
+/* Subscription Monitor Banner */
+.subscription-banner {
+  position: fixed;
+  top: 60px; /* Below header */
+  left: 0;
+  right: 0;
+  z-index: 999;
+  padding: 1rem 2rem;
+  backdrop-filter: blur(10px);
+  animation: slideDown 0.3s ease-out;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Banner variants */
+.subscription-banner.expiring-soon {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+}
+
+.subscription-banner.grace-period {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: white;
+}
+
+.subscription-banner.no-subscription {
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  color: white;
+}
+
+/* Banner content */
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.banner-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.banner-message {
+  flex: 1;
+}
+
+.banner-message p {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.banner-message small {
+  opacity: 0.9;
+  font-size: 0.875rem;
+}
+
+.banner-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.banner-btn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.banner-btn.primary {
+  background: white;
+  color: #1976d2;
+}
+
+.subscription-banner.expiring-soon .banner-btn.primary {
+  color: #f57c00;
+}
+
+.subscription-banner.grace-period .banner-btn.primary {
+  color: #d32f2f;
+}
+
+.banner-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.banner-btn.secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.banner-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .subscription-banner {
+    top: 50px;
+    padding: 0.75rem 1rem;
+  }
+
+  .banner-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .banner-icon {
+    font-size: 1.5rem;
+  }
+
+  .banner-message p {
+    font-size: 0.875rem;
+  }
+
+  .banner-message small {
+    font-size: 0.75rem;
+  }
+
+  .banner-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .banner-btn {
+    flex: 1;
+    font-size: 0.8125rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .banner-btn {
+    width: 100%;
+  }
+}

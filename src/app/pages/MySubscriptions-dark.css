@@ -1,0 +1,373 @@
+/* ===================================================================
+   MY SUBSCRIPTIONS - DARK THEME
+   Redesigned to match UGFlix dark mode
+   Small paddings, compact spacing, clean design
+   =================================================================== */
+
+.my-subscriptions {
+  min-height: calc(100vh - 140px);
+  padding: 0.5rem 1rem 1rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: transparent;
+}
+
+/* Header */
+.my-subscriptions-header {
+  margin-bottom: 1.5rem;
+  padding-top: 0;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--ugflix-text-primary);
+  margin-bottom: 0.5rem;
+  text-shadow: var(--ugflix-glow-text);
+}
+
+.page-title svg {
+  color: var(--ugflix-accent);
+  font-size: 1.75rem;
+}
+
+.page-subtitle {
+  font-size: 0.95rem;
+  color: var(--ugflix-text-secondary);
+}
+
+/* Stats Dashboard */
+.subscriptions-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--ugflix-background-secondary);
+  border: 1px solid var(--ugflix-border);
+  border-radius: 0;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: var(--ugflix-accent);
+  transform: translateY(-2px);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--ugflix-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ugflix-text-primary);
+}
+
+.stat-card.total .stat-value {
+  color: var(--ugflix-info);
+}
+
+.stat-card.active .stat-value {
+  color: var(--ugflix-success);
+}
+
+.stat-card.pending .stat-value {
+  color: var(--ugflix-accent);
+}
+
+.stat-card.money .stat-value {
+  color: var(--ugflix-primary);
+}
+
+/* Filters */
+.subscriptions-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--ugflix-border);
+  background: var(--ugflix-background-secondary);
+  color: var(--ugflix-text-primary);
+  border-radius: 0;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background: var(--ugflix-background-tertiary);
+  border-color: var(--ugflix-accent);
+}
+
+.filter-btn.active {
+  background: var(--ugflix-accent);
+  color: var(--ugflix-background);
+  border-color: var(--ugflix-accent);
+}
+
+/* Subscriptions List */
+.subscriptions-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.subscription-card {
+  background: var(--ugflix-background-secondary);
+  border: 1px solid var(--ugflix-border);
+  border-radius: 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.subscription-card:hover {
+  border-color: var(--ugflix-accent);
+  transform: translateY(-2px);
+}
+
+.subscription-card.active {
+  border-color: var(--ugflix-success);
+}
+
+.subscription-card.expired {
+  opacity: 0.6;
+}
+
+/* Card Header */
+.card-header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ugflix-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.card-subtitle {
+  font-size: 0.85rem;
+  color: var(--ugflix-text-muted);
+}
+
+/* Status Badge */
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.status-badge.active {
+  background: var(--ugflix-success);
+  color: white;
+}
+
+.status-badge.pending {
+  background: var(--ugflix-accent);
+  color: var(--ugflix-background);
+}
+
+.status-badge.expired {
+  background: var(--ugflix-error);
+  color: white;
+}
+
+.status-badge.canceled {
+  background: var(--ugflix-text-muted);
+  color: white;
+}
+
+/* Card Body */
+.card-body-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: var(--ugflix-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ugflix-text-primary);
+}
+
+/* Card Footer */
+.card-footer-section {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ugflix-border);
+}
+
+.check-status-btn,
+.view-details-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.check-status-btn {
+  background: var(--ugflix-accent);
+  color: var(--ugflix-background);
+}
+
+.check-status-btn:hover:not(:disabled) {
+  background: var(--ugflix-accent-dark);
+  transform: translateY(-2px);
+}
+
+.check-status-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.view-details-btn {
+  background: transparent;
+  color: var(--ugflix-text-secondary);
+  border: 1px solid var(--ugflix-border);
+}
+
+.view-details-btn:hover {
+  background: var(--ugflix-background-tertiary);
+  border-color: var(--ugflix-accent);
+  color: var(--ugflix-text-primary);
+}
+
+/* Loading & Empty States */
+.loading-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 0.75rem;
+}
+
+.loading-state p,
+.empty-state p {
+  color: var(--ugflix-text-secondary);
+  font-size: 0.875rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--ugflix-background-tertiary);
+  border-top-color: var(--ugflix-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-top-color: var(--ugflix-background);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--ugflix-text-muted);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .my-subscriptions {
+    padding: 0.75rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .subscriptions-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .stat-card {
+    padding: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .card-header-section {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-body-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .subscriptions-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .card-footer-section {
+    flex-direction: column;
+  }
+
+  .check-status-btn,
+  .view-details-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

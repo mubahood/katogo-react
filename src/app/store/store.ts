@@ -53,7 +53,10 @@ export const store = configureStore({
           'realProductsApi', 
           'productsApi', 
           'auth.user', 
-          'cart.items'
+          'cart.items',
+          'manifest.data.featured_products',
+          'manifest.data.recent_products',
+          'manifest.data.wishlist'
         ],
       },
     }).concat(
@@ -65,10 +68,9 @@ export const store = configureStore({
 // Optional: Required for refetchOnFocus/refetchOnReconnect behaviors
 setupListeners(store.dispatch);
 
-// Make store available for debugging in development
+// Expose store to window for debugging (development only)
 if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   (window as any).store = store;
-  console.log('🏪 Redux store available at window.store for debugging');
 }
 
 // Define RootState and AppDispatch types for TypeScript

@@ -151,14 +151,7 @@ const NewAccountLayout: React.FC = () => {
           icon: <FiShoppingBag />,
           path: '/account/products',
           section: 'marketplace'
-        },
-        {
-          id: 'orders',
-          label: 'My Orders',
-          icon: <FiPackage />,
-          path: '/account/orders',
-          section: 'marketplace'
-        }
+        }, 
       ]
     },
     {
@@ -185,12 +178,19 @@ const NewAccountLayout: React.FC = () => {
     section: 'settings'
   };
 
-  // Check if path is active
+  // Check if path is active - EXACT MATCH to prevent multiple active items
   const isActive = (path: string): boolean => {
-    if (path === '/account') {
-      return location.pathname === '/account' || location.pathname === '/account/';
+    // Normalize paths by removing trailing slashes
+    const normalizedLocation = location.pathname.replace(/\/$/, '') || '/account';
+    const normalizedPath = path.replace(/\/$/, '');
+    
+    // For exact dashboard match
+    if (normalizedPath === '/account') {
+      return normalizedLocation === '/account';
     }
-    return location.pathname.startsWith(path);
+    
+    // For all other routes, use exact match
+    return normalizedLocation === normalizedPath;
   };
 
   // Handle logout

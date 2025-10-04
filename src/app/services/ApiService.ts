@@ -423,8 +423,51 @@ export class ApiService {
    * Get application manifest with essential data and counts
    * Delegates to the optimized ManifestService for better caching and request deduplication
    */
+  /**
+   * ✅ STABILIZED: Get application manifest with comprehensive error handling
+   * Ensures subscription field always exists with safe defaults
+   */
   static async getManifest(): Promise<any> {
     try {
+      // Get movies manifest from HomePage API
+      
+      // ✅ CRITICAL: Get subscription data with comprehensive validation
+      let subscriptionData = null;
+      try {
+        const { default: streamingManifestService } = await import('./manifest.service');
+        const streamingManifest = await streamingManifestService.getManifest();
+        
+        // ✅ Validate subscription structure
+        const rawSubscription = streamingManifest?.data?.subscription;
+        if (rawSubscription && typeof rawSubscription === 'object') {
+          // ✅ STABILIZED: Ensure all required fields exist with safe defaults
+          subscriptionData = {
+            has_active_subscription: Boolean(rawSubscription.has_active_subscription ?? false),
+            days_remaining: typeof rawSubscription.days_remaining === 'number' 
+              ? Math.max(0, rawSubscription.days_remaining) 
+              : 0,
+            hours_remaining: typeof rawSubscription.hours_remaining === 'number'
+              ? Math.max(0, rawSubscription.hours_remaining)
+              : 0,
+            is_in_grace_period: Boolean(rawSubscription.is_in_grace_period ?? false),
+            subscription_status: String(rawSubscription.subscription_status || 'Unknown'),
+            end_date: rawSubscription.end_date || null,
+            require_subscription: rawSubscription.require_subscription !== undefined
+              ? Boolean(rawSubscription.require_subscription)
+              : false, // Default to false for open access
+            // Keep other fields if present
+            ...rawSubscription
+          };
+          console.log('✅ Subscription data validated and structured:', subscriptionData);
+        } else {
+          console.warn('⚠️ Invalid subscription structure, using safe defaults');
+          subscriptionData = null;
+        }
+      } catch (subError) {
+        console.error('❌ Failed to fetch subscription data:', subError);
+        subscriptionData = null;
+      }
+      
       // Use the shop manifest service for categories and shop data
       const { default: shopManifestService } = await import('./ManifestService');
       const homepageManifest = await shopManifestService.loadHomepageManifest();
@@ -503,8 +546,32 @@ export class ApiService {
         recent_products: [],
         recent_orders: [],
         recent_search_suggestions: [],
-        wishlist: []
+        wishlist: [],
+        // ✅ STABILIZED: Always include subscription field with safe defaults
+        subscription: subscriptionData || {
+          has_active_subscription: false,
+          days_remaining: 0,
+          hours_remaining: 0,
+          is_in_grace_period: false,
+          subscription_status: 'Unknown',
+          end_date: null,
+          require_subscription: false // Default to open access if no subscription data
+        }
       };
+      
+      // ✅ Final validation of manifest structure
+      if (!manifest.subscription || typeof manifest.subscription !== 'object') {
+        console.error('❌ CRITICAL: Subscription field missing or invalid, adding safe defaults');
+        manifest.subscription = {
+          has_active_subscription: false,
+          days_remaining: 0,
+          hours_remaining: 0,
+          is_in_grace_period: false,
+          subscription_status: 'Error',
+          end_date: null,
+          require_subscription: false
+        };
+      }
       
       return manifest;
     } catch (error: any) {

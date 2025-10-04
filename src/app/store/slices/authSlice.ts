@@ -1,6 +1,15 @@
 // src/app/store/slices/authSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { login, register, requestPasswordReset, resetPassword } from '../../services/Api';
+import * as Api from '../../services/Api';
+
+// User type
+type User = {
+  id: string | number;
+  email: string;
+  name: string;
+  [key: string]: any;
+};
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -81,7 +90,6 @@ const authSlice = createSlice({
       try {
         // Check if we're in a browser environment
         if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-          console.log('🚫 Not in browser environment, skipping auth restore');
           state.isLoading = false;
           return;
         }
@@ -89,47 +97,45 @@ const authSlice = createSlice({
         const token = localStorage.getItem('ugflix_auth_token');
         const userDataStr = localStorage.getItem('ugflix_user');
         
-        console.log('🔄 Restoring auth state:', { 
-          hasToken: !!token, 
-          hasUser: !!userDataStr,
-          token: token?.substring(0, 10) + '...', 
-          userPreview: userDataStr?.substring(0, 50) + '...' 
-        });
-        
         if (token && userDataStr) {
           try {
-            const userData = JSON.parse(userDataStr);
+            // Restore auth state from localStorage
+            const parsedUser: User = typeof userDataStr === 'string' ? JSON.parse(userDataStr) : userDataStr;
             
-            // Validate that the user data is valid
-            if (!userData || typeof userData !== 'object') {
-              throw new Error('Invalid user data format');
+            if (parsedUser && parsedUser.id) {
+              // Update Redux state
+              state.isAuthenticated = true;
+              state.user = parsedUser;
+              state.token = token;
+              state.isLoading = false;
+              state.error = null;
+              console.log('✅ Auth state restored from localStorage');
+            } else {
+              // Invalid user data - clear everything
+              state.isAuthenticated = false;
+              state.user = null;
+              state.token = null;
+              state.isLoading = false;
+              state.error = null;
+              console.log('⚠️ Invalid user data in localStorage');
             }
-            
-            state.isAuthenticated = true;
-            state.user = userData;
-            state.token = token;
-            state.isLoading = false;
-            state.error = null;
-            
-            console.log('✅ Auth state restored successfully', {
-              userEmail: userData.email,
-              userName: userData.first_name || userData.name
-            });
           } catch (parseError) {
             console.error('❌ Failed to parse user data:', parseError);
-            // Clear corrupted data
-            localStorage.removeItem('ugflix_auth_token');
-            localStorage.removeItem('ugflix_user');
-            throw parseError;
+            // Set loading to false even on parse error
+            state.isAuthenticated = false;
+            state.user = null;
+            state.token = null;
+            state.isLoading = false;
+            state.error = null;
           }
         } else {
+          // No stored auth data - user is not logged in
           state.isAuthenticated = false;
           state.user = null;
           state.token = null;
           state.isLoading = false;
           state.error = null;
-          
-          console.log('❌ No valid auth data found in localStorage');
+          console.log('ℹ️ No stored auth data found');
         }
       } catch (error) {
         console.error('❌ Failed to restore auth state:', error);

@@ -1,0 +1,623 @@
+/* src/app/pages/account/AccountSubscriptionManagement.css */
+/* Minimal, squared design - Small padding, small margins */
+
+.subscription-management-container {
+  padding: 0;
+  min-height: 600px;
+  color: var(--dark-text-primary, #FFFFFF);
+}
+
+/* ===================================================================
+   PAGE HEADER - Minimal, squared
+   =================================================================== */
+
+.page-header {
+  background: var(--brand-primary-900, #B71C1C);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  font-size: 20px;
+  color: var(--brand-accent, #F9A825);
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.header-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 400;
+}
+
+/* ===================================================================
+   CURRENT STATUS CARD - Squared, minimal
+   =================================================================== */
+
+.current-status-card {
+  background: var(--dark-bg-secondary, #1A1A1A);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.status-header.no-subscription {
+  border-bottom-color: rgba(183, 28, 28, 0.3);
+}
+
+.status-icon {
+  font-size: 20px;
+}
+
+.status-icon.active {
+  color: var(--color-success, #4CAF50);
+}
+
+.status-icon.inactive {
+  color: var(--color-error, #B71C1C);
+}
+
+.status-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark-text-primary, #FFFFFF);
+}
+
+/* Status Details Grid */
+.status-details {
+  margin-bottom: 12px;
+}
+
+.status-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.info-item label {
+  display: block;
+  font-size: 11px;
+  color: var(--dark-text-tertiary, #B0B0B0);
+  margin-bottom: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.info-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--dark-text-primary, #FFFFFF);
+  font-weight: 600;
+}
+
+.info-value svg {
+  color: var(--brand-accent, #F9A825);
+  font-size: 12px;
+}
+
+.info-value.expiring {
+  color: var(--brand-accent, #F9A825);
+}
+
+/* Alert Boxes - Squared, compact */
+.grace-period-alert,
+.expiring-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-top: 10px;
+}
+
+.grace-period-alert {
+  background: rgba(183, 28, 28, 0.15);
+  border: 1px solid rgba(183, 28, 28, 0.3);
+}
+
+.expiring-alert {
+  background: rgba(249, 168, 37, 0.15);
+  border: 1px solid rgba(249, 168, 37, 0.3);
+}
+
+.grace-period-alert svg {
+  color: var(--color-error, #B71C1C);
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.expiring-alert svg {
+  color: var(--brand-accent, #F9A825);
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.grace-period-alert strong,
+.expiring-alert strong {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 2px;
+  color: var(--dark-text-primary, #FFFFFF);
+}
+
+.grace-period-alert p,
+.expiring-alert p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--dark-text-secondary, #E0E0E0);
+  line-height: 1.4;
+}
+
+/* No Subscription Content - Compact */
+.no-subscription-content {
+  text-align: center;
+  padding: 20px 12px;
+}
+
+.no-subscription-content > p {
+  font-size: 14px;
+  color: var(--dark-text-secondary, #E0E0E0);
+  margin-bottom: 12px;
+}
+
+.benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 16px;
+  max-width: 400px;
+  text-align: left;
+}
+
+.benefits-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--dark-text-primary, #FFFFFF);
+}
+
+.benefits-list svg {
+  color: var(--color-success, #4CAF50);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Action Buttons - Squared, minimal */
+.status-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-primary,
+.btn-subscribe {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--brand-primary-900, #B71C1C);
+  border-color: var(--brand-primary-900, #B71C1C);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-subscribe {
+  background: var(--color-success, #4CAF50);
+  border-color: var(--color-success, #4CAF50);
+  color: #FFFFFF;
+  font-size: 14px;
+  padding: 10px 20px;
+}
+
+.btn-subscribe:hover {
+  opacity: 0.9;
+}
+
+/* ===================================================================
+   SUBSCRIPTION HISTORY SECTION - Squared, minimal
+   =================================================================== */
+
+.subscription-history-section {
+  margin-top: 16px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.section-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark-text-primary, #FFFFFF);
+  margin: 0;
+}
+
+.section-header svg {
+  color: var(--brand-accent, #F9A825);
+  font-size: 14px;
+}
+
+/* Filter Tabs - Squared */
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--dark-bg-tertiary, #2A2A2A);
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.filter-tab {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--dark-text-tertiary, #B0B0B0);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.filter-tab:hover {
+  color: var(--dark-text-primary, #FFFFFF);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-tab.active {
+  background: var(--brand-primary-900, #B71C1C);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Subscriptions List - Squared, compact */
+.subscriptions-list {
+  display: grid;
+  gap: 10px;
+}
+
+.subscription-card {
+  background: var(--dark-bg-secondary, #1A1A1A);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.subscription-card:hover {
+  border-color: rgba(183, 28, 28, 0.3);
+}
+
+.subscription-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: rgba(183, 28, 28, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.plan-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-icon {
+  font-size: 18px;
+  color: var(--brand-accent, #F9A825);
+}
+
+.plan-info h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dark-text-primary, #FFFFFF);
+}
+
+.plan-duration {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--dark-text-tertiary, #B0B0B0);
+}
+
+/* Status Badges - Squared */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  border: 1px solid;
+}
+
+.status-badge svg {
+  font-size: 11px;
+}
+
+.status-active {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--color-success, #4CAF50);
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.status-expired {
+  background: rgba(183, 28, 28, 0.15);
+  color: var(--color-error, #B71C1C);
+  border-color: rgba(183, 28, 28, 0.3);
+}
+
+.status-grace {
+  background: rgba(249, 168, 37, 0.15);
+  color: var(--brand-accent, #F9A825);
+  border-color: rgba(249, 168, 37, 0.3);
+}
+
+.status-pending {
+  background: rgba(33, 150, 243, 0.15);
+  color: var(--color-info, #2196F3);
+  border-color: rgba(33, 150, 243, 0.3);
+}
+
+/* Card Body */
+.subscription-card-body {
+  padding: 12px 14px;
+}
+
+.subscription-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.detail-row.highlight {
+  background: rgba(249, 168, 37, 0.1);
+  padding: 6px 10px;
+  margin: 4px 0;
+  border: 1px solid rgba(249, 168, 37, 0.2);
+}
+
+.detail-label {
+  font-size: 11px;
+  color: var(--dark-text-tertiary, #B0B0B0);
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 12px;
+  color: var(--dark-text-primary, #FFFFFF);
+  font-weight: 600;
+}
+
+.detail-value.expiring {
+  color: var(--brand-accent, #F9A825);
+}
+
+.detail-value.reference {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--dark-text-secondary, #E0E0E0);
+}
+
+/* ===================================================================
+   EMPTY & LOADING STATES - Compact
+   =================================================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 40px 12px;
+  color: var(--dark-text-tertiary, #B0B0B0);
+}
+
+.empty-icon {
+  font-size: 40px;
+  color: var(--dark-text-disabled, #666666);
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 13px;
+  margin: 0;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--brand-primary-900, #B71C1C);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--dark-text-secondary, #E0E0E0);
+}
+
+.error-icon {
+  font-size: 50px;
+  color: var(--color-error, #B71C1C);
+  margin-bottom: 12px;
+}
+
+.error-state h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--dark-text-primary, #FFFFFF);
+}
+
+.error-state p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--dark-text-secondary, #E0E0E0);
+}
+
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--brand-primary-900, #B71C1C);
+  color: #FFFFFF;
+  border: 1px solid var(--brand-primary-900, #B71C1C);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-retry:hover {
+  opacity: 0.9;
+/* ===================================================================
+   RESPONSIVE DESIGN - Minimal adjustments
+   =================================================================== */
+
+@media (max-width: 768px) {
+  .page-header {
+    padding: 10px 12px;
+  }
+
+  .header-icon {
+    font-size: 18px;
+  }
+
+  .page-header h1 {
+    font-size: 16px;
+  }
+
+  .header-subtitle {
+    font-size: 11px;
+  }
+
+  .current-status-card {
+    padding: 12px;
+  }
+
+  .status-info-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .subscription-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .status-badge {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-header {
+    padding: 8px 10px;
+  }
+
+  .header-content {
+    gap: 8px;
+  }
+
+  .header-icon {
+    font-size: 16px;
+  }
+
+  .page-header h1 {
+    font-size: 14px;
+  }
+
+  .status-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-subscribe {
+    width: 100%;
+    justify-content: center;
+  }
+}   justify-content: center;
+  }
+}

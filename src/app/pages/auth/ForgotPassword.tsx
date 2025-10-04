@@ -177,7 +177,7 @@ const ForgotPassword: React.FC = () => {
 
   const containerStyles: React.CSSProperties = {
     minHeight: '100vh',
-    background: `linear-gradient(135deg, var(--primary-color), var(--primary-color-dark))`,
+    background: `linear-gradient(135deg, #B71C1C, #8B0000)`,
     display: 'flex',
     margin: 0,
     padding: 0
@@ -191,7 +191,7 @@ const ForgotPassword: React.FC = () => {
     color: 'white',
     padding: 'var(--spacing-6)',
     textAlign: 'center',
-    background: `linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-dark) 100%)`
+    background: `linear-gradient(135deg, #B71C1C 0%, #8B0000 100%)`
   };
 
   const formPanelStyles: React.CSSProperties = {
@@ -199,12 +199,11 @@ const ForgotPassword: React.FC = () => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'var(--bg-white)',
-    padding: 'var(--spacing-6)',
-    margin: 0
-  };
-
-  return (
+    padding: 'var(--spacing-5)',
+    backgroundColor: 'white',
+    borderRadius: '0',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+  };  return (
     <div style={containerStyles}>
       {/* Left Panel - Branding */}
       <div style={brandingStyles} className="d-none d-lg-flex">
@@ -310,6 +309,7 @@ const ForgotPassword: React.FC = () => {
                   isInvalid={!!errors.email}
                   placeholder="Enter your email address"
                   autoComplete="email"
+                  style={{ borderRadius: '0' }}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.email}
@@ -323,9 +323,23 @@ const ForgotPassword: React.FC = () => {
                 className="w-100 mb-4"
                 disabled={isLoading}
                 style={{
-                  backgroundColor: 'var(--primary-color)',
-                  borderColor: 'var(--primary-color)',
-                  borderRadius: 'var(--border-radius)'
+                  backgroundColor: '#B71C1C',
+                  borderColor: 'rgba(255,255,255,0.2)',
+                  border: '2px solid rgba(255,255,255,0.2)',
+                  borderRadius: '0',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  fontWeight: '600'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#8B0000';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(183, 28, 28, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#B71C1C';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
                 }}
               >
                 {isLoading ? (
@@ -343,7 +357,7 @@ const ForgotPassword: React.FC = () => {
                 <Link 
                   to="/auth/login" 
                   className="text-decoration-none fw-semibold"
-                  style={{ color: 'var(--primary-color)' }}
+                  style={{ color: '#B71C1C' }}
                 >
                   Sign in
                 </Link>
@@ -360,6 +374,7 @@ const ForgotPassword: React.FC = () => {
                   onChange={handleInputChange}
                   isInvalid={!!errors.code}
                   placeholder="Enter the reset code from your email"
+                  style={{ borderRadius: '0' }}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.code}
@@ -376,6 +391,7 @@ const ForgotPassword: React.FC = () => {
                   isInvalid={!!errors.newPassword}
                   placeholder="Enter your new password"
                   autoComplete="new-password"
+                  style={{ borderRadius: '0' }}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.newPassword}
@@ -392,6 +408,7 @@ const ForgotPassword: React.FC = () => {
                   isInvalid={!!errors.confirmPassword}
                   placeholder="Confirm your new password"
                   autoComplete="new-password"
+                  style={{ borderRadius: '0' }}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.confirmPassword}
@@ -405,9 +422,23 @@ const ForgotPassword: React.FC = () => {
                 className="w-100 mb-4"
                 disabled={isLoading}
                 style={{
-                  backgroundColor: 'var(--primary-color)',
-                  borderColor: 'var(--primary-color)',
-                  borderRadius: 'var(--border-radius)'
+                  backgroundColor: '#B71C1C',
+                  borderColor: 'rgba(255,255,255,0.2)',
+                  border: '2px solid rgba(255,255,255,0.2)',
+                  borderRadius: '0',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  fontWeight: '600'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#8B0000';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(183, 28, 28, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#B71C1C';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
                 }}
               >
                 {isLoading ? (
@@ -425,7 +456,7 @@ const ForgotPassword: React.FC = () => {
                 <Link 
                   to="#" 
                   className="text-decoration-none fw-semibold"
-                  style={{ color: 'var(--primary-color)' }}
+                  style={{ color: '#B71C1C' }}
                   onClick={(e) => {
                     e.preventDefault();
                     setStep('request');

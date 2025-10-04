@@ -1,0 +1,158 @@
+/* ===================================================================
+   SUBSCRIPTION LAYOUT - DARK THEME
+   Minimal layout with only logout button
+   Matches UGFlix dark mode design system
+   =================================================================== */
+
+.subscription-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ugflix-background);
+  position: relative;
+}
+
+/* Override any body padding for subscription pages */
+body:has(.subscription-layout) {
+  padding: 0 !important;
+  margin: 0 !important;
+  padding-top: 2rem !important;
+}
+
+.subscription-layout ~ * {
+  padding-top: 0 !important;
+}
+
+/* Top Bar - Dark Theme */
+.subscription-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--ugflix-background-secondary);
+  border-bottom: 1px solid var(--ugflix-border);
+  height: 60px;
+  box-shadow: var(--ugflix-shadow-sm);
+}
+
+.topbar-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+}
+
+.app-logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--ugflix-text-primary);
+  letter-spacing: -0.5px;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--ugflix-primary);
+  color: white;
+  border: none;
+  border-radius: 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: var(--ugflix-primary-dark);
+  transform: translateY(-2px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+/* Main Content Area */
+.subscription-content {
+  flex: 1;
+  margin-top: 60px;
+  padding: 0 !important;
+  width: 100%;
+}
+
+/* Force remove any inherited padding/margin from children */
+.subscription-content > * {
+  margin-top: 0 !important;
+}
+
+.subscription-content > *:first-child {
+  padding-top: 0 !important;
+}
+
+/* Footer */
+.subscription-footer {
+  background: var(--ugflix-background-secondary);
+  border-top: 1px solid var(--ugflix-border);
+  color: var(--ugflix-text-secondary);
+  text-align: center;
+  padding: 1.25rem;
+  margin-top: auto;
+}
+
+.subscription-footer p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .subscription-topbar {
+    height: 50px;
+  }
+
+  .topbar-content {
+    padding: 0 0.75rem;
+  }
+
+  .app-logo {
+    font-size: 1.25rem;
+  }
+
+  .logout-btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8rem;
+  }
+
+  .logout-btn span {
+    display: none;
+  }
+
+  .subscription-content {
+    margin-top: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-content {
+    padding: 0 0.5rem;
+  }
+
+  .app-logo {
+    font-size: 1.1rem;
+  }
+
+  .logout-btn {
+    padding: 0.5rem;
+    gap: 0;
+  }
+}

@@ -113,12 +113,55 @@ const LandingPage: React.FC = () => {
 
   const handleVideoLoad = () => {
     if (videoRef.current) {
+      const video = videoRef.current;
       // Start video at 10% of its total length for more engaging content
-      const startTime = videoRef.current.duration * 0.1;
-      videoRef.current.currentTime = startTime;
+      const startTime = video.duration * 0.1;
+      video.currentTime = startTime;
       
-      // Ensure video plays automatically
-      videoRef.current.play().catch(console.error);
+      // Set volume to ON (unmuted) by default
+      video.muted = false;
+      video.volume = 1.0; // Set volume to maximum
+      setIsMuted(false);
+      
+      // Trigger autoplay with JavaScript
+      const attemptPlay = () => {
+        video.play().then(() => {
+          console.log('✅ Video autoplay started from 10% with VOLUME ON');
+          // Ensure volume stays on after play
+          video.muted = false;
+          video.volume = 1.0;
+          setIsMuted(false);
+        }).catch(err => {
+          console.log('⚠️ Autoplay with volume prevented, trying muted first:', err);
+          // If autoplay with sound fails, try muted first then unmute
+          video.muted = true;
+          video.play().then(() => {
+            console.log('✅ Video playing muted, will unmute in 1 second');
+            // Unmute after 1 second
+            setTimeout(() => {
+              video.muted = false;
+              video.volume = 1.0;
+              setIsMuted(false);
+              console.log('✅ Video unmuted - volume is now ON');
+            }, 1000);
+          }).catch(err2 => {
+            console.log('⚠️ Autoplay prevented completely, waiting for user interaction');
+            // Add click listener to play with volume on first user interaction
+            const playOnInteraction = () => {
+              video.muted = false;
+              video.volume = 1.0;
+              video.play();
+              setIsMuted(false);
+              document.removeEventListener('click', playOnInteraction);
+            };
+            document.addEventListener('click', playOnInteraction);
+          });
+        });
+      };
+      
+      // Attempt play immediately and after a short delay
+      attemptPlay();
+      setTimeout(attemptPlay, 200);
     }
     setVideoLoaded(true);
   };
@@ -152,7 +195,7 @@ const LandingPage: React.FC = () => {
             ref={videoRef}
             className="video-background"
             autoPlay
-            muted={isMuted}
+            muted={false}
             loop
             playsInline
             onLoadedData={handleVideoLoad}
@@ -213,15 +256,25 @@ const LandingPage: React.FC = () => {
         {/* Volume Control Button */}
         {movie?.video_url && !videoError && (
           <button
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={() => {
+              if (videoRef.current) {
+                const newMutedState = !isMuted;
+                videoRef.current.muted = newMutedState;
+                setIsMuted(newMutedState);
+                // Ensure video is playing when unmuting
+                if (!newMutedState) {
+                  videoRef.current.play().catch(console.error);
+                }
+              }
+            }}
             style={{
               position: 'fixed',
               bottom: '2rem',
               right: '2rem',
               zIndex: 100,
-              background: 'rgba(0,0,0,0.5)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              borderRadius: '50%',
+              background: 'rgba(183, 28, 28, 0.8)',
+              border: '2px solid rgba(255,255,255,0.3)',
+              borderRadius: '0',
               width: '50px',
               height: '50px',
               color: 'white',
@@ -229,18 +282,18 @@ const LandingPage: React.FC = () => {
               cursor: 'pointer',
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
-              opacity: showControls || isMuted ? 1 : 0.7,
-              transform: showControls ? 'scale(1.1)' : 'scale(1)',
+              opacity: showControls || isMuted ? 1 : 0.8,
+              transform: showControls ? 'scale(1.05)' : 'scale(1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.background = 'rgba(183, 28, 28, 1)';
               e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(0,0,0,0.5)';
+              e.currentTarget.style.background = 'rgba(183, 28, 28, 0.8)';
               e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
             }}
             title={isMuted ? 'Unmute video' : 'Mute video'}
@@ -350,17 +403,17 @@ const LandingPage: React.FC = () => {
                   className="movie-badge"
                   style={{
                     display: 'inline-block',
-                    background: 'rgba(255,255,255,0.15)',
+                    background: 'rgba(183, 28, 28, 0.3)',
                     color: 'white',
                     padding: '0.5rem 1rem',
-                    borderRadius: '25px',
+                    borderRadius: '0',
                     fontSize: '0.875rem',
                     fontWeight: '600',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                     marginBottom: '1.5rem',
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.2)'
+                    border: '2px solid rgba(183, 28, 28, 0.6)'
                   }}
                 >
                   {movie.type} • {movie.year} • {movie.genre}
@@ -410,31 +463,47 @@ const LandingPage: React.FC = () => {
               />
 
               {/* Action Buttons */}
-              <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center align-items-center fade-in-up" style={{animationDelay: '0.9s'}}>
+              <div 
+                className="fade-in-up" 
+                style={{
+                  animationDelay: '0.9s', 
+                  marginTop: '2rem',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  gap: '1rem',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  maxWidth: '500px',
+                  margin: '2rem auto 0'
+                }}
+              >
                 <Button
                   size="lg"
                   className="pulse-hover"
                   onClick={() => navigate('/auth/register')}
                   style={{
-                    background: 'linear-gradient(45deg, #ff6b6b, #ee5a24)',
-                    border: 'none',
-                    padding: '1rem 2.5rem',
-                    fontSize: '1.125rem',
+                    background: '#B71C1C',
+                    border: '2px solid rgba(255,255,255,0.2)',
+                    padding: '0.75rem 2rem',
+                    fontSize: '1rem',
                     fontWeight: '600',
-                    borderRadius: '50px',
+                    borderRadius: '0',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
-                    boxShadow: '0 8px 32px rgba(255,107,107,0.4)',
+                    boxShadow: '0 4px 16px rgba(183, 28, 28, 0.4)',
                     transition: 'all 0.3s ease',
-                    minWidth: '200px'
+                    minWidth: '180px'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.boxShadow = '0 15px 40px rgba(255,107,107,0.6)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 24px rgba(183, 28, 28, 0.6)';
+                    e.currentTarget.style.background = '#8B0000';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 8px 32px rgba(255,107,107,0.4)';
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(183, 28, 28, 0.4)';
+                    e.currentTarget.style.background = '#B71C1C';
                   }}
                 >
                   ▶ Start Streaming
@@ -446,28 +515,28 @@ const LandingPage: React.FC = () => {
                   className="pulse-hover"
                   onClick={() => navigate('/auth/login')}
                   style={{
-                    borderColor: 'rgba(255,255,255,0.3)',
+                    borderColor: 'rgba(255,255,255,0.4)',
                     color: 'white',
                     backgroundColor: 'rgba(255,255,255,0.1)',
                     backdropFilter: 'blur(10px)',
-                    border: '2px solid rgba(255,255,255,0.3)',
-                    padding: '1rem 2.5rem',
-                    fontSize: '1.125rem',
+                    border: '2px solid rgba(255,255,255,0.4)',
+                    padding: '0.75rem 2rem',
+                    fontSize: '1rem',
                     fontWeight: '600',
-                    borderRadius: '50px',
+                    borderRadius: '0',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                     transition: 'all 0.3s ease',
-                    minWidth: '200px'
+                    minWidth: '180px'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)';
                     e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
-                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
@@ -482,12 +551,12 @@ const LandingPage: React.FC = () => {
                   style={{
                     marginTop: '3rem',
                     padding: '1rem',
-                    background: 'rgba(0,0,0,0.3)',
-                    borderRadius: '15px',
+                    background: 'rgba(0,0,0,0.4)',
+                    borderRadius: '0',
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '2px solid rgba(183, 28, 28, 0.3)',
                     fontSize: '0.9rem',
-                    opacity: 0.8,
+                    opacity: 0.9,
                     animationDelay: '1.2s'
                   }}
                 >
@@ -510,13 +579,14 @@ const LandingPage: React.FC = () => {
               transform: 'translateX(-50%)',
               color: 'white',
               fontSize: '0.875rem',
-              opacity: 0.7,
+              opacity: 0.9,
               zIndex: 50,
               textAlign: 'center',
-              background: 'rgba(0,0,0,0.3)',
+              background: 'rgba(183, 28, 28, 0.8)',
               padding: '0.5rem 1rem',
-              borderRadius: '25px',
-              backdropFilter: 'blur(10px)'
+              borderRadius: '0',
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255,255,255,0.3)'
             }}
           >
             Loading movie...

@@ -2,6 +2,7 @@
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import HeaderWrapper from "../Header/HeaderWrapper";
+import SubscriptionMonitor from "../subscription/SubscriptionMonitor";
 
 const MainLayout: React.FC = () => {
   const location = useLocation();
@@ -10,6 +11,7 @@ const MainLayout: React.FC = () => {
   return (
     <>
       <HeaderWrapper />
+      <SubscriptionMonitor />
       <main className={`main-content ${isHomepage ? 'homepage-layout' : ''}`}>
         <Outlet />
       </main>

@@ -153,15 +153,20 @@ const RegisterPage: React.FC = () => {
 
           if (isUserAuthenticated && currentUser && authToken) {
             console.log('🎉 User successfully registered and logged in:', currentUser.name);
+            console.log('🔄 Performing full page refresh to home page...');
             
-            // Show a brief success message before redirecting
+            // Clear any errors
             setServerError("");
+            setIsLoading(false);
             
-            // Small delay to let user see the success state
+            // Use window.location.href for full page refresh redirect
+            // This ensures all state is properly reset and user sees the authenticated app
             setTimeout(() => {
-              console.log('🚀 Redirecting authenticated user to home page...');
-              navigate("/", { replace: true });
+              window.location.href = "/";
             }, 500);
+            
+            // Prevent further code execution
+            return;
             
           } else {
             console.error('❌ Login verification failed after successful login response');
@@ -539,14 +544,14 @@ const RegisterPage: React.FC = () => {
           }          .auth-logo-text {
             font-size: 1.8rem;
             font-weight: 700;
-            color: #4ecdc4;
+            color: #B71C1C;
             margin: 0;
           }
           
           .auth-form-title {
             font-size: 2rem;
             font-weight: 700;
-            color: #4ecdc4;
+            color: #B71C1C;
             margin-bottom: 0.5rem;
           }
           
@@ -558,8 +563,7 @@ const RegisterPage: React.FC = () => {
           
           .auth-alert {
             background: rgba(220, 53, 69, 0.15);
-            border: none;
-            border-left: 4px solid #ff6b6b;
+            border: 2px solid #B71C1C;
             border-radius: 0;
             padding: 1rem;
             margin-bottom: 1.5rem;
@@ -588,10 +592,9 @@ const RegisterPage: React.FC = () => {
           
           .auth-form-input {
             background: rgba(255, 255, 255, 0.05);
-            border: none;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 0;
-            padding: 1rem 0;
+            padding: 1rem;
             color: white;
             font-size: 1rem;
             transition: all 0.3s ease;
@@ -599,8 +602,8 @@ const RegisterPage: React.FC = () => {
           
           .auth-form-input:focus {
             background: rgba(255, 255, 255, 0.08);
-            border-bottom-color: #4ecdc4;
-            box-shadow: none;
+            border-color: #B71C1C;
+            box-shadow: 0 0 0 2px rgba(183, 28, 28, 0.2);
             color: white;
             outline: none;
           }
@@ -623,17 +626,17 @@ const RegisterPage: React.FC = () => {
             color: rgba(255, 255, 255, 0.6);
             cursor: pointer;
             padding: 0.25rem;
-            border-radius: 4px;
+            border-radius: 0;
             transition: color 0.3s ease;
           }
           
           .password-toggle:hover {
-            color: rgba(255, 255, 255, 0.9);
+            color: #B71C1C;
           }
           
           .auth-submit-button {
-            background: #4ecdc4;
-            border: none;
+            background: #B71C1C;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 0;
             padding: 1.2rem;
             width: 100%;
@@ -651,9 +654,9 @@ const RegisterPage: React.FC = () => {
           }
           
           .auth-submit-button:hover:not(:disabled) {
-            background: #42b8b1;
-            transform: none;
-            box-shadow: none;
+            background: #8B0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4);
           }
           
           .auth-submit-button:disabled {
@@ -670,7 +673,7 @@ const RegisterPage: React.FC = () => {
           }
           
           .auth-signup-link {
-            color: #4ecdc4;
+            color: #B71C1C;
             text-decoration: none;
             font-weight: 600;
             display: inline-flex;
@@ -680,11 +683,11 @@ const RegisterPage: React.FC = () => {
           }
           
           .auth-signup-link:hover {
-            color: #42b8b1;
+            color: #8B0000;
           }
           
           .auth-form-error {
-            color: #ff6b6b;
+            color: #B71C1C;
             font-size: 0.875rem;
             margin-top: 0.25rem;
           }
@@ -699,17 +702,17 @@ const RegisterPage: React.FC = () => {
           }
           
           .auth-checkbox input[type="checkbox"]:checked {
-            background: #4ecdc4;
-            border-color: #4ecdc4;
+            background: #B71C1C;
+            border-color: #B71C1C;
           }
           
           .auth-link {
-            color: #4ecdc4;
+            color: #B71C1C;
             text-decoration: none;
           }
           
           .auth-link:hover {
-            color: #42b8b1;
+            color: #8B0000;
           }
           
           /* Register-specific Styles */
@@ -759,7 +762,7 @@ const RegisterPage: React.FC = () => {
           
           .checkbox-label i {
             margin-right: 0.5rem;
-            color: #4ecdc4;
+            color: #B71C1C;
           }
           
           /* Desktop: Show split layout */

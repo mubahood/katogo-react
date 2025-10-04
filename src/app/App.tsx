@@ -9,6 +9,7 @@ import { restoreAuthState, selectIsAuthenticated, selectUser } from "./store/sli
 import { CacheApiService } from "./services/CacheApiService";
 import AnalyticsService from "./services/AnalyticsService";
 import PerformanceService from "./services/PerformanceService";
+// import { SubscriptionDebugBanner } from "./components/debug/SubscriptionDebugBanner"; // ✅ Disabled for production
 
 // Import Master CSS Architecture
 import "./styles/index.css";
@@ -28,14 +29,8 @@ const App: React.FC = () => {
 
   // Restore authentication state on app startup
   useEffect(() => {
-    // Ensure we're in browser environment and localStorage is available
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      console.log('🚀 App started, restoring auth state immediately...');
-      
-      // Restore auth state immediately - no delay needed
+    if (typeof window !== 'undefined') {
       dispatch(restoreAuthState());
-    } else {
-      console.log('🚫 Not in browser environment, skipping auth restore');
     }
   }, [dispatch]);
 
@@ -60,6 +55,10 @@ const App: React.FC = () => {
       <AppAuthWrapper>
         <AppRoutes />
       </AppAuthWrapper>
+      
+      {/* ✅ Debug Banner Disabled - Enable only for debugging subscription issues */}
+      {/* {isAuthenticated && <SubscriptionDebugBanner />} */}
+      
       <ToastContainer
         position="top-center"
         autoClose={5000}

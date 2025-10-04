@@ -9,7 +9,18 @@ import { API_CONFIG } from "../../constants";
 
 // Inline CSS styles for LiveSearchBox
 const inlineStyles = `
-  /* LiveSearchBox - Light Mode Minimalistic */
+  /* Live  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+
+    if (value.trim().length === 0) {
+      setSearchResults(null);
+      setShowDropdown(showRecentSearches && recentSearches.length > 0);
+    } else {
+      setShowDropdown(true);
+      debouncedSearch(value);
+    }
+  };ht Mode Minimalistic */
   .live-search-box {
     position: relative;
     width: 100%;
@@ -41,6 +52,7 @@ const inlineStyles = `
 
   .live-search-box .search-input-group-sm {
     height: 28px;
+    width: 20px!important;
   }
 
   .live-search-box .search-input-group-lg {
@@ -66,7 +78,7 @@ const inlineStyles = `
     background: var(--ugflix-primary, #ff6b35);
     color: var(--ugflix-text-primary, #ffffff);
     border: none;
-    width: 40px; /* Slightly wider for desktop */
+    width: 32px !important; /* Compact width for both mobile and desktop */
     height: 100%;
     display: flex;
     align-items: center;
@@ -476,27 +488,7 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
       style.id = styleId;
       style.textContent = inlineStyles;
       document.head.appendChild(style);
-      console.log("✅ LiveSearchBox styles injected into head");
-    } else {
-      console.log("ℹ️ LiveSearchBox styles already exist");
     }
-
-    // Verify styles are in DOM after injection
-    setTimeout(() => {
-      const existingStyle = document.getElementById(styleId);
-      if (existingStyle) {
-        console.log("✅ Styles confirmed in DOM, length:", existingStyle.textContent?.length);
-      } else {
-        console.error("❌ Styles NOT found in DOM after injection!");
-      }
-    }, 100);
-
-    // Cleanup function - DO NOT remove styles when component unmounts
-    // Keep styles in head for all instances
-    return () => {
-      // Don't remove styles - they're shared across all LiveSearchBox instances
-      console.log("⚠️ Component unmounting but keeping styles in head");
-    };
   }, []);
 
   // Load recent searches on component mount

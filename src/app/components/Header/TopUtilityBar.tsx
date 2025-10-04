@@ -12,7 +12,7 @@ const TopUtilityBar: React.FC = () => {
         <Link to="/account/watchlist" className="utility-link">My Watch List</Link>
         <Link to="/account/history" className="utility-link">Watch History</Link>
         <Link to="/help" className="utility-link">Help And Support</Link>
-        <Link to="/account/subscription" className="utility-link">My Subscription</Link>
+        <a href="/account/subscriptions" className="utility-link" onClick={(e) => { e.preventDefault(); window.location.href = '/account/subscriptions'; }}>My Subscription</a>
         <Link to="/mobile-apps" className="utility-link"><i className="bi bi-phone me-1"></i>Mobile Apps</Link>
       </div>
     </div>

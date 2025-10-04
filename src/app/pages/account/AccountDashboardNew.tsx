@@ -1,22 +1,23 @@
 // src/app/pages/account/AccountDashboardNew.tsx
 /**
- * 🎯 NEW ACCOUNT DASHBOARD - Clean, Modular, Mobile-First
+ * 🎯 ACCOUNT DASHBOARD - Production Ready with Real Data
  * 
  * Features:
- * ✅ Stats overview cards
- * ✅ Quick actions grid
- * ✅ Recent activity timeline
+ * ✅ Real statistics from backend API
+ * ✅ Squared UgFlix design (border-radius: 0)
+ * ✅ Small padding (8-16px)
+ * ✅ Subscription status tracking
+ * ✅ User activity summaries
  * ✅ Fully responsive
- * ✅ Smooth animations
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { 
   FiVideo, FiHeart, FiClock, FiStar, FiShoppingBag, 
-  FiPackage, FiMessageCircle, FiTrendingUp, FiActivity,
-  FiArrowRight, FiPlayCircle
+  FiPackage, FiMessageCircle, FiPlayCircle, FiEye,
+  FiArrowRight
 } from 'react-icons/fi';
 import { RootState } from '../../store/store';
 import AccountPageWrapper from '../../components/Account/AccountPageWrapper';
@@ -45,50 +46,74 @@ interface QuickAction {
 const AccountDashboardNew: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const appCounts = useAppCounts();
-  const [isLoading, setIsLoading] = useState(true);
+  const manifestData = useSelector((state: RootState) => state.manifest.data);
 
-  useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
+  // Get dashboard statistics from manifest
+  const dashboardStats = manifestData?.dashboard_stats || {
+    watchlist_count: 0,
+    watch_history_count: 0,
+    liked_movies_count: 0,
+    products_count: 0,
+    active_chats_count: 0,
+    total_orders_count: 0,
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
+  // Get subscription information
+  const subscriptionInfo = manifestData?.subscription || {
+    has_active_subscription: false,
+    days_remaining: 0,
+    subscription_status: 'No Active Subscription',
+  };
 
-  // Dashboard stats
+  // Dashboard stats with real data
   const stats: DashboardStat[] = [
     {
       id: 'watchlist',
       label: 'Watchlist',
-      value: appCounts.wishlist_count || 0,
+      value: dashboardStats.watchlist_count,
       icon: <FiVideo />,
       color: '#B71C1C',
       link: '/account/watchlist'
     },
     {
       id: 'likes',
-      label: 'Likes',
-      value: 0,
+      label: 'Liked Movies',
+      value: dashboardStats.liked_movies_count,
       icon: <FiHeart />,
       color: '#E91E63',
       link: '/account/likes'
     },
     {
-      id: 'watch-time',
-      label: 'Watch Time',
-      value: '24h',
-      icon: <FiClock />,
+      id: 'history',
+      label: 'Watch History',
+      value: dashboardStats.watch_history_count,
+      icon: <FiEye />,
       color: '#9C27B0',
       link: '/account/history'
     },
     {
-      id: 'subscriptions',
-      label: 'Subscriptions',
-      value: 0,
-      icon: <FiStar />,
-      color: '#FF9800',
-      link: '/account/subscriptions'
+      id: 'products',
+      label: 'My Products',
+      value: dashboardStats.products_count,
+      icon: <FiShoppingBag />,
+      color: '#2196F3',
+      link: '/account/products'
+    },
+    {
+      id: 'chats',
+      label: 'Active Chats',
+      value: dashboardStats.active_chats_count,
+      icon: <FiMessageCircle />,
+      color: '#FF5722',
+      link: '/account/chats'
+    },
+    {
+      id: 'orders',
+      label: 'Total Orders',
+      value: dashboardStats.total_orders_count,
+      icon: <FiPackage />,
+      color: '#4CAF50',
+      link: '/account/orders'
     }
   ];
 
@@ -127,6 +152,39 @@ const AccountDashboardNew: React.FC = () => {
       isLoading={false}
     >
       <div className="dashboard-container">
+        {/* Subscription Status Card */}
+        {subscriptionInfo.has_active_subscription ? (
+          <div className="subscription-card active">
+            <div className="subscription-icon">
+              <FiStar />
+            </div>
+            <div className="subscription-content">
+              <h3 className="subscription-status">Active Subscription</h3>
+              <p className="subscription-details">
+                {subscriptionInfo.days_remaining} days remaining
+              </p>
+            </div>
+            <Link to="/account/subscriptions" className="subscription-action">
+              <FiArrowRight />
+            </Link>
+          </div>
+        ) : (
+          <div className="subscription-card inactive">
+            <div className="subscription-icon">
+              <FiStar />
+            </div>
+            <div className="subscription-content">
+              <h3 className="subscription-status">No Active Subscription</h3>
+              <p className="subscription-details">
+                Subscribe to watch unlimited movies
+              </p>
+            </div>
+            <Link to="/account/subscriptions" className="subscription-action">
+              <FiArrowRight />
+            </Link>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="stats-grid">
           {stats.map((stat) => (
@@ -177,80 +235,6 @@ const AccountDashboardNew: React.FC = () => {
             ))}
           </div>
         </AccountCard>
-
-        {/* Activity Overview */}
-        <div className="dashboard-grid">
-          <AccountCard
-            title="Activity Overview"
-            subtitle="Your recent engagement"
-          >
-            <div className="activity-stats">
-              <div className="activity-item">
-                <div className="activity-icon">
-                  <FiActivity />
-                </div>
-                <div className="activity-content">
-                  <h4>Total Movies Watched</h4>
-                  <p className="activity-value">156 movies</p>
-                </div>
-              </div>
-
-              <div className="activity-item">
-                <div className="activity-icon">
-                  <FiTrendingUp />
-                </div>
-                <div className="activity-content">
-                  <h4>This Month</h4>
-                  <p className="activity-value">23 movies</p>
-                </div>
-              </div>
-
-              <div className="activity-item">
-                <div className="activity-icon">
-                  <FiClock />
-                </div>
-                <div className="activity-content">
-                  <h4>Average Watch Time</h4>
-                  <p className="activity-value">3.2 hours/day</p>
-                </div>
-              </div>
-            </div>
-          </AccountCard>
-
-          <AccountCard
-            title="Recent Orders"
-            subtitle="Your latest purchases"
-            actions={[
-              {
-                label: 'View All',
-                onClick: () => window.location.href = '/account/orders'
-              }
-            ]}
-          >
-            {appCounts.total_orders && appCounts.total_orders > 0 ? (
-              <div className="recent-orders">
-                <div className="order-item">
-                  <div className="order-icon">
-                    <FiPackage />
-                  </div>
-                  <div className="order-content">
-                    <h4>Order #12345</h4>
-                    <p>Delivered • 2 days ago</p>
-                  </div>
-                  <span className="order-status delivered">Delivered</span>
-                </div>
-              </div>
-            ) : (
-              <div className="empty-state">
-                <FiPackage className="empty-icon" />
-                <p>No orders yet</p>
-                <Link to="/products" className="empty-link">
-                  Start Shopping <FiArrowRight />
-                </Link>
-              </div>
-            )}
-          </AccountCard>
-        </div>
       </div>
     </AccountPageWrapper>
   );

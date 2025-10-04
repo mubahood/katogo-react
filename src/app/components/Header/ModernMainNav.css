@@ -373,9 +373,9 @@
 
 .search-form {
   position: relative;
-  max-width: none;
+  max-width: 400px !important; /* Limit width to make it more compact */
   margin: 0 12px; /* Reduced from 16px to 12px for better space utilization */
-  flex-grow: 1;
+  flex-grow: 0; /* Don't expand to fill space */
 }
 
 .search-input-wrapper {
@@ -427,7 +427,7 @@
   background: var(--ugflix-primary, #B71C1C);
   color: var(--ugflix-text-primary, #ffffff);
   border: none;
-  width: 44px; /* Increased from 42px for better balance */
+  width: 32px !important; /* Compact button width */
   height: 100%;
   display: flex;
   align-items: center;
@@ -1079,6 +1079,14 @@
   transition: all 0.3s ease !important;
 }
 
+/* Mobile Subscription Timer - Compact positioning */
+.mobile-subscription-timer-wrapper {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: 8px;
+}
+
 /* Mobile Action Icons */
 .mobile-action-icons {
   display: flex;
@@ -1404,7 +1412,7 @@
 /* Desktop Search Box Integration */
 .desktop-search-box {
   width: 100%;
-  max-width: 600px;
+  max-width: 400px !important; /* Compact width for desktop */
 }
 
 /* Use LiveSearchBox component styles instead of form-control */
@@ -1416,7 +1424,7 @@
   background: var(--ugflix-primary, #B71C1C);
   border: none;
   color: var(--ugflix-text-primary, #ffffff);
-  width: 40px;
+  width: 32px !important; /* Compact button width */
   height: 100%;
   display: flex;
   align-items: center;

@@ -1,152 +1,164 @@
 // src/app/pages/static/MobileApps.tsx
 import React from 'react';
-import StaticPageLayout from '../../components/Layout/StaticPageLayout';
+import { 
+  Smartphone, 
+  Play, 
+  Download, 
+  Zap, 
+  Bell, 
+  Wifi, 
+  Shield, 
+  Star,
+  MessageCircle,
+  Mail
+} from 'react-feather';
 import { APP_LINKS, COMPANY_INFO } from '../../constants';
+import './MobileApps.css';
 
 const MobileApps: React.FC = () => {
-  const breadcrumbs = [
-    { label: 'Home', path: '/' },
-    { label: 'Mobile Apps' }
+  const features = [
+    {
+      icon: <Play />,
+      title: 'Stream Anywhere',
+      description: 'Watch movies and series on the go with seamless streaming'
+    },
+    {
+      icon: <Download />,
+      title: 'Offline Viewing',
+      description: 'Download content to watch later without internet (coming soon)'
+    },
+    {
+      icon: <Bell />,
+      title: 'Push Notifications',
+      description: 'Get alerts for new releases, subscriptions, and messages'
+    },
+    {
+      icon: <Zap />,
+      title: 'Fast & Smooth',
+      description: 'Optimized performance for quick browsing and playback'
+    },
+    {
+      icon: <MessageCircle />,
+      title: 'Chat & Connect',
+      description: 'Message sellers and connect with friends instantly'
+    },
+    {
+      icon: <Shield />,
+      title: 'Secure Payments',
+      description: 'Safe mobile money and card payments integrated'
+    }
   ];
 
   return (
-    <StaticPageLayout
-      title="UgFlix Mobile Apps"
-      subtitle="Download our app and shop anywhere, anytime"
-      breadcrumbs={breadcrumbs}
-    >
-      <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
-        
-        {/* Main Download Section */}
-        <div style={{ 
-          backgroundColor: '#f8f9fa', 
-          padding: '3rem 2rem', 
-          borderRadius: '12px', 
-          marginBottom: '3rem',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-        }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#333' }}>
-            Get the App
-          </h2>
-          <p style={{ fontSize: '1.1rem', color: '#666', marginBottom: '2rem' }}>
-            Free download for iOS and Android
-          </p>
-          
-          <div style={{ 
-            display: 'flex', 
-            gap: '1rem', 
-            justifyContent: 'center',
-            flexWrap: 'wrap'
-          }}>
-            <a 
-              href={APP_LINKS.IOS}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                backgroundColor: '#000',
-                color: 'white',
-                padding: '1rem 2rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                fontSize: '1.1rem',
-                fontWeight: '500',
-                transition: 'transform 0.2s',
-                minWidth: '180px',
-                justifyContent: 'center'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              <i className="bi bi-apple" style={{ fontSize: '1.5rem' }}></i>
-              App Store
-            </a>
-            
-            <a 
-              href={APP_LINKS.ANDROID}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                backgroundColor: '#34A853',
-                color: 'white',
-                padding: '1rem 2rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                fontSize: '1.1rem',
-                fontWeight: '500',
-                transition: 'transform 0.2s',
-                minWidth: '180px',
-                justifyContent: 'center'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              <i className="bi bi-google-play" style={{ fontSize: '1.5rem' }}></i>
-              Google Play
-            </a>
-          </div>
-        </div>
-
-        {/* Simple Features */}
-        <div style={{ marginBottom: '3rem' }}>
-          <h3 style={{ marginBottom: '1.5rem', color: '#333' }}>Why Download?</h3>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-            gap: '1.5rem',
-            textAlign: 'center'
-          }}>
-            <div>
-              <i className="bi bi-lightning-fill" style={{ fontSize: '2rem', color: '#007bff', marginBottom: '0.5rem' }}></i>
-              <h4>Fast Shopping</h4>
-              <p style={{ color: '#666', fontSize: '0.9rem' }}>Quick and secure</p>
-            </div>
-            <div>
-              <i className="bi bi-bell-fill" style={{ fontSize: '2rem', color: '#28a745', marginBottom: '0.5rem' }}></i>
-              <h4>Notifications</h4>
-              <p style={{ color: '#666', fontSize: '0.9rem' }}>Order updates</p>
-            </div>
-            <div>
-              <i className="bi bi-credit-card-fill" style={{ fontSize: '2rem', color: '#ffc107', marginBottom: '0.5rem' }}></i>
-              <h4>Mobile Pay</h4>
-              <p style={{ color: '#666', fontSize: '0.9rem' }}>Easy payments</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Contact */}
-        <div style={{ 
-          backgroundColor: '#f8f9fa', 
-          padding: '2rem', 
-          borderRadius: '8px',
-          marginBottom: '2rem'
-        }}>
-          <h3 style={{ marginBottom: '1rem' }}>Need Help?</h3>
-          <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a 
-              href={`mailto:${COMPANY_INFO.EMAIL}`}
-              style={{ color: '#007bff', textDecoration: 'none' }}
-            >
-              <i className="bi bi-envelope"></i> Email
-            </a>
-            <a 
-              href={`https://wa.me/${COMPANY_INFO.WHATSAPP.replace(/\D/g, '')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#25D366', textDecoration: 'none' }}
-            >
-              <i className="bi bi-whatsapp"></i> WhatsApp
-            </a>
-          </div>
-        </div>
-
+    <div className="mobile-apps-container">
+      {/* Page Header */}
+      <div className="mobile-apps-header">
+        <h1>UgFlix Mobile Apps</h1>
+        <p>Watch movies, buy & sell, and connect on the go</p>
       </div>
-    </StaticPageLayout>
+
+      {/* Hero Section */}
+      <div className="mobile-apps-hero">
+        <div className="mobile-apps-hero-content">
+          <h2>Download UgFlix App</h2>
+          <p>
+            Experience the full power of UgFlix in the palm of your hand. Stream movies, 
+            browse products, chat with friends, and manage your subscriptions - all from 
+            our mobile app.
+          </p>
+          <div className="mobile-apps-download-buttons">
+            <a 
+              href={APP_LINKS.IOS || '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mobile-apps-download-btn ios"
+            >
+              <Smartphone />
+              Download for iOS
+            </a>
+            <a 
+              href="https://play.google.com/store/apps/details?id=ugflix.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mobile-apps-download-btn android"
+            >
+              <Smartphone />
+              Download for Android
+            </a>
+          </div>
+        </div>
+        <div className="mobile-apps-hero-image">
+          <Smartphone />
+        </div>
+      </div>
+
+      {/* Features Grid */}
+      <div className="mobile-apps-features">
+        {features.map((feature, index) => (
+          <div key={index} className="mobile-apps-feature-card">
+            <div className="mobile-apps-feature-icon">
+              {feature.icon}
+            </div>
+            <div className="mobile-apps-feature-content">
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Requirements */}
+      <div className="mobile-apps-requirements">
+        <div className="mobile-apps-requirement-card">
+          <h3>
+            <Smartphone />
+            iOS Requirements
+          </h3>
+          <ul>
+            <li>iOS 12.0 or later</li>
+            <li>iPhone, iPad, and iPod touch</li>
+            <li>100MB storage space</li>
+            <li>Internet connection required</li>
+          </ul>
+        </div>
+        <div className="mobile-apps-requirement-card">
+          <h3>
+            <Smartphone />
+            Android Requirements
+          </h3>
+          <ul>
+            <li>Android 6.0 or later</li>
+            <li>All Android phones and tablets</li>
+            <li>80MB storage space</li>
+            <li>Internet connection required</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="mobile-apps-cta">
+        <h2>Ready to Get Started?</h2>
+        <p>Download the app now and enjoy UgFlix on your mobile device</p>
+        <div className="mobile-apps-cta-buttons">
+          <a 
+            href="https://play.google.com/store/apps/details?id=ugflix.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mobile-apps-cta-btn"
+          >
+            <Download />
+            Download Now
+          </a>
+          <a 
+            href={`mailto:${COMPANY_INFO.EMAIL || 'support@ugflix.com'}`}
+            className="mobile-apps-cta-btn"
+          >
+            <Mail />
+            Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
   );
 };
 

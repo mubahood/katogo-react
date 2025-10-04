@@ -6,10 +6,12 @@ import { Spinner } from "react-bootstrap";
 // Layouts
 import MainLayout from "../components/Layout/MainLayout";
 import AuthLayout from "../components/Layout/AuthLayout";
+import SubscriptionLayout from "../components/Layout/SubscriptionLayout";
 
 // Route Guards
 import ProtectedRoute from "../components/Auth/ProtectedRoute";
 import PublicOnlyRoute from "../components/Auth/PublicOnlyRoute";
+import SubscriptionProtectedRoute from "../components/Auth/SubscriptionProtectedRoute";
 
 // Lazy loaded components for better performance
 const HomePage = React.lazy(() => import("../pages/HomePage"));
@@ -57,6 +59,13 @@ const ForgotPassword = React.lazy(() => import("../pages/auth/ForgotPassword"));
 const ForgotPasswordPage = React.lazy(() => import("../pages/auth/ForgotPasswordPage"));
 const LandingPage = React.lazy(() => import("../pages/auth/LandingPage"));
 
+// Subscription Pages - New comprehensive subscription system
+const SubscriptionPlans = React.lazy(() => import("../pages/SubscriptionPlans"));
+const PendingSubscription = React.lazy(() => import("../pages/PendingSubscription"));
+const PaymentResult = React.lazy(() => import("../pages/PaymentResult"));
+const SubscriptionHistory = React.lazy(() => import("../pages/SubscriptionHistory"));
+const MySubscriptions = React.lazy(() => import("../pages/MySubscriptions"));
+
 // Account Pages - Direct imports to fix dynamic import issues
 import AccountDashboard from "../pages/account/AccountDashboard";
 import AccountDashboardNew from "../pages/account/AccountDashboardNew";
@@ -64,7 +73,7 @@ import AccountProfile from "../pages/account/AccountProfile";
 import ProfileEdit from "../pages/account/ProfileEdit";
 import AccountOrdersPage from "../pages/account/AccountOrdersPage";
 import AccountSettings from "../pages/account/AccountSettings";
-import AccountSubscriptions from "../pages/account/AccountSubscriptions";
+import AccountSubscriptionManagement from "../pages/account/AccountSubscriptionManagement";
 import AccountWatchHistory from "../pages/account/AccountWatchHistory";
 import AccountWatchlist from "../pages/account/AccountWatchlist";
 import AccountMovieLikes from "../pages/account/AccountMovieLikes";
@@ -140,12 +149,14 @@ const AppRoutes: React.FC = () => {
             } 
           />
           
-          {/* Movies & Series - Protected */}
+          {/* Movies & Series - Subscription Required */}
           <Route 
             path="movies" 
             element={
               <ProtectedRoute>
-                <MoviesPage contentType="Movie" />
+                <SubscriptionProtectedRoute>
+                  <MoviesPage contentType="Movie" />
+                </SubscriptionProtectedRoute>
               </ProtectedRoute>
             } 
           />
@@ -153,7 +164,9 @@ const AppRoutes: React.FC = () => {
             path="series" 
             element={
               <ProtectedRoute>
-                <MoviesPage contentType="Series" />
+                <SubscriptionProtectedRoute>
+                  <MoviesPage contentType="Series" />
+                </SubscriptionProtectedRoute>
               </ProtectedRoute>
             } 
           />
@@ -161,7 +174,9 @@ const AppRoutes: React.FC = () => {
             path="movies/:id" 
             element={
               <ProtectedRoute>
-                <WatchPage />
+                <SubscriptionProtectedRoute>
+                  <WatchPage />
+                </SubscriptionProtectedRoute>
               </ProtectedRoute>
             } 
           />
@@ -169,7 +184,9 @@ const AppRoutes: React.FC = () => {
             path="series/:id" 
             element={
               <ProtectedRoute>
-                <WatchPage />
+                <SubscriptionProtectedRoute>
+                  <WatchPage />
+                </SubscriptionProtectedRoute>
               </ProtectedRoute>
             } 
           />
@@ -177,7 +194,9 @@ const AppRoutes: React.FC = () => {
             path="watch/:id" 
             element={
               <ProtectedRoute>
-                <WatchPage />
+                <SubscriptionProtectedRoute>
+                  <WatchPage />
+                </SubscriptionProtectedRoute>
               </ProtectedRoute>
             } 
           />
@@ -281,10 +300,10 @@ const AppRoutes: React.FC = () => {
             <Route index element={<AccountDashboardNew />} />
             <Route path="profile" element={<AccountProfile />} />
             <Route path="profile/edit" element={<ProfileEdit />} />
-            <Route path="subscriptions" element={<AccountSubscriptions />} />
-            <Route path="watchlist" element={<AccountWatchlist />} />
-            <Route path="history" element={<AccountWatchHistory />} />
-            <Route path="likes" element={<AccountMovieLikes />} />
+            <Route path="subscriptions" element={<AccountSubscriptionManagement />} />
+            <Route path="watchlist" element={<SubscriptionProtectedRoute><AccountWatchlist /></SubscriptionProtectedRoute>} />
+            <Route path="history" element={<SubscriptionProtectedRoute><AccountWatchHistory /></SubscriptionProtectedRoute>} />
+            <Route path="likes" element={<SubscriptionProtectedRoute><AccountMovieLikes /></SubscriptionProtectedRoute>} />
             <Route path="products" element={<MyProducts />} />
             <Route path="products/new" element={<ProductPost />} />
             <Route path="products/edit/:id" element={<ProductPost />} />
@@ -407,6 +426,44 @@ const AppRoutes: React.FC = () => {
             </PublicOnlyRoute>
           } 
         />
+
+        {/* Subscription System Routes - COMPLETELY SEPARATE from MainLayout */}
+        <Route path="subscription" element={<SubscriptionLayout />}>
+          {/* Public - Anyone can view subscription plans */}
+          <Route path="plans" element={<SubscriptionPlans />} />
+          
+          {/* Protected - Pending subscription management */}
+          <Route 
+            path="pending" 
+            element={
+              <ProtectedRoute>
+                <PendingSubscription />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Public - Pesapal redirects here after payment (no auth required) */}
+          <Route path="callback" element={<PaymentResult />} />
+          
+          {/* Protected - Requires authentication */}
+          <Route 
+            path="my-subscriptions" 
+            element={
+              <ProtectedRoute>
+                <MySubscriptions />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="history" 
+            element={
+              <ProtectedRoute>
+                <SubscriptionHistory />
+              </ProtectedRoute>
+              } 
+          />
+        </Route>
 
         {/* Error Routes */}
         <Route path="/404" element={<NotFoundPage />} />

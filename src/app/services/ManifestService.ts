@@ -1,11 +1,35 @@
 // src/app/services/ManifestService.ts
 
 import { ApiService } from './ApiService';
+import { http_get } from './Api';
 import BannerModel from '../models/BannerModel';
 import CategoryModel from '../models/CategoryModel';
 import ProductModel from '../models/ProductModel';
 import ToastService from './ToastService';
 import VendorModel from '../models/VendorModel';
+
+/**
+ * Subscription information from manifest API
+ */
+export interface ManifestSubscription {
+  has_active_subscription: boolean;
+  days_remaining: number;
+  hours_remaining: number;
+  is_in_grace_period: boolean;
+  subscription_status: string;
+  end_date: string | null;
+  require_subscription: boolean;
+}
+
+/**
+ * Complete manifest data structure from API
+ */
+export interface ManifestData {
+  subscription?: ManifestSubscription;
+  top_movie?: any[];
+  lists?: any[];
+  [key: string]: any;
+}
 
 /**
  * Manifest interface matching the Flutter app's structure
@@ -28,6 +52,13 @@ export class ManifestService {
   private cachedManifest: HomepageManifest | null = null;
   private cacheExpiry: number = 5 * 60 * 1000; // 5 minutes
   private lastCacheTime: number = 0;
+
+  // Subscription-specific cache (shorter duration for more frequent updates)
+  private cachedSubscriptionManifest: ManifestData | null = null;
+  private subscriptionCacheExpiry: number = 60 * 1000; // 1 minute
+  private lastSubscriptionCacheTime: number = 0;
+  private isLoadingSubscription: boolean = false;
+  private subscriptionLoadingPromise: Promise<ManifestData> | null = null;
 
   private constructor() {}
 
@@ -293,6 +324,8 @@ export class ManifestService {
     this.cachedManifest = null;
     this.cachedCategories = null;
     this.lastCacheTime = 0;
+    this.cachedSubscriptionManifest = null;
+    this.lastSubscriptionCacheTime = 0;
     console.log('🧹 ManifestService cache cleared');
   }
 
@@ -308,6 +341,223 @@ export class ManifestService {
       return this.cachedManifest;
     }
     return null;
+  }
+
+  // ==================== SUBSCRIPTION METHODS ====================
+
+  /**
+   * Check if user has an active subscription
+   * This is the ONLY source of truth for subscription status
+   * 
+   * @returns Promise<boolean> - True if user has active subscription
+   */
+  async hasActiveSubscription(): Promise<boolean> {
+    try {
+      console.log('🔍 ManifestService: Checking subscription status');
+
+      const manifest = await this.getSubscriptionManifest();
+      
+      if (!manifest || !manifest.subscription) {
+        console.warn('⚠️ ManifestService: No subscription data in manifest');
+        return false;
+      }
+
+      const hasAccess = manifest.subscription.has_active_subscription === true;
+
+      console.log('📊 ManifestService: Subscription status', {
+        hasAccess,
+        status: manifest.subscription.subscription_status,
+        daysRemaining: manifest.subscription.days_remaining,
+        hoursRemaining: manifest.subscription.hours_remaining,
+        isInGracePeriod: manifest.subscription.is_in_grace_period,
+      });
+
+      return hasAccess;
+
+    } catch (error) {
+      console.error('💥 ManifestService: Error checking subscription', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get the full manifest data including subscription info
+   * Uses caching to prevent redundant API calls (1 minute cache)
+   * 
+   * @param forceRefresh - Skip cache and fetch fresh data
+   * @returns Promise<ManifestData> - Complete manifest data
+   */
+  async getSubscriptionManifest(forceRefresh: boolean = false): Promise<ManifestData> {
+    const now = Date.now();
+
+    // Return cached data if valid and not forcing refresh
+    if (
+      !forceRefresh &&
+      this.cachedSubscriptionManifest &&
+      (now - this.lastSubscriptionCacheTime) < this.subscriptionCacheExpiry
+    ) {
+      console.log('📦 ManifestService: Using cached subscription manifest');
+      return this.cachedSubscriptionManifest;
+    }
+
+    // If already loading, wait for that promise
+    if (this.isLoadingSubscription && this.subscriptionLoadingPromise) {
+      console.log('⏳ ManifestService: Waiting for existing subscription request');
+      return this.subscriptionLoadingPromise;
+    }
+
+    // Start new fetch
+    this.isLoadingSubscription = true;
+    this.subscriptionLoadingPromise = this.fetchSubscriptionManifestFromServer();
+
+    try {
+      const manifest = await this.subscriptionLoadingPromise;
+      this.cachedSubscriptionManifest = manifest;
+      this.lastSubscriptionCacheTime = now;
+      return manifest;
+    } finally {
+      this.isLoadingSubscription = false;
+      this.subscriptionLoadingPromise = null;
+    }
+  }
+
+  /**
+   * Fetch manifest from server (private method)
+   * Handles API call and error handling
+   */
+  private async fetchSubscriptionManifestFromServer(): Promise<ManifestData> {
+    try {
+      console.log('🌐 ManifestService: Fetching subscription manifest from server');
+
+      const response = await http_get('manifest', {});
+
+      // Parse response - http_get already unwraps to { code, data: { subscription, top_movie, lists } }
+      if (response.code === 1 && response.data) {
+        const manifest = response.data; // Get the data object directly
+
+        console.log('✅ ManifestService: Subscription manifest fetched successfully', {
+          hasSubscription: !!manifest.subscription,
+          subscriptionStatus: manifest.subscription?.subscription_status,
+          topMovies: manifest.top_movie?.length || 0,
+          lists: manifest.lists?.length || 0,
+        });
+
+        return manifest;
+      } else {
+        console.error('❌ ManifestService: Invalid manifest response structure', {
+          hasCode: !!response.code,
+          hasData: !!response.data,
+          actualStructure: Object.keys(response || {}),
+        });
+        throw new Error('Invalid manifest response structure');
+      }
+
+    } catch (error: any) {
+      console.error('💥 ManifestService: Failed to fetch subscription manifest', {
+        message: error.message,
+        response: error.response?.data,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get subscription details from manifest
+   * @returns ManifestSubscription | null
+   */
+  async getSubscriptionDetails(): Promise<ManifestSubscription | null> {
+    try {
+      const manifest = await this.getSubscriptionManifest();
+      return manifest.subscription || null;
+    } catch (error) {
+      console.error('💥 ManifestService: Error getting subscription details', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if subscription is expiring soon
+   * @param days - Number of days to check (default: 7)
+   * @returns Promise<boolean>
+   */
+  async isExpiringSoon(days: number = 7): Promise<boolean> {
+    const subscription = await this.getSubscriptionDetails();
+    if (!subscription || !subscription.has_active_subscription) {
+      return false;
+    }
+    return subscription.days_remaining > 0 && subscription.days_remaining <= days;
+  }
+
+  /**
+   * Check if user is in grace period
+   * @returns Promise<boolean>
+   */
+  async isInGracePeriod(): Promise<boolean> {
+    const subscription = await this.getSubscriptionDetails();
+    return subscription?.is_in_grace_period === true;
+  }
+
+  /**
+   * Redirect to subscription plans page
+   * @param reason - Optional reason for redirect (for logging/analytics)
+   */
+  redirectToSubscription(reason?: string): void {
+    console.log('🔀 ManifestService: Redirecting to subscription', { reason });
+    
+    const redirectUrl = '/subscription/plans';
+    
+    if (reason) {
+      // Store reason in session storage for display on subscription page
+      sessionStorage.setItem('subscriptionRedirectReason', reason);
+    }
+    
+    window.location.href = redirectUrl;
+  }
+
+  /**
+   * Clear subscription cache
+   * Useful when subscription status changes (e.g., after payment)
+   */
+  clearSubscriptionCache(): void {
+    console.log('🗑️ ManifestService: Clearing subscription cache');
+    this.cachedSubscriptionManifest = null;
+    this.lastSubscriptionCacheTime = 0;
+  }
+
+  /**
+   * Force refresh subscription data from server
+   * @returns Promise<ManifestData>
+   */
+  async refreshSubscription(): Promise<ManifestData> {
+    console.log('🔄 ManifestService: Forcing subscription refresh');
+    return this.getSubscriptionManifest(true);
+  }
+
+  /**
+   * Check access and optionally redirect if no subscription
+   * Useful for route guards and protected components
+   * 
+   * @param autoRedirect - Automatically redirect if no subscription (default: true)
+   * @returns Promise<boolean> - True if has access, false otherwise
+   */
+  async checkAccessAndRedirect(autoRedirect: boolean = true): Promise<boolean> {
+    console.log('🛡️ ManifestService: Checking access');
+
+    const hasAccess = await this.hasActiveSubscription();
+
+    if (!hasAccess && autoRedirect) {
+      console.log('❌ ManifestService: Access denied');
+      this.redirectToSubscription('Access denied - subscription required');
+      return false;
+    }
+
+    if (hasAccess) {
+      console.log('✅ ManifestService: Access granted');
+    } else {
+      console.log('❌ ManifestService: Access denied');
+    }
+
+    return hasAccess;
   }
 }
 

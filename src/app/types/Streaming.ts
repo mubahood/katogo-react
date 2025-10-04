@@ -45,6 +45,16 @@ export interface MovieCategoryList {
   priority?: number;
 }
 
+export interface SubscriptionInfo {
+  has_active_subscription: boolean;
+  days_remaining: number;
+  hours_remaining: number;
+  is_in_grace_period: boolean;
+  subscription_status: string;
+  end_date: string | null;
+  require_subscription: boolean;
+}
+
 export interface ManifestData {
   // App metadata
   APP_VERSION: number;
@@ -64,6 +74,9 @@ export interface ManifestData {
   // User-specific data
   user_stats: UserStreamingStats;
   content_summary: ContentSummary;
+  
+  // Subscription data
+  subscription?: SubscriptionInfo;
 }
 
 export interface UserStreamingStats {
