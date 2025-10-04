@@ -9,6 +9,8 @@ import { restoreAuthState, selectIsAuthenticated, selectUser } from "./store/sli
 import { CacheApiService } from "./services/CacheApiService";
 import AnalyticsService from "./services/AnalyticsService";
 import PerformanceService from "./services/PerformanceService";
+import PWAInstallPrompt from "./components/PWA/PWAInstallPrompt";
+import * as serviceWorkerRegistration from "./utils/serviceWorkerRegistration";
 // import { SubscriptionDebugBanner } from "./components/debug/SubscriptionDebugBanner"; // ✅ Disabled for production
 
 // Import Master CSS Architecture
@@ -49,12 +51,22 @@ const App: React.FC = () => {
     });
   }, []);
 
+  // Register service worker for PWA functionality
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      serviceWorkerRegistration.register();
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <ScrollToTop />
       <AppAuthWrapper>
         <AppRoutes />
       </AppAuthWrapper>
+      
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
       
       {/* ✅ Debug Banner Disabled - Enable only for debugging subscription issues */}
       {/* {isAuthenticated && <SubscriptionDebugBanner />} */}
