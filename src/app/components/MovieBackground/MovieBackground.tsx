@@ -240,17 +240,17 @@ const MovieBackground: React.FC<MovieBackgroundProps> = ({
         }
         
         .movie-background-volume-control {
-          position: absolute;
-          bottom: 1rem;
-          right: 1rem;
-          z-index: 10;
-          background: rgba(0,0,0,0.7);
-          border: 1px solid rgba(255,255,255,0.3);
+          position: fixed;
+          bottom: 90px;
+          left: 1.5rem;
+          z-index: 900;
+          background: rgba(0,0,0,0.85);
+          border: 2px solid rgba(255,255,255,0.4);
           border-radius: 50%;
-          width: 44px;
-          height: 44px;
+          width: 50px;
+          height: 50px;
           color: white;
-          font-size: 1.1rem;
+          font-size: 1.25rem;
           cursor: pointer;
           backdrop-filter: blur(10px);
           transition: all 0.3s ease;
@@ -259,12 +259,14 @@ const MovieBackground: React.FC<MovieBackgroundProps> = ({
           display: flex;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
         
         .movie-background-volume-control:hover {
-          background: rgba(255,255,255,0.2);
-          border-color: rgba(255,255,255,0.6);
+          background: rgba(183, 28, 28, 0.9);
+          border-color: rgba(255,255,255,0.8);
           transform: scale(1.1);
+          box-shadow: 0 6px 20px rgba(183, 28, 28, 0.6);
         }
         
         .movie-background-info {
@@ -345,11 +347,11 @@ const MovieBackground: React.FC<MovieBackgroundProps> = ({
           }
           
           .movie-background-volume-control {
-            bottom: 0.8rem;
-            right: 0.8rem;
-            width: 38px;
-            height: 38px;
-            font-size: 1rem;
+            bottom: 90px;
+            left: 1rem;
+            width: 44px;
+            height: 44px;
+            font-size: 1.1rem;
           }
           
           .movie-title {
@@ -364,11 +366,11 @@ const MovieBackground: React.FC<MovieBackgroundProps> = ({
         /* Ultra small mobile */
         @media (max-width: 480px) {
           .movie-background-volume-control {
-            bottom: 0.5rem;
-            right: 0.5rem;
-            width: 32px;
-            height: 32px;
-            font-size: 0.875rem;
+            bottom: 85px;
+            left: 0.75rem;
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
           }
           
           .movie-background-info {
