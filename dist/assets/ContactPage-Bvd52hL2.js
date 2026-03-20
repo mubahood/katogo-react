@@ -1,1 +1,0 @@
-import{j as s,d as o}from"./vendor-bootstrap-CDKGkX3Y.js";import"./vendor-react-CSr-5IoM.js";const r=()=>s.jsx(o,{children:s.jsxs("div",{className:"py-5",children:[s.jsx("h1",{children:"Contact Us"}),s.jsx("p",{children:"Contact page coming soon..."})]})});export{r as default};

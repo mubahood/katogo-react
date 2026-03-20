@@ -486,3 +486,91 @@ html {
   outline: 2px solid var(--ugflix-primary, #ff6b35);
   outline-offset: 2px;
 }
+
+  /* ── V2 Filter Bar ──────────────────────────────────────────────────────── */
+  .movies-filters-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--ugflix-border, #1e1e1e);
+    justify-content: space-between;
+  }
+
+  .movies-filters-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .filter-icon { color: var(--ugflix-text-muted, #888); }
+  .filter-label { font-size: 0.75rem; color: var(--ugflix-text-muted, #888); margin-right: 0.2rem; }
+
+  .filter-select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .filter-select {
+    appearance: none;
+    background: var(--ugflix-bg-secondary, #161616);
+    border: 1px solid var(--ugflix-border, #1e1e1e);
+    border-radius: 6px;
+    color: var(--ugflix-text-secondary, #ccc);
+    font-size: 0.72rem;
+    padding: 0.3rem 1.5rem 0.3rem 0.6rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .filter-select:hover,
+  .filter-select:focus {
+    border-color: var(--color-brand-red, #E50914);
+    outline: none;
+  }
+
+  .select-chevron {
+    position: absolute;
+    right: 0.35rem;
+    pointer-events: none;
+    color: var(--ugflix-text-muted, #888);
+  }
+
+  .filter-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-brand-red, #E50914);
+    background: transparent;
+    color: var(--color-brand-red, #E50914);
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .filter-clear-btn:hover { background: rgba(229,9,20,0.08); }
+
+  .movies-count {
+    font-size: 0.75rem;
+    color: var(--ugflix-text-muted, #888);
+    margin-bottom: 0.75rem;
+  }
+
+  /* ── V2 Movies Grid ─────────────────────────────────────────────────────── */
+  .movies-grid-v2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (min-width: 480px) { .movies-grid-v2 { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 768px) { .movies-grid-v2 { grid-template-columns: repeat(4, 1fr); } }
+  @media (min-width: 992px) { .movies-grid-v2 { grid-template-columns: repeat(5, 1fr); } }
+  @media (min-width: 1200px) { .movies-grid-v2 { grid-template-columns: repeat(6, 1fr); } }

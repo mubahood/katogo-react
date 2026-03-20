@@ -1,21 +1,18 @@
 /* Account Card - Simple Flat Design, Mobile First */
 
 /* Card Container */
-.account-card /* Card Body */
-.account-card-body {
-  padding: 12px; /* Reduced padding */
-}background: rgba(255, 255, 255, 0.03);
+.account-card {
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px; /* Squared corners */
+  border-radius: 4px;
   overflow: hidden;
-  transition: all 0.2s ease; /* Faster transition */
+  transition: all 0.2s ease;
 }
 
 .account-card:hover {
-  border-color: #B71C1C; /* Primary red on hover */
+  border-color: #B71C1C;
 }
 
-/* Card Header */
 /* Card Header */
 .account-card-header {
   padding: 10px 12px; /* Reduced padding */
@@ -164,6 +161,7 @@
   .account-card-body {
     padding: 10px; /* More compact */
   }
+}
 
 /* Tablets (576px - 767px) */
 @media (min-width: 576px) and (max-width: 767px) {
@@ -197,6 +195,7 @@
   .account-card-body {
     padding: 14px; /* More compact */
   }
+}
 
 /* Large Desktop (>= 1200px) */
 @media (min-width: 1200px) {

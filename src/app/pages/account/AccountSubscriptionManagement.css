@@ -541,6 +541,8 @@
 
 .btn-retry:hover {
   opacity: 0.9;
+}
+
 /* ===================================================================
    RESPONSIVE DESIGN - Minimal adjustments
    =================================================================== */
@@ -617,7 +619,5 @@
   .btn-subscribe {
     width: 100%;
     justify-content: center;
-  }
-}   justify-content: center;
   }
 }

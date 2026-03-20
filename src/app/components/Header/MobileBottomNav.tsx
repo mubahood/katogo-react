@@ -3,146 +3,61 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
-import { 
-  Film, 
-  Tv, 
-  ShoppingCart, 
-  Globe, 
-  MessageSquare,
-  User
-} from 'react-feather';
+import { Home, Film, Radio, ShoppingBag, User } from 'lucide-react';
+import { useCart } from '../../hooks/useCart';
 import './MobileBottomNav.css';
 
 const MobileBottomNav: React.FC = () => {
   const location = useLocation();
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  const authState = useSelector((state: RootState) => state.auth);
+  const { cartCount } = useCart();
 
-  // Intelligent helper function to check if route is active
-  const isActive = (section: string) => {
-    const pathname = location.pathname;
-    const search = location.search;
-    
-    switch(section) {
-      case '/movies':
-        // Movies active for: /movies, /movies/*, /watch/*, search results with movies
-        return pathname === '/movies' || 
-               pathname.startsWith('/movies/') ||
-               pathname.startsWith('/watch/') ||
-               (pathname === '/search' && search.includes('type=movie'));
-      
-      case '/series':
-        // Series active for: /series, /series/*
-        return pathname === '/series' || pathname.startsWith('/series/');
-      
-      case '/products':
-        // Products active for: /products, /products/*, /product/*, /account/post-product
-        return pathname === '/products' || 
-               pathname.startsWith('/products/') ||
-               pathname.startsWith('/product/') ||
-               pathname === '/account/post-product';
-      
-      case '/connect':
-        // Connect active for: /connect, /connect/*
-        return pathname === '/connect' || pathname.startsWith('/connect/');
-      
-      case '/account/chats':
-        // Chats active for: /account/chats, /account/chats/*, /account/chat/*
-        return pathname === '/account/chats' || 
-               pathname.startsWith('/account/chats/') ||
-               pathname.startsWith('/account/chat/');
-      
-      case '/account':
-        // Account active for: /account but NOT chats (chats has its own tab)
-        return pathname === '/account' || 
-               (pathname.startsWith('/account/') && 
-                !pathname.startsWith('/account/chat') &&
-                pathname !== '/account/post-product');
-      
-      case '/auth/login':
-        // Login active for: /auth/login, /auth/register, /auth/*
-        return pathname.startsWith('/auth/');
-      
-      default:
-        return pathname === section || pathname.startsWith(section + '/');
-    }
-  };
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
+
+  const tabs = [
+    { to: '/',        label: 'Home',    Icon: Home,       active: location.pathname === '/' },
+    { to: '/movies',  label: 'Movies',  Icon: Film,       active: isActive('/movies') || isActive('/watch') || isActive('/series') },
+    { to: '/live',    label: 'Live TV', Icon: Radio,      active: isActive('/live') },
+    { to: '/products',label: 'Shop',    Icon: ShoppingBag, active: isActive('/products') || isActive('/product') || isActive('/cart') },
+    {
+      to: isAuthenticated ? '/account' : '/auth/login',
+      label: isAuthenticated ? 'Account' : 'Login',
+      Icon: User,
+      active: isActive('/account') || isActive('/auth'),
+    },
+  ];
 
   return (
-    <nav className="mobile-bottom-nav d-lg-none">
-      <Link 
-        to="/movies" 
-        className={`bottom-nav-item ${isActive('/movies') ? 'active' : ''}`}
-      >
-        <div className="bottom-nav-icon-wrapper">
-          <Film size={22} className="bottom-nav-icon" />
-        </div>
-        <span className="bottom-nav-label">Movies</span>
-      </Link>
-
-      <Link 
-        to="/series" 
-        className={`bottom-nav-item ${isActive('/series') ? 'active' : ''}`}
-      >
-        <div className="bottom-nav-icon-wrapper">
-          <Tv size={22} className="bottom-nav-icon" />
-        </div>
-        <span className="bottom-nav-label">Series</span>
-      </Link>
-
-      <Link 
-        to="/products" 
-        className={`bottom-nav-item ${isActive('/products') ? 'active' : ''}`}
-      >
-        <div className="bottom-nav-icon-wrapper">
-          <ShoppingCart size={22} className="bottom-nav-icon" />
-        </div>
-        <span className="bottom-nav-label">Buy & Sell</span>
-      </Link>
-
-      <Link 
-        to="/connect" 
-        className={`bottom-nav-item ${isActive('/connect') ? 'active' : ''}`}
-      >
-        <div className="bottom-nav-icon-wrapper">
-          <Globe size={22} className="bottom-nav-icon" />
-        </div>
-        <span className="bottom-nav-label">Connect</span>
-      </Link>
-
-      <Link 
-        to="/account/chats" 
-        className={`bottom-nav-item ${isActive('/account/chats') ? 'active' : ''}`}
-      >
-        <div className="bottom-nav-icon-wrapper">
-          <MessageSquare size={22} className="bottom-nav-icon" />
-        </div>
-        <span className="bottom-nav-label">Chats</span>
-      </Link>
-
-      {(isAuthenticated || (authState.user && authState.token)) ? (
-        <Link 
-          to="/account" 
-          className={`bottom-nav-item ${isActive('/account') ? 'active' : ''}`}
+    <nav className="mobile-bottom-nav lg:hidden fixed bottom-0 inset-x-0 z-50 flex bg-gray-950 border-t border-gray-800 safe-area-pb">
+      {tabs.map(({ to, label, Icon, active }) => (
+        <Link
+          key={to}
+          to={to}
+          className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 relative transition-colors ${
+            active ? 'text-red-500' : 'text-gray-400 hover:text-gray-200'
+          }`}
         >
-          <div className="bottom-nav-icon-wrapper">
-            <User size={22} className="bottom-nav-icon" />
+          <div className="relative">
+            <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
+            {/* Cart badge */}
+            {label === 'Shop' && cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold min-w-[16px] h-4 flex items-center justify-center rounded-full px-0.5">
+                {cartCount > 9 ? '9+' : cartCount}
+              </span>
+            )}
           </div>
-          <span className="bottom-nav-label">Account</span>
+          <span className={`text-[10px] font-medium ${active ? 'text-red-500' : ''}`}>
+            {label}
+          </span>
+          {active && (
+            <span className="absolute top-0 inset-x-0 h-0.5 bg-red-500 rounded-b" />
+          )}
         </Link>
-      ) : (
-        <Link 
-          to="/auth/login" 
-          className={`bottom-nav-item ${isActive('/auth/login') ? 'active' : ''}`}
-        >
-          <div className="bottom-nav-icon-wrapper">
-            <User size={22} className="bottom-nav-icon" />
-          </div>
-          <span className="bottom-nav-label">Login</span>
-        </Link>
-      )}
+      ))}
     </nav>
   );
 };
 
 export default MobileBottomNav;
+

@@ -1,7 +1,7 @@
 // src/app/pages/Movies/components/SearchBar.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Form, InputGroup, Button, Spinner } from 'react-bootstrap';
-import { Search, X } from 'react-feather';
+import { Search, X } from 'lucide-react';
 import './SearchBar.css';
 
 interface SearchBarProps {

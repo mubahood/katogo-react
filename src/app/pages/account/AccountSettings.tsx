@@ -1,12 +1,57 @@
 // src/app/pages/account/AccountSettings.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Settings, Shield, Bell, CreditCard, Eye, EyeOff, Save } from "lucide-react";
+import { Settings, Shield, Bell, CreditCard, Eye, EyeOff, Save, Moon, Sun, Trash2 } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { selectThemeMode, toggleThemeMode } from "../../store/slices/themeSlice";
+import { AppDispatch, RootState } from "../../store/store";
+import ModerationService from "../../services/v2/ModerationService";
+import { http_post } from "../../services/Api";
 
 const AccountSettings: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+
+  // SETTINGS-01: Dark mode
+  const dispatch = useDispatch<AppDispatch>();
+  const themeMode = useSelector(selectThemeMode);
+
+  // SETTINGS-02: Delete account
+  const [deleting, setDeleting] = useState(false);
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Are you absolutely sure? This will permanently delete your account and all data. This cannot be undone.'
+    );
+    if (!confirmed) return;
+    const doubleConfirm = window.confirm('Final confirmation: delete account permanently?');
+    if (!doubleConfirm) return;
+    setDeleting(true);
+    try {
+      await http_post('disable-account', {});
+      window.location.href = '/landing';
+    } catch {
+      alert('Failed to delete account. Please contact support.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // SETTINGS-03: Consent status
+  const [consentStatus, setConsentStatus] = useState<{ has_consented: boolean; consented_at?: string } | null>(null);
+  useEffect(() => {
+    ModerationService.getLegalConsentStatus().then(setConsentStatus).catch(() => {});
+  }, []);
+  const handleReconsent = async () => {
+    try {
+      await ModerationService.submitLegalConsent(true);
+      sessionStorage.setItem('katogo_has_consented', 'true');
+      setConsentStatus(prev => prev ? { ...prev, has_consented: true, consented_at: new Date().toISOString() } : null);
+      alert('Consent updated.');
+    } catch {
+      alert('Failed to update consent. Please try again.');
+    }
+  };
   
   // Settings state
   const [securitySettings, setSecuritySettings] = useState({
@@ -107,6 +152,68 @@ const AccountSettings: React.FC = () => {
       )}
 
       {/* Security Settings */}
+      {/* SETTINGS-01: Appearance / Dark Mode */}
+      <div className="acc-card" style={{ marginBottom: 'var(--spacing-4)' }}>
+        <div className="acc-card-header">
+          <h3 className="acc-card-title">
+            {themeMode === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+            Appearance
+          </h3>
+        </div>
+        <div className="acc-card-body">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <p style={{ margin: 0, fontWeight: 'var(--font-weight-medium)' }}>Dark Mode</p>
+              <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--text-color-medium)' }}>
+                Currently: {themeMode === 'dark' ? 'Dark' : 'Light'}
+              </p>
+            </div>
+            <button
+              className="acc-btn acc-btn-outline acc-btn-sm"
+              onClick={() => dispatch(toggleThemeMode())}
+            >
+              {themeMode === 'dark' ? <Sun size={14} style={{ marginRight: '6px' }} /> : <Moon size={14} style={{ marginRight: '6px' }} />}
+              Switch to {themeMode === 'dark' ? 'Light' : 'Dark'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* SETTINGS-03: Legal Consent Status */}
+      {consentStatus && (
+        <div className="acc-card" style={{ marginBottom: 'var(--spacing-4)' }}>
+          <div className="acc-card-header">
+            <h3 className="acc-card-title">
+              <Shield size={20} />
+              Legal Consent
+            </h3>
+          </div>
+          <div className="acc-card-body">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <p style={{ margin: 0 }}>
+                  Status:{' '}
+                  <strong style={{ color: consentStatus.has_consented ? 'var(--success-color)' : 'var(--danger-color)' }}>
+                    {consentStatus.has_consented ? 'Agreed' : 'Not agreed'}
+                  </strong>
+                </p>
+                {consentStatus.consented_at && (
+                  <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--text-color-medium)' }}>
+                    Consented on {new Date(consentStatus.consented_at).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Link to="/terms" className="acc-btn acc-btn-outline acc-btn-sm">View Terms</Link>
+                <button className="acc-btn acc-btn-outline acc-btn-sm" onClick={handleReconsent}>
+                  Re-consent
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="acc-card">
         <div className="acc-card-header">
           <h3 className="acc-card-title">
@@ -509,11 +616,14 @@ const AccountSettings: React.FC = () => {
                   Permanently delete your account and all data
                 </p>
               </div>
-              <button className="acc-btn acc-btn-outline acc-btn-sm" style={{
-                color: 'var(--danger-color)',
-                borderColor: 'var(--danger-color)'
-              }}>
-                Delete
+              <button
+                className="acc-btn acc-btn-outline acc-btn-sm"
+                style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+              >
+                <Trash2 size={14} style={{ marginRight: '6px' }} />
+                {deleting ? 'Deleting…' : 'Delete'}
               </button>
             </div>
           </div>

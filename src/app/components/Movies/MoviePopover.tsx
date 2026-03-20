@@ -1,6 +1,6 @@
 // src/app/components/Movies/MoviePopover.tsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX, Clock, Star, Eye } from 'react-feather';
+import { Play, Pause, Volume2, VolumeX, Clock, Star, Eye } from 'lucide-react';
 import WishlistButton from './WishlistButton';
 import type { Movie } from '../../services/manifest.service';
 

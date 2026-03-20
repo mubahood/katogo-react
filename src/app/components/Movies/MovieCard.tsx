@@ -1,10 +1,11 @@
 // src/app/components/Movies/MovieCard.tsx
 import React, { useState, useCallback, memo, useRef, useEffect } from 'react';
-import { Play, Award } from 'react-feather';
+import { Play, Award, Flag } from 'lucide-react';
 import LazyImage from './LazyImage';
 import MoviePopover from './MoviePopover';
 import WishlistButton from './WishlistButton';
 import LikeButton from './LikeButton';
+import ReportContentModal from '../moderation/ReportContentModal';
 import type { Movie } from '../../services/manifest.service';
 
 interface MovieCardProps {
@@ -39,6 +40,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [showPopover, setShowPopover] = useState(false);
   const [cardRect, setCardRect] = useState<DOMRect | null>(null);
   const [isInHoverZone, setIsInHoverZone] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -281,6 +283,19 @@ const MovieCard: React.FC<MovieCardProps> = ({
               />
             </div>
           )}
+
+          {/* Report Button */}
+          {isHovered && (
+            <div className="movie-card-report-btn">
+              <button
+                title="Report"
+                onClick={(e) => { e.stopPropagation(); setShowReportModal(true); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'rgba(255,255,255,0.7)' }}
+              >
+                <Flag size={12} />
+              </button>
+            </div>
+          )}
         </div>
         
         {/* Progress Bar */}
@@ -506,6 +521,16 @@ const MovieCard: React.FC<MovieCardProps> = ({
         onMouseEnter={handlePopoverEnter}
         onMouseLeave={handlePopoverLeave}
       />
+
+      {/* Report Content Modal */}
+      {showReportModal && (
+        <ReportContentModal
+          isOpen={showReportModal}
+          contentType="movie"
+          contentId={movie.id}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
     </>
   );
 };

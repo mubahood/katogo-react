@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   base: "/",
   server: {
     port: 5173,
@@ -27,7 +28,7 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom'],
           'vendor-redux': ['@reduxjs/toolkit', 'react-redux'],
           'vendor-bootstrap': ['react-bootstrap', 'bootstrap'],
-          'vendor-ui': ['lucide-react', '@fortawesome/react-fontawesome'],
+          'vendor-ui': ['lucide-react'],
           'vendor-router': ['react-router-dom'],
           'vendor-query': ['@tanstack/react-query'],
         },

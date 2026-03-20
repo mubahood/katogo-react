@@ -420,17 +420,17 @@ export class CacheApiService {
   }
 
   /**
-   * Check if server is reachable
+   * Check if server is reachable using only public endpoints
+   * Uses subscription-plans which doesn't require authentication
    */
   private static async checkServerHealth(): Promise<boolean> {
     try {
-      // Use centralized http_get with a lightweight existing endpoint
-      // Using chat-heads as it's a simple GET endpoint that exists
       const { http_get } = await import('./Api');
-      await http_get('chat-heads');
+      // Use public subscription-plans endpoint instead of auth-required chat-heads
+      await http_get('subscription-plans');
       return true;
     } catch (error) {
-      // Server unreachable or user not authenticated
+      // Server unreachable or endpoint not available
       return false;
     }
   }

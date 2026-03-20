@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Button, Spinner, Alert, ProgressBar, Badge } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { ApiService } from '../../services/ApiService';
+import AnalyticsV2Service from '../../services/v2/AnalyticsV2Service';
 
 // Backend response interface
 interface WatchHistoryItem {
@@ -49,15 +50,26 @@ const AccountWatchHistory: React.FC = () => {
     }
   };
 
+  // HIST-04: Clear all history
   const handleClearHistory = async () => {
-    if (window.confirm('Are you sure you want to clear your entire watch history? This action cannot be undone.')) {
-      try {
-        // TODO: Implement clear history API endpoint
-        setWatchHistory([]);
-        setTotalItems(0);
-      } catch (error) {
-        console.error('Error clearing watch history:', error);
-      }
+    if (!window.confirm('Are you sure you want to clear your entire watch history? This cannot be undone.')) return;
+    try {
+      await AnalyticsV2Service.clearAllHistory();
+      setWatchHistory([]);
+      setTotalItems(0);
+    } catch (error) {
+      console.error('Error clearing watch history:', error);
+    }
+  };
+
+  // HIST-03: Remove single item from history
+  const handleRemoveItem = async (movieId: number) => {
+    try {
+      await AnalyticsV2Service.deleteProgress(movieId);
+      setWatchHistory((prev) => prev.filter((item) => item.movie_id !== movieId));
+      setTotalItems((prev) => prev - 1);
+    } catch (error) {
+      console.error('Error removing history item:', error);
     }
   };
 
@@ -191,10 +203,25 @@ const AccountWatchHistory: React.FC = () => {
 
                   <Card.Footer className="bg-transparent border-0 pt-0">
                     <div className="d-grid gap-2 d-md-flex">
-                      <Link to={`/watch/${item.movie_id}`} className="btn btn-primary btn-sm flex-grow-1">
+                      {/* HIST-02: Resume button */}
+                      <Link
+                        to={item.percentage >= 90
+                          ? `/watch/${item.movie_id}`
+                          : `/watch/${item.movie_id}?t=${item.progress}`}
+                        className="btn btn-primary btn-sm flex-grow-1"
+                      >
                         <i className="bi bi-play-fill me-2"></i>
-                        {item.percentage >= 90 ? 'Watch Again' : 'Continue'}
+                        {item.percentage >= 90 ? 'Watch Again' : 'Resume'}
                       </Link>
+                      {/* HIST-03: Remove button */}
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        title="Remove from history"
+                        onClick={() => handleRemoveItem(item.movie_id)}
+                      >
+                        <i className="bi bi-trash"></i>
+                      </Button>
                     </div>
                   </Card.Footer>
                 </Card>

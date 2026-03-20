@@ -1,10 +1,9 @@
-// src/app/pages/auth/LandingPage.tsx
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Container, Button } from "react-bootstrap";
-import { APP_CONFIG } from "../../constants";
-import { SEOHead } from "../../components/seo";
-import { http_get } from "../../services/Api";
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Download, Play, Volume2, VolumeX } from 'lucide-react';
+import { APP_CONFIG } from '../../constants';
+import { SEOHead } from '../../components/seo';
+import { http_get } from '../../services/Api';
 
 interface RandomMovie {
   id: number;
@@ -22,803 +21,542 @@ interface RandomMovie {
   vj?: string;
 }
 
+const fallbackMovie: RandomMovie = {
+  id: 0,
+  title: 'Featured Luganda Movie',
+  description: '',
+  video_url: '',
+  type: 'Featured',
+  year: new Date().getFullYear().toString(),
+};
+
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const [movie, setMovie] = useState<RandomMovie | null>(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [videoError, setVideoError] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [showControls, setShowControls] = useState(false);
-  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Remove body padding for landing page and prevent scrolling
+  const [movie, setMovie] = useState<RandomMovie>(fallbackMovie);
+  const [isFetchingMovie, setIsFetchingMovie] = useState(true);
+  const [videoReady, setVideoReady] = useState(false);
+  const [isPlaybackActive, setIsPlaybackActive] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+
   useEffect(() => {
     document.body.style.paddingTop = '0';
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
-    document.body.style.height = '100vh'; // Lock height
+    document.body.style.overflow = 'hidden';
     document.body.classList.add('landing-active');
-    
+
     return () => {
       document.body.style.paddingTop = 'calc(56px + 35px + 0px)';
-      document.body.style.overflow = 'auto'; // Restore scrolling
-      document.body.style.height = 'auto'; // Restore height
+      document.body.style.overflow = 'auto';
       document.body.classList.remove('landing-active');
     };
   }, []);
 
-  // Fetch random movie for background
   useEffect(() => {
     const fetchRandomMovie = async () => {
       try {
         const response = await http_get('random-movie');
         if (response.code === 1 && response.data) {
-          console.log('✅ Random movie loaded:', response.data);
-          setMovie(response.data);
-        } else {
-          throw new Error('Invalid response format');
+          setMovie({
+            ...fallbackMovie,
+            ...response.data,
+            title: response.data.title || fallbackMovie.title,
+            video_url: response.data.video_url || '',
+          });
+          setVideoError(false);
+          setVideoReady(false);
+          setIsPlaybackActive(false);
+          return;
         }
       } catch (error) {
-        console.error('❌ Failed to fetch random movie:', error);
-        // Set fallback content if API fails
-        setMovie({
-          id: 0,
-          title: `Welcome to ${APP_CONFIG.NAME}`,
-          description: "Uganda's premier streaming platform. Watch thousands of movies and TV shows instantly! Stream the latest releases, classic films, and exclusive content.",
-          video_url: "",
-          genre: "Entertainment",
-          type: "Platform",
-          year: new Date().getFullYear().toString()
-        });
+        console.error('Failed to fetch random movie:', error);
+      } finally {
+        setIsFetchingMovie(false);
       }
+
+      setMovie(fallbackMovie);
     };
 
     fetchRandomMovie();
   }, []);
 
-  // Ensure video autoplays when loaded
-  useEffect(() => {
-    if (movie?.video_url && videoRef.current && videoLoaded) {
-      const playVideo = async () => {
-        try {
-          await videoRef.current?.play();
-        } catch (error) {
-          console.log('Autoplay prevented by browser:', error);
-        }
-      };
-      playVideo();
+  const playPreview = async (withSound: boolean) => {
+    if (!videoRef.current) return;
+
+    const video = videoRef.current;
+    video.defaultMuted = !withSound;
+    video.muted = !withSound;
+    video.volume = withSound ? 1 : 0;
+    setIsMuted(!withSound);
+
+    try {
+      await video.play();
+    } catch {
+      // Unmuted autoplay can still be blocked until the user interacts.
     }
-  }, [movie, videoLoaded]);
+  };
+
+  const ensureAudiblePlayback = async () => {
+    await playPreview(true);
+  };
+
+  const handleLoadedData = async () => {
+    const video = videoRef.current;
+    if (!video) {
+      setVideoReady(true);
+      return;
+    }
+
+    if (Number.isFinite(video.duration) && video.duration > 0) {
+      video.currentTime = video.duration * 0.08;
+    }
+
+    setVideoReady(true);
+    await playPreview(false);
+  };
+
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
+
+    const startPoint = video.duration * 0.08;
+    const endPoint = video.duration * 0.3;
+    if (video.currentTime >= endPoint) {
+      video.currentTime = startPoint;
+    }
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const nextMuted = !isMuted;
+    video.muted = nextMuted;
+    video.volume = nextMuted ? 0 : 1;
+    setIsMuted(nextMuted);
+
+    if (!nextMuted) {
+      video.play().catch(() => undefined);
+    }
+  };
+
+  const showLoader = isFetchingMovie || (!!movie.video_url && !videoError && (!videoReady || !isPlaybackActive));
 
   const landingPageMeta = {
     basic: {
-      title: `${APP_CONFIG.NAME} - Stream Movies & TV Shows | Uganda's Premier Streaming Platform`,
-      description: `Stream thousands of movies and TV shows on ${APP_CONFIG.NAME}. Watch the latest releases, classic films, and exclusive content. Start your streaming journey today!`,
-      keywords: "streaming, movies, TV shows, entertainment, Uganda, UgFlix, online streaming, watch movies, binge watch",
+      title: `${APP_CONFIG.NAME} - Watch Luganda Movies`,
+      description: `Watch Luganda translated movies and featured releases on ${APP_CONFIG.NAME}.`,
+      keywords: 'Luganda movies, Ugandan streaming, Katogo, UgFlix',
     },
     openGraph: {
-      title: `${APP_CONFIG.NAME} - Uganda's Premier Streaming Platform`,
-      description: "Stream thousands of movies and TV shows. Watch anywhere, anytime. Start your free trial today!",
+      title: `${APP_CONFIG.NAME} - Watch Luganda Movies`,
+      description: `Watch Luganda translated movies and featured releases on ${APP_CONFIG.NAME}.`,
       url: window.location.origin,
       image: APP_CONFIG.LOGO,
-      type: "website",
+      type: 'website',
       siteName: APP_CONFIG.NAME,
-      locale: "en_US",
+      locale: 'en_US',
     },
     twitter: {
-      card: "summary_large_image" as const,
-      title: `${APP_CONFIG.NAME} - Stream Movies & TV Shows`,
-      description: "Uganda's premier streaming platform. Watch thousands of movies and TV shows instantly!",
+      card: 'summary_large_image' as const,
+      title: `${APP_CONFIG.NAME} - Watch Luganda Movies`,
+      description: `Watch Luganda translated movies and featured releases on ${APP_CONFIG.NAME}.`,
     },
-  };
-
-  const handleVideoLoad = () => {
-    if (videoRef.current) {
-      const video = videoRef.current;
-      // Start video at 10% of its total length for more engaging content
-      const startTime = video.duration * 0.1;
-      video.currentTime = startTime;
-      
-      // Set volume to ON (unmuted) by default
-      video.muted = false;
-      video.volume = 1.0; // Set volume to maximum
-      setIsMuted(false);
-      
-      // Trigger autoplay with JavaScript
-      const attemptPlay = () => {
-        video.play().then(() => {
-          console.log('✅ Video autoplay started from 10% with VOLUME ON');
-          // Ensure volume stays on after play
-          video.muted = false;
-          video.volume = 1.0;
-          setIsMuted(false);
-        }).catch(err => {
-          console.log('⚠️ Autoplay with volume prevented, trying muted first:', err);
-          // If autoplay with sound fails, try muted first then unmute
-          video.muted = true;
-          video.play().then(() => {
-            console.log('✅ Video playing muted, will unmute in 1 second');
-            // Unmute after 1 second
-            setTimeout(() => {
-              video.muted = false;
-              video.volume = 1.0;
-              setIsMuted(false);
-              console.log('✅ Video unmuted - volume is now ON');
-            }, 1000);
-          }).catch(err2 => {
-            console.log('⚠️ Autoplay prevented completely, waiting for user interaction');
-            // Add click listener to play with volume on first user interaction
-            const playOnInteraction = () => {
-              video.muted = false;
-              video.volume = 1.0;
-              video.play();
-              setIsMuted(false);
-              document.removeEventListener('click', playOnInteraction);
-            };
-            document.addEventListener('click', playOnInteraction);
-          });
-        });
-      };
-      
-      // Attempt play immediately and after a short delay
-      attemptPlay();
-      setTimeout(attemptPlay, 200);
-    }
-    setVideoLoaded(true);
-  };
-
-  const handleVideoTimeUpdate = () => {
-    if (videoRef.current) {
-      const currentTime = videoRef.current.currentTime;
-      const duration = videoRef.current.duration;
-      const thirtyPercentMark = duration * 0.3;
-      
-      // If video goes beyond 30% of total length, loop back to 10%
-      if (currentTime >= thirtyPercentMark) {
-        videoRef.current.currentTime = duration * 0.1;
-      }
-    }
-  };
-
-  const handleVideoError = () => {
-    setVideoError(true);
   };
 
   return (
     <>
       <SEOHead config={landingPageMeta} />
-      
-      {/* Full-Screen Video Background Landing Page */}
-      <div className="video-landing-container">
-        {/* Video Background */}
-        {movie?.video_url && !videoError && (
+
+      <div className="landing-shell" onClick={ensureAudiblePlayback}>
+        {movie.video_url && !videoError ? (
           <video
             ref={videoRef}
-            className="video-background"
+            className="landing-video"
             autoPlay
-            muted={false}
-            loop
+            muted={isMuted}
             playsInline
-            onLoadedData={handleVideoLoad}
-            onTimeUpdate={handleVideoTimeUpdate}
-            onError={handleVideoError}
-            onMouseEnter={() => setShowControls(true)}
-            onMouseLeave={() => setShowControls(false)}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              objectFit: 'cover',
-              zIndex: -2,
-              opacity: videoLoaded ? 1 : 0,
-              transition: 'opacity 1s ease-in-out'
+            preload="metadata"
+            onLoadedData={handleLoadedData}
+            onPlay={() => setIsPlaybackActive(true)}
+            onPlaying={() => setIsPlaybackActive(true)}
+            onPause={() => setIsPlaybackActive(false)}
+            onWaiting={() => setIsPlaybackActive(false)}
+            onStalled={() => setIsPlaybackActive(false)}
+            onTimeUpdate={handleTimeUpdate}
+            onError={() => {
+              setVideoError(true);
+              setVideoReady(true);
+              setIsPlaybackActive(false);
             }}
           >
             <source src={movie.video_url} type="video/mp4" />
           </video>
-        )}
-
-        {/* Fallback Background Image */}
-        {(!movie?.video_url || videoError) && (
+        ) : (
           <div
-            className="fallback-background"
+            className="landing-fallback"
             style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              backgroundImage: movie?.image_url || movie?.thumbnail_url
+              backgroundImage: movie.image_url || movie.thumbnail_url
                 ? `url(${movie.image_url || movie.thumbnail_url})`
-                : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              zIndex: -2
+                : undefined,
             }}
           />
         )}
 
-        {/* Dark Overlay */}
-        <div
-          className="video-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7))',
-            zIndex: -1
-          }}
-        />
+        <div className="landing-overlay" />
 
-        {/* Volume Control Button */}
-        {movie?.video_url && !videoError && (
-          <button
-            onClick={() => {
-              if (videoRef.current) {
-                const newMutedState = !isMuted;
-                videoRef.current.muted = newMutedState;
-                setIsMuted(newMutedState);
-                // Ensure video is playing when unmuting
-                if (!newMutedState) {
-                  videoRef.current.play().catch(console.error);
-                }
-              }
-            }}
-            style={{
-              position: 'fixed',
-              bottom: '2rem',
-              right: '2rem',
-              zIndex: 100,
-              background: 'rgba(183, 28, 28, 0.8)',
-              border: '2px solid rgba(255,255,255,0.3)',
-              borderRadius: '0',
-              width: '50px',
-              height: '50px',
-              color: 'white',
-              fontSize: '1.25rem',
-              cursor: 'pointer',
-              backdropFilter: 'blur(10px)',
-              transition: 'all 0.3s ease',
-              opacity: showControls || isMuted ? 1 : 0.8,
-              transform: showControls ? 'scale(1.05)' : 'scale(1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(183, 28, 28, 1)';
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(183, 28, 28, 0.8)';
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-            }}
-            title={isMuted ? 'Unmute video' : 'Mute video'}
-          >
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-        )}
-
-        {/* Header */}
-        <header
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)',
-            padding: '1rem 0',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          <Container>
-            <div className="d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <img 
-                  src={APP_CONFIG.LOGO}
-                  alt={APP_CONFIG.NAME}
-                  style={{ 
-                    height: '40px',
-                    marginRight: '1rem',
-                    filter: 'brightness(1.2)'
-                  }}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const textLogo = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (textLogo) textLogo.style.display = 'inline';
-                  }}
-                />
-                <h1 
-                  style={{
-                    display: 'none',
-                    fontSize: '1.75rem',
-                    fontWeight: 'bold',
-                    margin: 0,
-                    background: 'linear-gradient(45deg, #ffffff, #f0f0f0)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}
-                >
-                  {APP_CONFIG.NAME}
-                </h1>
+        {showLoader ? (
+          <div className="landing-loader" aria-live="polite" aria-label="Loading movie preview">
+            <div className="landing-loader-panel">
+              <div className="landing-loader-mark" aria-hidden="true">
+                <span />
+                <span />
+                <span />
               </div>
-              
-              <Button
-                variant="outline-light"
-                size="sm"
-                onClick={() => navigate('/auth/login')}
-                style={{
-                  borderColor: 'rgba(255,255,255,0.3)',
-                  color: 'white',
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-                }}
-              >
-                Sign In
-              </Button>
+              <div className="landing-loader-copy">
+                <strong>Loading preview</strong>
+                <span>{movie.title || fallbackMovie.title}</span>
+              </div>
             </div>
-          </Container>
+          </div>
+        ) : null}
+
+        <header className="landing-header">
+          <button className="landing-brand" onClick={() => navigate('/landing')}>
+            <img src={APP_CONFIG.LOGO} alt={APP_CONFIG.NAME} />
+          </button>
         </header>
 
-        {/* Main Content */}
-        <main
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            width: '100vw',
-            position: 'relative',
-            zIndex: 50,
-            padding: '2rem 1rem'
-          }}
-        >
-          <Container>
-            <div
-              className="text-center"
-              style={{
-                maxWidth: '800px',
-                margin: '0 auto',
-                color: 'white'
-              }}
-            >
-              {/* Movie Badge */}
-              {movie?.type && (
-                <div
-                  className="movie-badge"
-                  style={{
-                    display: 'inline-block',
-                    background: 'rgba(183, 28, 28, 0.3)',
-                    color: 'white',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '0',
-                    fontSize: '0.875rem',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    marginBottom: '1.5rem',
-                    backdropFilter: 'blur(10px)',
-                    border: '2px solid rgba(183, 28, 28, 0.6)'
-                  }}
-                >
-                  {movie.type} • {movie.year} • {movie.genre}
-                </div>
-              )}
-
-              {/* Main Title */}
-              <h1
-                className="fade-in-up"
-                style={{
-                  fontSize: 'clamp(2rem, 6vw, 3.5rem)',
-                  fontWeight: 'bold',
-                  lineHeight: '1.1',
-                  marginBottom: '1.5rem',
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                  background: 'linear-gradient(45deg, #ffffff, #f0f0f0)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  animationDelay: '0.3s'
-                }}
-              >
-                {movie?.title || `Welcome to ${APP_CONFIG.NAME}`}
-              </h1>
-
-              {/* Description */}
-              <div
-                className="fade-in-up"
-                style={{
-                  fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
-                  lineHeight: '1.6',
-                  marginBottom: '3rem',
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
-                  opacity: 0.95,
-                  maxWidth: '600px',
-                  margin: '0 auto 3rem',
-                  animationDelay: '0.6s'
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: movie?.description
-                    ? (movie.description.length > 150 
-                        ? movie.description.substring(0, 150).trim() + '...'
-                        : movie.description
-                      )
-                    : "Uganda's premier streaming platform. <strong>Watch thousands of movies and TV shows</strong> instantly!"
-                }}
-              />
-
-              {/* Action Buttons */}
-              <div 
-                className="fade-in-up" 
-                style={{
-                  animationDelay: '0.9s', 
-                  marginTop: '2rem',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  gap: '1rem',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  maxWidth: '500px',
-                  margin: '2rem auto 0'
-                }}
-              >
-                <Button
-                  size="lg"
-                  className="pulse-hover"
-                  onClick={() => navigate('/auth/register')}
-                  style={{
-                    background: '#B71C1C',
-                    border: '2px solid rgba(255,255,255,0.2)',
-                    padding: '0.75rem 2rem',
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    borderRadius: '0',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    boxShadow: '0 4px 16px rgba(183, 28, 28, 0.4)',
-                    transition: 'all 0.3s ease',
-                    minWidth: '180px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 24px rgba(183, 28, 28, 0.6)';
-                    e.currentTarget.style.background = '#8B0000';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(183, 28, 28, 0.4)';
-                    e.currentTarget.style.background = '#B71C1C';
-                  }}
-                >
-                  ▶ Start Streaming
-                </Button>
-
-                <Button
-                  variant="outline-light"
-                  size="lg"
-                  className="pulse-hover"
-                  onClick={() => navigate('/auth/login')}
-                  style={{
-                    borderColor: 'rgba(255,255,255,0.4)',
-                    color: 'white',
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: '2px solid rgba(255,255,255,0.4)',
-                    padding: '0.75rem 2rem',
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    borderRadius: '0',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    transition: 'all 0.3s ease',
-                    minWidth: '180px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}
-                >
-                  Sign In
-                </Button>
-              </div>
-
-              {/* Movie Info */}
-              {movie && (movie.actor || movie.rating) && (
-                <div
-                  className="fade-in-up"
-                  style={{
-                    marginTop: '3rem',
-                    padding: '1rem',
-                    background: 'rgba(0,0,0,0.4)',
-                    borderRadius: '0',
-                    backdropFilter: 'blur(10px)',
-                    border: '2px solid rgba(183, 28, 28, 0.3)',
-                    fontSize: '0.9rem',
-                    opacity: 0.9,
-                    animationDelay: '1.2s'
-                  }}
-                >
-                  {movie.actor && <div>Starring: {movie.actor}</div>}
-                  {movie.rating && <div>Rating: {movie.rating}/10</div>}
-                </div>
-              )}
-            </div>
-          </Container>
-        </main>
-
-        {/* Loading Indicator for Video */}
-        {movie?.video_url && !videoLoaded && !videoError && (
-          <div
-            className="loading-indicator"
-            style={{
-              position: 'fixed',
-              bottom: '2rem',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              color: 'white',
-              fontSize: '0.875rem',
-              opacity: 0.9,
-              zIndex: 50,
-              textAlign: 'center',
-              background: 'rgba(183, 28, 28, 0.8)',
-              padding: '0.5rem 1rem',
-              borderRadius: '0',
-              backdropFilter: 'blur(10px)',
-              border: '2px solid rgba(255,255,255,0.3)'
-            }}
-          >
-            Loading movie...
+        <div className="landing-bottom-bar">
+          <div className="landing-bottom-copy">
+            <span className="landing-eyebrow">Now showing</span>
+            <h1>{movie.title || fallbackMovie.title}</h1>
           </div>
-        )}
+
+          <div className="landing-actions" onClick={(e) => e.stopPropagation()}>
+            <button className="landing-primary-btn" onClick={() => navigate('/auth/register')}>
+              <Play size={18} />
+              Start watching
+            </button>
+            <button className="landing-secondary-btn" onClick={() => navigate('/mobile-apps')}>
+              <Download size={18} />
+              Install now
+            </button>
+          </div>
+        </div>
+
+        {movie.video_url && !videoError ? (
+          <button
+            className="landing-volume-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMute();
+            }}
+            title={isMuted ? 'Unmute preview' : 'Mute preview'}
+          >
+            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+        ) : null}
       </div>
 
-      {/* CSS Animations */}
       <style>{`
-        .video-landing-container {
-          position: fixed;
-          top: 0;
-          left: 0;
+        html.landing-active {
+          height: 100svh;
+          overflow: hidden;
+        }
+
+        body.landing-active {
+          background: #000;
+          overflow: hidden;
+          height: 100svh;
+          min-height: 100svh;
+        }
+
+        .landing-shell {
+          position: relative;
           width: 100vw;
-          height: 100vh;
+          height: 100svh;
           overflow: hidden;
           background: #000;
+          color: #fff;
         }
-        
-        .video-background {
-          width: 100vw;
-          height: 100vh;
+
+        .landing-video,
+        .landing-fallback,
+        .landing-overlay {
+          position: absolute;
+          inset: 0;
+        }
+
+        .landing-video,
+        .landing-fallback {
+          width: 100%;
+          height: 100%;
           object-fit: cover;
         }
-        
-        /* Ensure no scrolling */
-        body.landing-active {
-          overflow: hidden !important;
-          height: 100vh !important;
+
+        .landing-fallback {
+          background-position: center;
+          background-size: cover;
+          background-image: linear-gradient(180deg, #121212 0%, #000 100%);
         }
-        
-        /* Fade in animations */
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+
+        .landing-overlay {
+          background:
+            linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.28) 35%, rgba(0,0,0,0.72) 100%),
+            radial-gradient(circle at bottom left, rgba(229, 9, 20, 0.18), transparent 28%);
         }
-        
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
+
+        .landing-header,
+        .landing-bottom-bar,
+        .landing-loader,
+        .landing-volume-btn {
+          position: relative;
+          z-index: 2;
         }
-        
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
+
+        .landing-loader {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+          pointer-events: none;
         }
-        
-        @keyframes pulse {
-          0%, 100% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.05);
-          }
+
+        .landing-loader-panel {
+          display: grid;
+          gap: 0.85rem;
+          min-width: min(86vw, 320px);
+          max-width: 360px;
+          padding: 1rem 1.05rem;
+          background: rgba(9, 9, 11, 0.58);
+          border: 1px solid rgba(255,255,255,0.12);
+          box-shadow: 0 28px 80px rgba(0,0,0,0.32);
+          backdrop-filter: blur(16px);
         }
-        
-        .fade-in-up {
-          animation: fadeInUp 0.8s ease-out both;
+
+        .landing-loader-mark {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
         }
-        
-        .slide-in-left {
-          animation: slideInLeft 0.6s ease-out both;
+
+        .landing-loader-mark span {
+          width: 0.6rem;
+          height: 0.6rem;
+          border-radius: 999px;
+          background: #fff;
+          opacity: 0.3;
+          animation: landingPulse 1.2s ease-in-out infinite;
         }
-        
-        .slide-in-right {
-          animation: slideInRight 0.6s ease-out both;
+
+        .landing-loader-mark span:nth-child(2) {
+          animation-delay: 0.16s;
         }
-        
-        .pulse-hover:hover {
-          animation: pulse 0.6s ease-in-out;
+
+        .landing-loader-mark span:nth-child(3) {
+          animation-delay: 0.32s;
         }
-        
-        /* Button hover effects */
-        .video-landing-container .btn {
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        .landing-loader-copy {
+          display: grid;
+          gap: 0.2rem;
         }
-        
-        .video-landing-container .btn:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+
+        .landing-loader-copy strong {
+          font-size: 0.95rem;
+          font-weight: 700;
+          letter-spacing: 0.01em;
         }
-        
-        .video-landing-container .btn:active {
+
+        .landing-loader-copy span {
+          font-size: 0.82rem;
+          color: rgba(255,255,255,0.7);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .landing-header {
+          padding: max(1rem, env(safe-area-inset-top)) 1rem 0;
+        }
+
+        .landing-brand {
+          border: 0;
+          background: transparent;
+          padding: 0;
+          cursor: pointer;
+        }
+
+        .landing-brand img {
+          width: 44px;
+          height: 44px;
+          object-fit: contain;
+          border-radius: 12px;
+          display: block;
+        }
+
+        .landing-primary-btn,
+        .landing-secondary-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.55rem;
+          min-height: 46px;
+          padding: 0.85rem 1.1rem;
+          border: 0;
+          cursor: pointer;
+          font-size: 0.95rem;
+          font-weight: 700;
+          transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+        }
+
+        .landing-primary-btn {
+          background: #e50914;
+          color: #fff;
+          box-shadow: 0 12px 30px rgba(229, 9, 20, 0.28);
+        }
+
+        .landing-secondary-btn {
+          background: rgba(255,255,255,0.08);
+          color: #fff;
+          border: 1px solid rgba(255,255,255,0.14);
+          backdrop-filter: blur(10px);
+        }
+
+        .landing-bottom-bar {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          display: flex;
+          align-items: end;
+          justify-content: space-between;
+          gap: 1rem;
+          padding: 1rem 1rem max(1rem, env(safe-area-inset-bottom));
+          background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.78) 55%, rgba(0,0,0,0.92) 100%);
+        }
+
+        .landing-primary-btn:hover,
+        .landing-secondary-btn:hover,
+        .landing-volume-btn:hover {
           transform: translateY(-1px);
+          opacity: 0.95;
         }
-        
-        /* Movie badge animation */
-        .video-landing-container .movie-badge {
-          animation: fadeInUp 0.6s ease-out both;
-          animation-delay: 0.2s;
+
+        .landing-bottom-copy {
+          display: grid;
+          gap: 0.25rem;
+          min-width: 0;
+          max-width: 420px;
+          padding: 0.7rem 0.85rem;
+          background: rgba(0,0,0,0.38);
+          border: 1px solid rgba(255,255,255,0.1);
+          backdrop-filter: blur(10px);
         }
-        
-        /* Video overlay smooth transition */
-        .video-overlay {
-          transition: background 0.5s ease-in-out;
+
+        .landing-eyebrow {
+          font-size: 0.65rem;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.65);
         }
-        
-        /* Header slide down */
-        .video-landing-container header {
-          animation: slideInDown 0.8s ease-out both;
+
+        .landing-bottom-copy h1 {
+          margin: 0;
+          font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+          line-height: 1.3;
+          font-weight: 600;
+          color: #fff;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
-        
-        @keyframes slideInDown {
-          from {
-            opacity: 0;
-            transform: translateY(-100%);
+
+        .landing-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .landing-volume-btn {
+          position: absolute;
+          right: max(1rem, env(safe-area-inset-right));
+          top: max(1rem, env(safe-area-inset-top));
+          width: 42px;
+          height: 42px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(255,255,255,0.16);
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(10px);
+          color: #fff;
+          cursor: pointer;
+        }
+
+        @media (max-width: 900px) {
+          .landing-bottom-bar {
+            flex-direction: column;
+            align-items: stretch;
           }
-          to {
-            opacity: 1;
+
+          .landing-bottom-copy {
+            max-width: none;
+          }
+
+          .landing-actions {
+            justify-content: stretch;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .landing-bottom-bar {
+            padding: 0.9rem 0.9rem max(0.9rem, env(safe-area-inset-bottom));
+            gap: 0.75rem;
+          }
+
+          .landing-loader {
+            align-items: flex-end;
+            padding: 1rem 0.9rem 7rem;
+          }
+
+          .landing-loader-panel {
+            min-width: 100%;
+            max-width: none;
+          }
+
+          .landing-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+          }
+
+          .landing-primary-btn,
+          .landing-secondary-btn {
+            width: 100%;
+          }
+
+          .landing-bottom-copy h1 {
+            white-space: normal;
+            font-size: 0.92rem;
+          }
+        }
+
+        @keyframes landingPulse {
+          0%, 100% {
+            opacity: 0.3;
             transform: translateY(0);
           }
-        }
-        
-        /* Loading indicator animation */
-        @keyframes loadingPulse {
-          0%, 100% {
-            opacity: 0.6;
-          }
+
           50% {
             opacity: 1;
+            transform: translateY(-2px);
           }
-        }
-        
-        .loading-indicator {
-          animation: loadingPulse 1.5s ease-in-out infinite;
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 576px) {
-          .video-landing-container main {
-            padding: 1rem 0.5rem;
-          }
-          
-          .video-landing-container .d-flex.gap-3 {
-            flex-direction: column !important;
-            gap: 1rem !important;
-          }
-          
-          .video-landing-container h1 {
-            font-size: clamp(1.75rem, 8vw, 2.5rem) !important;
-          }
-          
-          .video-landing-container .fade-in-up {
-            font-size: clamp(0.9rem, 3.5vw, 1.1rem) !important;
-          }
-          
-          /* Volume button mobile positioning */
-          .video-landing-container button[title*='video'] {
-            bottom: 1rem !important;
-            right: 1rem !important;
-            width: 45px !important;
-            height: 45px !important;
-            font-size: 1.1rem !important;
-          }
-        }
-        
-        /* Tablet optimizations */
-        @media (max-width: 768px) {
-          .video-landing-container header {
-            padding: 0.75rem 0;
-          }
-          
-          .video-landing-container header img {
-            height: 32px !important;
-          }
-        }
-        
-        /* High DPI displays */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-          .video-background {
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-          }
-        }
-        
-        /* Landscape mobile fixes */
-        @media (max-height: 500px) and (orientation: landscape) {
-          .video-landing-container main {
-            padding: 0.5rem;
-          }
-          
-          .video-landing-container h1 {
-            font-size: clamp(1.25rem, 5vw, 2rem) !important;
-            margin-bottom: 0.5rem !important;
-          }
-          
-          .video-landing-container .fade-in-up {
-            font-size: clamp(0.8rem, 2.5vw, 1rem) !important;
-            margin-bottom: 1.5rem !important;
-          }
-          
-          .video-landing-container .btn {
-            padding: 0.5rem 1.5rem !important;
-            font-size: 0.875rem !important;
-          }
-          
-          .video-landing-container button[title*='video'] {
-            bottom: 0.5rem !important;
-            right: 0.5rem !important;
-            width: 40px !important;
-            height: 40px !important;
-          }
-        }
-        
-        /* Smooth scrolling for future use */
-        html {
-          scroll-behavior: smooth;
-        }
-        
-        /* Focus states for accessibility */
-        .video-landing-container button:focus,
-        .video-landing-container .btn:focus {
-          outline: 2px solid rgba(255,255,255,0.8);
-          outline-offset: 2px;
         }
       `}</style>
     </>

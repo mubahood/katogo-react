@@ -1,7 +1,7 @@
 // src/app/pages/Movies/components/FilterBar.tsx
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Offcanvas } from 'react-bootstrap';
-import { Filter, X, ChevronDown } from 'react-feather';
+import { Filter, X, ChevronDown } from 'lucide-react';
 import { manifestService } from '../../../services/manifest.service';
 import './FilterBar.css';
 

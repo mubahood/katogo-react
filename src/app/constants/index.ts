@@ -11,14 +11,11 @@ export * from "../../Constants";
 // API CONFIGURATION
 // ===================================================================
 
-/* 
- BASE_URL: "http://localhost:8888/katogo",
-  API_URL: "http://localhost:8888/katogo/api",
-*/
+const _BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://katogo.ugnews24.info";
 
 export const API_CONFIG = {
-  BASE_URL: "https://katogo.schooldynamics.ug",
-  API_URL: "https://katogo.schooldynamics.ug/api",
+  BASE_URL: _BASE_URL,
+  API_URL: `${_BASE_URL}/api`,
   TIMEOUT: 5000,
   MAX_RETRIES: 3,
 } as const;
@@ -31,7 +28,7 @@ export const APP_CONFIG = {
   NAME: "UgFlix",
   CURRENCY: "UGX",
   DATE_FORMAT: "YYYY-MM-DD",
-  LOGO: "https://katogo.schooldynamics.ug/storage/images/logo.png",
+  LOGO: "https://katogo.ugnews24.info/storage/images/logo.png",
 } as const;
 
 // ===================================================================

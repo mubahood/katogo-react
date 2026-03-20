@@ -2,6 +2,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { login, register, requestPasswordReset, resetPassword } from '../../services/Api';
 import * as Api from '../../services/Api';
+import * as Sentry from '@sentry/react';
 
 // User type
 type User = {
@@ -50,6 +51,10 @@ const authSlice = createSlice({
       } catch (error) {
         console.error('Failed to save auth data to localStorage:', error);
       }
+      // ERR-03: Set Sentry user context
+      try {
+        Sentry.setUser({ id: String(action.payload.user.id), email: action.payload.user.email });
+      } catch { /* ignore if Sentry not configured */ }
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -72,6 +77,10 @@ const authSlice = createSlice({
       } catch (error) {
         console.error('Failed to clear auth data from localStorage:', error);
       }
+      // ERR-04: Clear Sentry user context
+      try {
+        Sentry.setUser(null);
+      } catch { /* ignore if Sentry not configured */ }
     },
     // Action to update user profile
     updateProfile: (state, action: PayloadAction<any>) => {

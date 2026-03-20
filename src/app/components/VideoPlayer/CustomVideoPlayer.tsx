@@ -86,8 +86,8 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
     playing: false,
     currentTime: 0,
     duration: 0,
-    volume: savedPreferences.volume,
-    muted: savedPreferences.muted,
+    volume: 1,
+    muted: false,
     buffering: true,
     loaded: 0,
     playbackRate: savedPreferences.playbackRate,
@@ -249,6 +249,10 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
 
   const handleCanPlay = () => {
     setState(prev => ({ ...prev, buffering: false, ready: true }));
+    if (videoRef.current) {
+      videoRef.current.volume = 1;
+      videoRef.current.muted = false;
+    }
     if (autoPlay && videoRef.current) {
       videoRef.current.play().catch(console.error);
     }

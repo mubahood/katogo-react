@@ -1,5 +1,5 @@
 // src/app/components/Auth/AppAuthWrapper.tsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated, selectAuthLoading } from '../../store/slices/authSlice';
@@ -8,7 +8,6 @@ interface AppAuthWrapperProps {
   children: React.ReactNode;
 }
 
-// Define public routes that don't require authentication
 const PUBLIC_ROUTES = [
   '/landing',
   '/auth/login',
@@ -45,7 +44,6 @@ const AppAuthWrapper: React.FC<AppAuthWrapperProps> = ({ children }) => {
   const location = useLocation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isLoading = useSelector(selectAuthLoading);
-
   useEffect(() => {
     // Don't do anything while authentication is loading
     if (isLoading) {

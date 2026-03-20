@@ -1,9 +1,11 @@
 import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import AppRoutes from "./routing/AppRoutes";
 import ScrollToTop from "./components/Layout/ScrollToTop";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
+import OfflineBanner from "./components/shared/OfflineBanner";
 import AppAuthWrapper from "./components/Auth/AppAuthWrapper";
 import { restoreAuthState, selectIsAuthenticated, selectUser } from "./store/slices/authSlice";
 import { CacheApiService } from "./services/CacheApiService";
@@ -11,6 +13,7 @@ import AnalyticsService from "./services/AnalyticsService";
 import PerformanceService from "./services/PerformanceService";
 import PWAInstallPrompt from "./components/PWA/PWAInstallPrompt";
 import * as serviceWorkerRegistration from "./utils/serviceWorkerRegistration";
+import { useTheme } from "./hooks/useTheme";
 // import { SubscriptionDebugBanner } from "./components/debug/SubscriptionDebugBanner"; // ✅ Disabled for production
 
 // Import Master CSS Architecture
@@ -25,9 +28,11 @@ import "./utils/authDebugger";
 import "./utils/testAuthFlow";
 
 const App: React.FC = () => {
+  const location = useLocation();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const user = useSelector(selectUser);
+  useTheme();
 
   // Restore authentication state on app startup
   useEffect(() => {
@@ -60,13 +65,14 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
+      <OfflineBanner />
       <ScrollToTop />
       <AppAuthWrapper>
         <AppRoutes />
       </AppAuthWrapper>
       
       {/* PWA Install Prompt */}
-      <PWAInstallPrompt />
+      {location.pathname !== '/landing' ? <PWAInstallPrompt /> : null}
       
       {/* ✅ Debug Banner Disabled - Enable only for debugging subscription issues */}
       {/* {isAuthenticated && <SubscriptionDebugBanner />} */}

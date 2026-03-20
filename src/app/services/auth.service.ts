@@ -3,6 +3,10 @@ import { http_post } from './Api';
 import Utils from './Utils';
 import { ugflix_auth_token, ugflix_user } from '../../Constants';
 
+export interface GoogleLoginRequest {
+  google_token: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -195,6 +199,31 @@ class AuthService {
     } catch (error: any) {
       console.error('❌ Registration error:', error);
       throw new Error(error.message || 'Network error occurred');
+    }
+  }
+
+  /**
+   * Login with Google OAuth token — POST /api/auth/google
+   */
+  async loginWithGoogle(googleToken: string): Promise<AuthResponse> {
+    try {
+      const data = await http_post('auth/google', { google_token: googleToken }) as AuthResponse;
+
+      if (data.code !== 1) {
+        throw new Error(data.message || 'Google login failed');
+      }
+
+      const token = data.data?.user?.token || data.data?.user?.remember_token;
+      if (token) {
+        localStorage.setItem('ugflix_auth_token', token);
+      }
+      if (data.data?.user) {
+        localStorage.setItem('ugflix_user', JSON.stringify(data.data.user));
+      }
+
+      return { success: true, code: data.code, data: data.data, message: data.message };
+    } catch (error: any) {
+      throw new Error(error.message || 'Google login failed');
     }
   }
 

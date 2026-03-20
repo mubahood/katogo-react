@@ -153,25 +153,11 @@ export class AccountApiService {
    */
   static async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const response = await http_get("account/dashboard/stats");
+      const response = await http_get("account/dashboard");
       return response.data;
     } catch (error) {
       console.error("Failed to fetch dashboard stats:", error);
       ToastService.error("Failed to load dashboard statistics");
-      throw error;
-    }
-  }
-
-  /**
-   * Get recent activity
-   */
-  static async getRecentActivity(limit: number = 10): Promise<RecentActivity[]> {
-    try {
-      const response = await http_get(`account/dashboard/activity?limit=${limit}`);
-      return response.data;
-    } catch (error) {
-      console.error("Failed to fetch recent activity:", error);
-      ToastService.error("Failed to load recent activity");
       throw error;
     }
   }
@@ -323,30 +309,15 @@ export class AccountApiService {
   }
 
   /**
-   * Like content
+   * Toggle like on a movie — POST /api/account/likes/toggle
    */
-  static async likeContent(productId: number): Promise<LikedContent> {
+  static async toggleMovieLike(movieId: number): Promise<{ liked: boolean; likes_count: number }> {
     try {
-      const response = await http_post("account/likes", { product_id: productId });
-      ToastService.success("Content liked");
+      const response = await http_post("account/likes/toggle", { movie_id: movieId });
       return response.data;
     } catch (error) {
-      console.error("Failed to like content:", error);
-      ToastService.error("Failed to like content");
-      throw error;
-    }
-  }
-
-  /**
-   * Unlike content
-   */
-  static async unlikeContent(likeId: number): Promise<void> {
-    try {
-      await http_post(`account/likes/${likeId}`, { _method: 'DELETE' });
-      ToastService.success("Content unliked");
-    } catch (error) {
-      console.error("Failed to unlike content:", error);
-      ToastService.error("Failed to unlike content");
+      console.error("Failed to toggle like:", error);
+      ToastService.error("Failed to update like");
       throw error;
     }
   }
@@ -614,6 +585,31 @@ export class AccountApiService {
       console.error("Failed to start conversation:", error);
       ToastService.error("Failed to start conversation");
       throw error;
+    }
+  }
+
+  // ── Likes ──────────────────────────────────────────────────────
+  static async unlikeContent(likeId: number): Promise<void> {
+    try {
+      await http_post(`account/likes/${likeId}`, { _method: 'DELETE' });
+    } catch (error) {
+      console.error("Failed to unlike content:", error);
+      ToastService.error("Failed to unlike content");
+      throw error;
+    }
+  }
+
+  // ── Dashboard activity ─────────────────────────────────────────
+  static async getRecentActivity(limit: number = 5): Promise<RecentActivity[]> {
+    try {
+      const response = await http_get(`account/activity?limit=${limit}`);
+      if (response?.code === 1 && Array.isArray(response.data)) {
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error("Failed to fetch recent activity:", error);
+      return [];
     }
   }
 }

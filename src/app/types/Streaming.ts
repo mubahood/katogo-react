@@ -418,6 +418,44 @@ export const isApiResponse = <T>(obj: any): obj is ApiResponse<T> => {
   return obj && typeof obj.code === 'number' && typeof obj.message === 'string';
 };
 
+/**
+ * Live TV & Radio streaming types
+ */
+export interface Station {
+  id: number;
+  name: string;
+  slug: string;
+  type: 'TV' | 'Radio';
+  category: string;
+  frequency?: string;
+  logo_url: string;
+  language: string;
+  region?: string;
+  votes: number;
+  listeners_count: number;
+  is_featured: boolean;
+  sort_order: number;
+  description?: string;
+  country: string;
+  website_url?: string;
+  stream_url?: string;
+  created_at: string;
+}
+
+export interface StreamingCategory {
+  id: number;
+  name: string;
+  slug: string;
+  stations_count?: number;
+}
+
+export interface StreamingHomeData {
+  featured_stations?: Station[];
+  tv_stations?: Station[];
+  radio_stations?: Station[];
+  categories?: StreamingCategory[];
+}
+
 export const isApiError = (obj: any): obj is ApiError => {
   return obj && typeof obj.code === 'number' && typeof obj.message === 'string';
 };

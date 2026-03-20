@@ -1,6 +1,6 @@
 // src/app/pages/static/Help.tsx
 import React, { useState } from 'react';
-import { Film, Tv, ShoppingCart, Users, CreditCard, Play, HelpCircle, Mail, MessageCircle, Phone, ChevronDown } from 'react-feather';
+import { Film, Tv, ShoppingCart, Users, CreditCard, Play, HelpCircle, Mail, MessageCircle, Phone, ChevronDown } from 'lucide-react';
 import { COMPANY_INFO } from '../../constants';
 import './Help.css';
 

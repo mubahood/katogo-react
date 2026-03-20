@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiMessageCircle, FiMapPin, FiUser, FiHeart } from 'react-icons/fi';
 import { ConnectUser } from '../../../models/ConnectModels';
+import BlockUserButton from '../../../components/moderation/BlockUserButton';
 import OnlineIndicator from './OnlineIndicator';
 import VerifiedBadge from './VerifiedBadge';
 import UserAvatar from './UserAvatar';
@@ -14,6 +15,7 @@ interface UserCardProps {
   variant?: 'list' | 'grid' | 'swipe';
   onChatClick?: (user: ConnectUser) => void;
   onLikeClick?: (user: ConnectUser) => void;
+  onBlock?: (user: ConnectUser) => void;
   className?: string;
 }
 
@@ -22,6 +24,7 @@ const UserCard: React.FC<UserCardProps> = ({
   variant = 'list',
   onChatClick,
   onLikeClick,
+  onBlock,
   className = '',
 }) => {
   const navigate = useNavigate();
@@ -89,6 +92,12 @@ const UserCard: React.FC<UserCardProps> = ({
           >
             <FiMessageCircle size={18} />
           </button>
+          <BlockUserButton
+            userId={user.id}
+            userName={user.name || user.username || 'this user'}
+            onBlock={() => onBlock?.(user)}
+            className="action-btn-block"
+          />
         </div>
       </div>
     );
@@ -124,6 +133,13 @@ const UserCard: React.FC<UserCardProps> = ({
           <div className="info-row">
             <FiUser size={12} />
             <span>{user.occupation || 'Not specified'}</span>
+          </div>
+          <div className="info-row" onClick={(e) => e.stopPropagation()}>
+            <BlockUserButton
+              userId={user.id}
+              userName={user.name || user.username || 'this user'}
+              onBlock={() => onBlock?.(user)}
+            />
           </div>
         </div>
       </div>

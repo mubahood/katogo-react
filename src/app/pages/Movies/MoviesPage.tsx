@@ -1,261 +1,246 @@
 // src/app/pages/Movies/MoviesPage.tsx
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Container, Row, Col, Spinner, Alert } from 'react-bootstrap';
+import React, { useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { SEOHead } from '../../components/seo';
-import MoviesApiService, { MoviesApiParams } from '../../services/MoviesApiService';
-import { Movie as MovieType } from '../../types/Streaming';
+import { Filter, ChevronDown, Film, X } from 'lucide-react';
+import { useGetMoviesQuery } from '../../store/api/moviesApi';
+import type { MoviesV2Params } from '../../services/v2/MoviesV2Service';
 import MovieCard from '../../components/Movies/MovieCard';
 import MovieCardSkeleton from '../../components/Movies/MovieCardSkeleton';
 import Pagination from './components/Pagination';
-import ToastService from '../../services/ToastService';
 import './MoviesPage.css';
 
 interface MoviesPageProps {
-  contentType?: 'Movie' | 'Series'; // Can be set via prop or route
+  contentType?: 'Movie' | 'Series';
 }
+
+const GENRES = ['Action', 'Comedy', 'Drama', 'Horror', 'Romance', 'Thriller', 'Documentary', 'Animation', 'Family', 'Sci-Fi'];
+const LANGUAGES = ['Luganda', 'English', 'Swahili', 'French'];
+const VJS = ['VJ Junior', 'VJ Emmie', 'VJ Ice', 'VJ Remo', 'VJ Pimpa', 'VJ Kats'];
+const YEARS = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest First' },
+  { value: 'oldest', label: 'Oldest First' },
+  { value: 'popular', label: 'Most Popular' },
+  { value: 'rating', label: 'Top Rated' },
+] as const;
 
 const MoviesPage: React.FC<MoviesPageProps> = ({ contentType }) => {
   const navigate = useNavigate();
-  const { type } = useParams<{ type?: string }>(); // From route: /movies or /series
+  const { type } = useParams<{ type?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Determine the content type (from prop or route or default to 'Movie')
-  const activeContentType: 'Movie' | 'Series' | 'All' = useMemo(() => {
+  // Derive content type from prop, route param, or default
+  const activeContentType = useMemo<'Movie' | 'Series' | undefined>(() => {
     if (contentType) return contentType;
     if (type === 'series') return 'Series';
     if (type === 'movies') return 'Movie';
-    return 'All';
+    return undefined;
   }, [contentType, type]);
 
-  // State
-  const [movies, setMovies] = useState<MovieType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  // Read all filters from URL
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const genre = searchParams.get('genre') || undefined;
+  const language = searchParams.get('language') || undefined;
+  const vj = searchParams.get('vj') || undefined;
+  const year = searchParams.get('year') ? parseInt(searchParams.get('year')!, 10) : undefined;
+  const sort = (searchParams.get('sort') as MoviesV2Params['sort']) || 'newest';
 
-  // Search query from URL
-  const searchQuery = searchParams.get('search') || '';
+  const queryParams: MoviesV2Params = {
+    page: currentPage,
+    per_page: 24,
+    ...(activeContentType && { type: activeContentType }),
+    ...(genre && { genre }),
+    ...(language && { language }),
+    ...(vj && { vj }),
+    ...(year && { year }),
+    sort,
+  };
 
-  // Filters are handled in header, no local state needed
+  const { data, isLoading, isError } = useGetMoviesQuery(queryParams);
 
+  const movies = data?.items ?? [];
+  const pagination = data?.pagination;
+  const totalPages = pagination?.last_page ?? 1;
+  const totalItems = pagination?.total ?? 0;
 
-  // Load movies on mount and when page or search changes
-  useEffect(() => {
-    loadMovies();
-  }, [currentPage, activeContentType, searchQuery]);
-
-  // Load page from URL
-  useEffect(() => {
-    const page = searchParams.get('page');
-    if (page) setCurrentPage(parseInt(page));
-  }, []);
-
-  // Load movies from API
-  const loadMovies = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      console.log('🎬 MoviesPage: Loading movies', {
-        page: currentPage,
-        activeContentType,
-        searchQuery
-      });
-
-      // Build API params
-      const apiParams: MoviesApiParams = {
-        page: currentPage,
-        per_page: itemsPerPage,
-        type: activeContentType !== 'All' ? activeContentType : undefined,
-        sort_by: 'created_at',
-        sort_dir: 'desc',
-      };
-
-      // Add search query if present
-      if (searchQuery) {
-        apiParams.search = searchQuery;
-      }
-
-      // For series, only get first episodes
-      if (activeContentType === 'Series') {
-        apiParams.is_first_episode = 'Yes';
-      }
-
-      const response = await MoviesApiService.getMovies(apiParams);
-
-      if (response.code === 1 && response.data) {
-        setMovies(response.data.items);
-        setTotalPages(response.data.pagination.last_page);
-        setTotalItems(response.data.pagination.total);
-        setItemsPerPage(response.data.pagination.per_page);
-
-        console.log('✅ MoviesPage: Movies loaded successfully', {
-          count: response.data.items.length,
-          total: response.data.pagination.total
-        });
+  // Update a single URL filter param, reset page to 1
+  const setFilter = useCallback((key: string, value: string | null) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (value) {
+        next.set(key, value);
       } else {
-        throw new Error(response.message || 'Failed to load movies');
+        next.delete(key);
       }
-    } catch (err: any) {
-      console.error('❌ MoviesPage: Error loading movies:', err);
-      setError(err.message || 'Failed to load movies. Please try again.');
-      ToastService.error('Failed to load movies');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, activeContentType, itemsPerPage, searchQuery]);
+      next.set('page', '1');
+      return next;
+    });
+  }, [setSearchParams]);
 
-  // Filters and search are handled in the header
-
-  // Handle page change
   const handlePageChange = useCallback((page: number) => {
-    console.log('📄 MoviesPage: Page changed to:', page);
-    setCurrentPage(page);
-    
-    // Update URL
-    searchParams.set('page', page.toString());
-    setSearchParams(searchParams);
-  }, [searchParams, setSearchParams]);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('page', page.toString());
+      return next;
+    });
+  }, [setSearchParams]);
 
-  // Handle movie click
-  const handleMovieClick = useCallback((movie: any) => {
-    console.log('🎬 MoviesPage: Movie clicked:', movie.title);
-    navigate(`/watch/${movie.id}`);
-  }, [navigate]);
-
-  // Handle play movie
-  const handlePlayMovie = useCallback((movie: any) => {
-    console.log('▶️ MoviesPage: Play movie:', movie.title);
-    navigate(`/watch/${movie.id}`);
-    ToastService.success(`Playing ${movie.title}`);
-  }, [navigate]);
-
-  // Handle add to watchlist
-  const handleAddToWatchlist = useCallback((movie: any) => {
-    console.log('➕ MoviesPage: Add to watchlist:', movie.title);
-    // TODO: Implement watchlist functionality
-    ToastService.success(`Added ${movie.title} to watchlist`);
-  }, []);
-
-  // Get page title
-  const getPageTitle = (): string => {
-    if (searchQuery) return `Search Results for "${searchQuery}"`;
-    if (activeContentType === 'Series') return 'Browse Series';
-    if (activeContentType === 'Movie') return 'Browse Movies';
-    return 'Browse Content';
+  const clearFilters = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams();
+      if (prev.get('page')) next.set('page', '1');
+      return next;
+    });
   };
 
-  // Get page subtitle
-  const getPageSubtitle = (): string => {
-    if (searchQuery) {
-      return `${totalItems} result${totalItems !== 1 ? 's' : ''} found`;
-    }
-    return `${totalItems} ${activeContentType === 'Series' ? 'series' : activeContentType === 'Movie' ? 'movies' : 'items'} available`;
-  };
+  const hasActiveFilters = !!(genre || language || vj || year);
+
+  const pageTitle = activeContentType === 'Series' ? 'Browse Series' : activeContentType === 'Movie' ? 'Browse Movies' : 'All Content';
 
   return (
-    <>
-      {/* SEO Head */}
-      <SEOHead
-        config={{
-          basic: {
-            title: `${getPageTitle()} | UgFlix`,
-            description: `Browse and discover ${activeContentType === 'Series' ? 'series' : activeContentType === 'Movie' ? 'movies' : 'content'} on UgFlix. Filter by genre, VJ, and more.`
-          },
-          openGraph: {
-            title: `${getPageTitle()} | UgFlix`,
-            description: `Browse and discover ${activeContentType === 'Series' ? 'series' : activeContentType === 'Movie' ? 'movies' : 'content'} on UgFlix`,
-            type: 'website',
-            siteName: 'UgFlix',
-            locale: 'en_US'
-          },
-          twitter: {
-            card: 'summary_large_image',
-            title: `${getPageTitle()} | UgFlix`,
-            description: `Browse and discover ${activeContentType === 'Series' ? 'series' : activeContentType === 'Movie' ? 'movies' : 'content'} on UgFlix`
-          }
-        }}
-      />
+    <div className="movies-page">
+      <div className="movies-content">
+        {/* Filter Bar */}
+        <div className="movies-filters-bar">
+          <div className="movies-filters-left">
+            <Filter size={14} className="filter-icon" />
+            <span className="filter-label">Filter:</span>
 
-      <div className="movies-page">
-        {/* Main Content */}
-        <Container fluid className="movies-content">
-          
-
-          {/* Error State */}
-          {error && (
-            <Alert variant="danger" className="movies-error">
-              <Alert.Heading>Oops! Something went wrong</Alert.Heading>
-              <p>{error}</p>
-            </Alert>
-          )}
-
-          {/* Loading State */}
-          {loading && movies.length === 0 && (
-            <Row className="movies-grid">
-              {Array.from({ length: itemsPerPage }).map((_, index) => (
-                <Col key={index} xs={6} sm={4} md={3} lg={2} className="movie-col">
-                  <MovieCardSkeleton />
-                </Col>
-              ))}
-            </Row>
-          )}
-
-          {/* Empty State */}
-          {!loading && movies.length === 0 && !error && (
-            <div className="movies-empty">
-              <div className="empty-icon">🎬</div>
-              {searchQuery ? (
-                <>
-                  <h3>No results found for "{searchQuery}"</h3>
-                  <p>Try searching with different keywords or browse all content.</p>
-                </>
-              ) : (
-                <>
-                  <h3>No {activeContentType === 'Series' ? 'series' : 'movies'} found</h3>
-                  <p>Check back later for new content.</p>
-                </>
-              )}
+            {/* Genre */}
+            <div className="filter-select-wrap">
+              <select
+                className="filter-select"
+                value={genre || ''}
+                onChange={(e) => setFilter('genre', e.target.value || null)}
+              >
+                <option value="">Genre</option>
+                {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+              <ChevronDown size={12} className="select-chevron" />
             </div>
-          )}
 
-          {/* Movies Grid */}
-          {movies.length > 0 && (
-            <Row className="movies-grid">
-              {movies.map((movie) => (
-                <Col key={movie.id} xs={6} sm={4} md={3} lg={2} className="movie-col">
-                  <MovieCard
-                    movie={movie as any}
-                    onClick={handleMovieClick}
-                    onPlay={handlePlayMovie}
-                    onAddToWatchlist={handleAddToWatchlist}
-                    showProgress={true}
-                  />
-                </Col>
-              ))}
-            </Row>
-          )}
+            {/* Language */}
+            <div className="filter-select-wrap">
+              <select
+                className="filter-select"
+                value={language || ''}
+                onChange={(e) => setFilter('language', e.target.value || null)}
+              >
+                <option value="">Language</option>
+                {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
+              </select>
+              <ChevronDown size={12} className="select-chevron" />
+            </div>
 
-          {/* Pagination */}
-          {movies.length > 0 && !loading && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-              isLoading={loading}
-            />
-          )}
-        </Container>
+            {/* VJ */}
+            <div className="filter-select-wrap">
+              <select
+                className="filter-select"
+                value={vj || ''}
+                onChange={(e) => setFilter('vj', e.target.value || null)}
+              >
+                <option value="">VJ</option>
+                {VJS.map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+              <ChevronDown size={12} className="select-chevron" />
+            </div>
+
+            {/* Year */}
+            <div className="filter-select-wrap">
+              <select
+                className="filter-select"
+                value={year?.toString() || ''}
+                onChange={(e) => setFilter('year', e.target.value || null)}
+              >
+                <option value="">Year</option>
+                {YEARS.map((y) => <option key={y} value={y.toString()}>{y}</option>)}
+              </select>
+              <ChevronDown size={12} className="select-chevron" />
+            </div>
+
+            {hasActiveFilters && (
+              <button className="filter-clear-btn" onClick={clearFilters}>
+                <X size={12} /> Clear
+              </button>
+            )}
+          </div>
+
+          {/* Sort */}
+          <div className="filter-select-wrap">
+            <select
+              className="filter-select"
+              value={sort}
+              onChange={(e) => setFilter('sort', e.target.value)}
+            >
+              {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <ChevronDown size={12} className="select-chevron" />
+          </div>
+        </div>
+
+        {/* Results count */}
+        {!isLoading && (
+          <p className="movies-count">
+            {totalItems > 0 ? `${totalItems} ${activeContentType ?? 'items'} found` : ''}
+          </p>
+        )}
+
+        {/* Error State */}
+        {isError && (
+          <div className="movies-empty">
+            <Film size={48} />
+            <h3>Failed to load content</h3>
+            <p>Please try again later.</p>
+          </div>
+        )}
+
+        {/* Skeleton */}
+        {isLoading && (
+          <div className="movies-grid-v2">
+            {Array.from({ length: 24 }).map((_, i) => (
+              <MovieCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !isError && movies.length === 0 && (
+          <div className="movies-empty">
+            <Film size={48} />
+            <h3>No {activeContentType?.toLowerCase() ?? 'content'} found</h3>
+            {hasActiveFilters && <p>Try adjusting your filters.</p>}
+          </div>
+        )}
+
+        {/* Movies Grid */}
+        {movies.length > 0 && (
+          <div className="movies-grid-v2">
+            {movies.map((movie) => (
+              <MovieCard
+                key={movie.id}
+                movie={movie as any}
+                onClick={(m: any) => navigate(`/watch/${m.id}`)}
+                onPlay={(m: any) => navigate(`/watch/${m.id}`)}
+                onAddToWatchlist={() => {}}
+                showProgress={false}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && !isLoading && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={24}
+            onPageChange={handlePageChange}
+            isLoading={isLoading}
+          />
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

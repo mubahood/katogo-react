@@ -1,5 +1,5 @@
 // src/app/components/search/LiveSearchBox.tsx
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Form, Button, ListGroup, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useManifest } from "../../hooks/useManifest";
@@ -209,7 +209,8 @@ const inlineStyles = `
     border-bottom: none;
   }
 
-  .livesearch-dropdown-item:hover {
+  .livesearch-dropdown-item:hover,
+  .livesearch-item-active {
     background: rgba(255, 107, 53, 0.2);
     border-left: 3px solid #ff6b35;
     padding-left: 7px;
@@ -470,10 +471,27 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
     null
   );
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [activeIndex, setActiveIndex] = useState(-1);
 
   const navigate = useNavigate();
   const searchRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Reset active index when dropdown closes or query changes
+  useEffect(() => { setActiveIndex(-1); }, [showDropdown, query]);
+
+  // Build flat navigable items list for keyboard nav
+  const navigableItems = useMemo(() => {
+    if (searchResults) {
+      const products = searchResults.products.map((p) => ({ type: 'product' as const, data: p }));
+      const suggestions = searchResults.suggestions.map((s) => ({ type: 'suggestion' as const, data: s }));
+      return [...products, ...suggestions];
+    }
+    if (recentSearches.length > 0) {
+      return recentSearches.map((s) => ({ type: 'recent' as const, data: s }));
+    }
+    return [];
+  }, [searchResults, recentSearches]);
 
   // Get recent search suggestions from manifest
   const { manifest } = useManifest();
@@ -571,6 +589,27 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
     }
   };
 
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showDropdown || navigableItems.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((prev) => Math.min(prev + 1, navigableItems.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((prev) => Math.max(prev - 1, -1));
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setShowDropdown(false);
+      setActiveIndex(-1);
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault();
+      const item = navigableItems[activeIndex];
+      if (item.type === 'product') handleProductClick(item.data as ProductModel);
+      else handleSuggestionClick(item.data as string);
+    }
+  };
+
   // Handle input blur
   const handleInputBlur = (e: React.FocusEvent) => {
     // Delay hiding dropdown to allow clicking on items
@@ -662,7 +701,11 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
               onChange={handleInputChange}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
+              onKeyDown={handleKeyDown}
               autoComplete="off"
+              aria-autocomplete="list"
+              aria-expanded={showDropdown}
+              aria-activedescendant={activeIndex >= 0 ? `lsb-item-${activeIndex}` : undefined}
             />
             <button
               className="btn btn-search"
@@ -760,7 +803,7 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
                         <i className="bi bi-film"></i>
                         <span>Movies & Series</span>
                       </div>
-                      {searchResults.products.map((product) => {
+                      {searchResults.products.map((product, pIdx) => {
                         // Parse movie data from tags field
                         let movieData;
                         try {
@@ -772,7 +815,8 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
                         return (
                           <div
                             key={product.id}
-                            className="livesearch-dropdown-item livesearch-product-item"
+                            id={`lsb-item-${pIdx}`}
+                            className={`livesearch-dropdown-item livesearch-product-item${activeIndex === pIdx ? ' livesearch-item-active' : ''}`}
                             onClick={() => handleProductClick(product)}
                           >
                             <div 
@@ -822,17 +866,21 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
                         <i className="bi bi-search"></i>
                         <span>Suggestions</span>
                       </div>
-                      {searchResults.suggestions.map((suggestion, index) => (
+                      {searchResults.suggestions.map((suggestion, sIdx) => {
+                        const itemIdx = searchResults.products.length + sIdx;
+                        return (
                         <div
-                          key={index}
-                          className="livesearch-dropdown-item"
+                          key={sIdx}
+                          id={`lsb-item-${itemIdx}`}
+                          className={`livesearch-dropdown-item${activeIndex === itemIdx ? ' livesearch-item-active' : ''}`}
                           onClick={() => handleSuggestionClick(suggestion)}
                         >
                           <i className="bi bi-search"></i>
                           <span>{suggestion}</span>
                           <i className="bi bi-arrow-up-left livesearch-item-action"></i>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
 
@@ -874,7 +922,8 @@ const LiveSearchBox: React.FC<LiveSearchBoxProps> = ({
                     {recentSearches.map((search, index) => (
                       <div
                         key={index}
-                        className="livesearch-dropdown-item"
+                        id={`lsb-item-${index}`}
+                        className={`livesearch-dropdown-item${activeIndex === index ? ' livesearch-item-active' : ''}`}
                         onClick={() => handleSuggestionClick(search)}
                       >
                         <i className="bi bi-clock"></i>

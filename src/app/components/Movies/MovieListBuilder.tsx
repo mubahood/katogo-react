@@ -1,6 +1,6 @@
 // src/app/components/Movies/MovieListBuilder.tsx
 import React, { useState, useRef, useCallback, memo, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight, RotateCcw } from 'react-feather';
+import { ChevronLeft, ChevronRight, ArrowRight, RotateCcw } from 'lucide-react';
 import MovieCard from './MovieCard';
 import MovieCardSkeleton from './MovieCardSkeleton';
 import type { Movie } from '../../services/manifest.service';

@@ -37,7 +37,7 @@ export interface MoviesResponse {
 }
 
 class MoviesApiService {
-  private static moviesEndpoint = 'movies';
+  private static moviesEndpoint = 'v2/movies';
 
   static async getMovies(params: MoviesApiParams = {}): Promise<ApiResponse<MoviesResponse>> {
     try {
@@ -128,7 +128,7 @@ class MoviesApiService {
 
   static async getMovieById(movieId: number): Promise<Movie | null> {
     try {
-      const response = await http_get(`movies/${movieId}`, {});
+      const response = await http_get(`v2/movies/${movieId}`, {});
       if (response.code === 1 && response.data?.movie) {
         return response.data.movie;
       }

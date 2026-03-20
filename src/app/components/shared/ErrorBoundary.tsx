@@ -1,6 +1,7 @@
 // src/app/components/shared/ErrorBoundary.tsx
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, Button, Container, Card } from 'react-bootstrap';
+import * as Sentry from '@sentry/react';
 
 interface Props {
   children: ReactNode;
@@ -13,6 +14,7 @@ interface State {
   error?: Error;
   errorInfo?: ErrorInfo;
   errorId?: string;
+  sentryEventId?: string;
 }
 
 /**
@@ -36,11 +38,12 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log error to external service in production
-    this.logErrorToService(error, errorInfo);
+    const sentryEventId = this.logErrorToService(error, errorInfo);
     
     this.setState({
       error,
       errorInfo,
+      sentryEventId,
     });
 
     // Call custom error handler if provided
@@ -49,33 +52,24 @@ class ErrorBoundary extends Component<Props, State> {
     }
   }
 
-  private logErrorToService = (error: Error, errorInfo: ErrorInfo) => {
-    const errorData = {
-      errorId: this.state.errorId,
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-      userId: this.getUserId(),
-    };
-
-    // In production, send to error tracking service (Sentry, Bugsnag, etc.)
-    if (import.meta.env.PROD) {
-      // Example: Sentry.captureException(error, { extra: errorData });
-      console.error('Production Error:', errorData);
-      
-      // Send to your error tracking endpoint using centralized method
-      import('../../services/Api').then(({ http_post }) => {
-        http_post('errors', errorData).catch(() => {
-          // Silently fail if error reporting fails
-        });
+  private logErrorToService = (error: Error, errorInfo: ErrorInfo): string | undefined => {
+    // ERR-02/05: Send to Sentry
+    try {
+      return Sentry.captureException(error, {
+        extra: {
+          componentStack: errorInfo.componentStack,
+          errorId: this.state.errorId,
+          userId: this.getUserId(),
+          url: window.location.href,
+        },
       });
-    } else {
-      // Development logging
+    } catch { /* ignore if Sentry not configured */ }
+
+    if (!import.meta.env.PROD) {
       console.error('Error Boundary caught an error:', error, errorInfo);
     }
+
+    return undefined;
   };
 
   private getUserId = (): string | null => {
@@ -96,7 +90,20 @@ class ErrorBoundary extends Component<Props, State> {
   };
 
   private handleRetry = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined, sentryEventId: undefined });
+  };
+
+  private handleReportProblem = () => {
+    try {
+      if (this.state.sentryEventId) {
+        Sentry.showReportDialog({ eventId: this.state.sentryEventId });
+        return;
+      }
+    } catch {
+      // fall through to alert fallback
+    }
+
+    alert(`Error ID: ${this.state.errorId ?? 'unknown'}. Please contact support.`);
   };
 
   render() {
@@ -156,12 +163,21 @@ class ErrorBoundary extends Component<Props, State> {
                   <i className="bi bi-arrow-clockwise me-2"></i>
                   Reload Page
                 </Button>
+
+                <Button
+                  variant="outline-danger"
+                  onClick={this.handleReportProblem}
+                >
+                  <i className="bi bi-flag me-2"></i>
+                  Report Problem
+                </Button>
               </div>
 
               {import.meta.env.DEV && this.state.error && (
                 <Alert variant="danger" className="mt-4 text-start">
                   <details>
                     <summary className="fw-bold">Development Error Details</summary>
+
                     <pre className="mt-2 small">
                       {this.state.error.message}
                       {'\n\n'}

@@ -15,10 +15,17 @@ import SubscriptionProtectedRoute from "../components/Auth/SubscriptionProtected
 
 // Lazy loaded components for better performance
 const HomePage = React.lazy(() => import("../pages/HomePage"));
+const StreamingHomePage = React.lazy(() => import("../pages/home/StreamingHomePage"));
+const LiveTVPage = React.lazy(() => import("../pages/liveTV/LiveTVPage"));
+const LiveStationPage = React.lazy(() => import("../pages/liveTV/LiveStationPage"));
+const BlogPage = React.lazy(() => import("../pages/blog/BlogPage"));
+const BlogPostPage = React.lazy(() => import("../pages/blog/BlogPostPage"));
 const ProductDetailPageWrapper = React.lazy(() => import("../pages/ProductDetailPage/ProductDetailPageWrapper"));
 const ProductsPage = React.lazy(() => import("../pages/ProductsPage"));
 const MoviesPage = React.lazy(() => import("../pages/Movies/MoviesPage"));
 const WatchPage = React.lazy(() => import("../pages/WatchPage"));
+const SeriesDetailPage = React.lazy(() => import("../pages/Movies/SeriesDetailPage"));
+const MovieDetailPage = React.lazy(() => import("../pages/Movies/MovieDetailPage"));
 const CategoryPage = React.lazy(() => import("../pages/CategoryPage"));
 const CartPage = React.lazy(() => import("../pages/CartPage"));
 const CheckoutPage = React.lazy(() => import("../pages/CheckoutPage"));
@@ -47,14 +54,10 @@ const Contact = React.lazy(() => import("../pages/static/Contact"));
 
 // Demo Pages
 const ToastDemo = React.lazy(() => import("../components/Demo/ToastDemo"));
-const ApiTestPage = React.lazy(() => import("../pages/ApiTestPage"));
-const ApiIntegrationStatusPage = React.lazy(() => import("../pages/ApiIntegrationStatusPage"));
 
 // Auth Pages
 const LoginPage = React.lazy(() => import("../pages/auth/LoginPage"));
 const RegisterPage = React.lazy(() => import("../pages/auth/RegisterPage"));
-const MinimalLogin = React.lazy(() => import("../pages/auth/MinimalLogin"));
-const MinimalRegister = React.lazy(() => import("../pages/auth/MinimalRegister"));
 const ForgotPassword = React.lazy(() => import("../pages/auth/ForgotPassword"));
 const ForgotPasswordPage = React.lazy(() => import("../pages/auth/ForgotPasswordPage"));
 const LandingPage = React.lazy(() => import("../pages/auth/LandingPage"));
@@ -67,27 +70,28 @@ const SubscriptionHistory = React.lazy(() => import("../pages/SubscriptionHistor
 const MySubscriptions = React.lazy(() => import("../pages/MySubscriptions"));
 
 // Account Pages - Direct imports to fix dynamic import issues
-import AccountDashboard from "../pages/account/AccountDashboard";
-import AccountDashboardNew from "../pages/account/AccountDashboardNew";
-import AccountProfile from "../pages/account/AccountProfile";
-import ProfileEdit from "../pages/account/ProfileEdit";
-import AccountOrdersPage from "../pages/account/AccountOrdersPage";
-import AccountSettings from "../pages/account/AccountSettings";
-import AccountSubscriptionManagement from "../pages/account/AccountSubscriptionManagement";
-import AccountWatchHistory from "../pages/account/AccountWatchHistory";
-import AccountWatchlist from "../pages/account/AccountWatchlist";
-import AccountMovieLikes from "../pages/account/AccountMovieLikes";
-import AccountProducts from "../pages/account/AccountProducts";
-import AccountChats from "../pages/account/AccountChats";
-// Old chat modules removed - using AccountChats module now
-import OrderDetailsPage from "../pages/account/OrderDetailsPage";
-import Account from "../pages/account/Account";
-import ProductPost from "../pages/account/ProductPost";
-import MyProducts from "../pages/account/MyProducts";
+// Account Pages - Lazy-loaded for better code splitting
+const AccountDashboard = React.lazy(() => import("../pages/account/AccountDashboard"));
+const AccountProfile = React.lazy(() => import("../pages/account/AccountProfile"));
+const ProfileEdit = React.lazy(() => import("../pages/account/ProfileEdit"));
+const AccountOrdersPage = React.lazy(() => import("../pages/account/AccountOrdersPage"));
+const AccountSettings = React.lazy(() => import("../pages/account/AccountSettings"));
+const AccountSubscriptionManagement = React.lazy(() => import("../pages/account/AccountSubscriptionManagement"));
+const AccountWatchHistory = React.lazy(() => import("../pages/account/AccountWatchHistory"));
+const AccountWatchlist = React.lazy(() => import("../pages/account/AccountWatchlist"));
+const AccountMovieLikes = React.lazy(() => import("../pages/account/AccountMovieLikes"));
+const AccountProducts = React.lazy(() => import("../pages/account/AccountProducts"));
+const AccountChats = React.lazy(() => import("../pages/account/AccountChats"));
+const OrderDetailsPage = React.lazy(() => import("../pages/account/OrderDetailsPage"));
+const Account = React.lazy(() => import("../pages/account/Account"));
+const ProductPost = React.lazy(() => import("../pages/account/ProductPost"));
+const MyProducts = React.lazy(() => import("../pages/account/MyProducts"));
+const AccountBlockedUsersPage = React.lazy(() => import("../pages/account/AccountBlockedUsersPage"));
+const AccountMyReportsPage = React.lazy(() => import("../pages/account/AccountMyReportsPage"));
 
 // Connect/Dating Pages
-import ConnectDiscover from "../pages/connect/ConnectDiscover";
-import ConnectProfile from "../pages/connect/ConnectProfile";
+const ConnectDiscover = React.lazy(() => import("../pages/connect/ConnectDiscover"));
+const ConnectProfile = React.lazy(() => import("../pages/connect/ConnectProfile"));
 
 // Error Pages
 const NotFoundPage = React.lazy(() => import("../pages/errors/NotFoundPage"));
@@ -110,7 +114,7 @@ const AppRoutes: React.FC = () => {
             index 
             element={
               <ProtectedRoute>
-                <HomePage />
+                <StreamingHomePage />
               </ProtectedRoute>
             } 
           />
@@ -148,6 +152,32 @@ const AppRoutes: React.FC = () => {
               </ProtectedRoute>
             } 
           />
+
+          {/* Live TV - Protected + Subscription */}
+          <Route
+            path="live"
+            element={
+              <ProtectedRoute>
+                <SubscriptionProtectedRoute>
+                  <LiveTVPage />
+                </SubscriptionProtectedRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="live/:id"
+            element={
+              <ProtectedRoute>
+                <SubscriptionProtectedRoute>
+                  <LiveStationPage />
+                </SubscriptionProtectedRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Blog - Public (no subscription required) */}
+          <Route path="blog" element={<BlogPage />} />
+          <Route path="blog/:id" element={<BlogPostPage />} />
           
           {/* Movies & Series - Subscription Required */}
           <Route 
@@ -180,15 +210,25 @@ const AppRoutes: React.FC = () => {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="series/:id" 
+          <Route
+            path="series/:id"
             element={
               <ProtectedRoute>
                 <SubscriptionProtectedRoute>
-                  <WatchPage />
+                  <SeriesDetailPage />
                 </SubscriptionProtectedRoute>
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="movie/:id"
+            element={
+              <ProtectedRoute>
+                <SubscriptionProtectedRoute>
+                  <MovieDetailPage />
+                </SubscriptionProtectedRoute>
+              </ProtectedRoute>
+            }
           />
           <Route 
             path="watch/:id" 
@@ -297,7 +337,7 @@ const AppRoutes: React.FC = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<AccountDashboardNew />} />
+            <Route index element={<AccountDashboard />} />
             <Route path="profile" element={<AccountProfile />} />
             <Route path="profile/edit" element={<ProfileEdit />} />
             <Route path="subscriptions" element={<AccountSubscriptionManagement />} />
@@ -311,6 +351,8 @@ const AppRoutes: React.FC = () => {
             <Route path="orders" element={<AccountOrdersPage />} />
             <Route path="orders/:orderId" element={<OrderDetailsPage />} />
             <Route path="settings" element={<AccountSettings />} />
+              <Route path="blocked-users" element={<AccountBlockedUsersPage />} />
+              <Route path="my-reports" element={<AccountMyReportsPage />} />
           </Route>
           
           {/* Connect/Dating - Protected Routes */}
@@ -360,9 +402,6 @@ const AppRoutes: React.FC = () => {
           
           {/* Demo Pages */}
           <Route path="toast-demo" element={<ToastDemo />} />
-          <Route path="api-test" element={<ApiTestPage />} />
-          <Route path="test" element={<ApiTestPage />} />
-          <Route path="integration-status" element={<ApiIntegrationStatusPage />} />
         </Route>
 
         {/* Landing Page for Non-Authenticated Users */}

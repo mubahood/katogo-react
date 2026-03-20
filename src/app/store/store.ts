@@ -5,6 +5,8 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 // Import your API services
 import { productsApi } from '../services/productsApi';
 import { realProductsApi } from '../services/realProductsApi';
+import { manifestApi } from './api/manifestApi';
+import { moviesApi } from './api/moviesApi';
 
 // Import your Redux slices
 import cartReducer from './slices/cartSlice';
@@ -13,6 +15,7 @@ import notificationReducer from './slices/notificationSlice';
 import wishlistReducer from './slices/wishlistSlice';
 import userReducer from './slices/userSlice';
 import manifestReducer from './slices/manifestSlice';
+import themeReducer from './slices/themeSlice';
 
 export const store = configureStore({
   reducer: {
@@ -21,9 +24,12 @@ export const store = configureStore({
     notification: notificationReducer,
     wishlist: wishlistReducer,
     manifest: manifestReducer,
+    theme: themeReducer,
     // Add the API reducers
     [productsApi.reducerPath]: productsApi.reducer,
     [realProductsApi.reducerPath]: realProductsApi.reducer,
+    [manifestApi.reducerPath]: manifestApi.reducer,
+    [moviesApi.reducerPath]: moviesApi.reducer,
   },
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of RTK Query.
@@ -61,7 +67,9 @@ export const store = configureStore({
       },
     }).concat(
       productsApi.middleware,
-      realProductsApi.middleware
+      realProductsApi.middleware,
+      manifestApi.middleware,
+      moviesApi.middleware
     ),
 });
 

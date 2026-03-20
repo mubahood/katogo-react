@@ -1,7 +1,7 @@
 // src/app/pages/Movies/components/Pagination.tsx
 import React from 'react';
 import { Button } from 'react-bootstrap';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'react-feather';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import './Pagination.css';
 
 interface PaginationProps {

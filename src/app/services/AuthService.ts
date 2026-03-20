@@ -13,16 +13,15 @@ const ugflix_auth_token = "ugflix_auth_token";
 const ugflix_user = "ugflix_user";
 
 export interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface RegisterData {
-  username: string;
+  email: string;
   password: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
+  name?: string;
+  phone_number?: string;
 }
 
 /**
@@ -32,49 +31,31 @@ export interface RegisterData {
  */
 export const loginUser = async (credentials: LoginCredentials): Promise<ProfileModel> => {
   try {
-    console.log('🔐 AuthService: Attempting login with:', { username: credentials.username });
-    
-    // Call the API using your established pattern
-    const response = await http_post('users/login', {
-      username: credentials.username,
-      password: credentials.password
+    const response = await http_post('auth/login', {
+      email: credentials.email,
+      password: credentials.password,
     });
 
-    console.log('🔐 AuthService: Raw login response:', response);
-
-    // Check if the response is successful
     if (response.code !== 1) {
-      console.error('❌ Login failed:', response.message);
       throw new Error(response.message || 'Login failed');
     }
 
     if (!response.data) {
-      console.error('❌ No user data in response');
       throw new Error('No user data received from server');
     }
 
-    const responseData = response.data;
-    console.log('🔐 AuthService: User data received:', responseData);
+    // Backend returns { token, user } inside data
+    const token = response.data.token || response.data.remember_token || response.data.access_token;
+    const userData = response.data.user || response.data;
 
-    // Create ProfileModel from response data
-    const userProfile = ProfileModel.fromJson(responseData);
-    
-    // Get token from response (could be remember_token, token, or access_token)
-    const token = responseData.remember_token || responseData.token || responseData.access_token;
-    
-    console.log('🔐 AuthService: Token found:', token ? `${token.substring(0, 10)}...` : 'NO TOKEN');
-    
     if (!token) {
-      console.error('❌ No token in response data:', Object.keys(responseData));
       throw new Error('No authentication token received from server');
     }
 
-    // Save user and token using localStorage
-    localStorage.setItem(ugflix_user, JSON.stringify(responseData));
+    localStorage.setItem(ugflix_user, JSON.stringify(userData));
     localStorage.setItem(ugflix_auth_token, token);
 
-    console.log('✅ AuthService: Login successful, data saved');
-    return userProfile;
+    return ProfileModel.fromJson(userData);
   } catch (error) {
     console.error('❌ AuthService: Login failed:', error);
     throw error;
@@ -88,50 +69,33 @@ export const loginUser = async (credentials: LoginCredentials): Promise<ProfileM
  */
 export const registerUser = async (userData: RegisterData): Promise<ProfileModel> => {
   try {
-    console.log('🔐 AuthService: Attempting registration');
-    
-    // Call the API using your established pattern
-    // Combine first_name and last_name into name as expected by the API
-    const registrationData = {
-      name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
-      email: userData.email || userData.username,
-      password: userData.password
-    };
+    const response = await http_post('auth/register', {
+      email: userData.email,
+      password: userData.password,
+      name: userData.name || '',
+      phone_number: userData.phone_number || '',
+    });
 
-    const response = await http_post('users/register', registrationData);
-
-    console.log('🔐 AuthService: Registration response:', response);
-
-    // Check if the response is successful
     if (response.code !== 1) {
-      console.error('❌ Registration failed:', response.message);
       throw new Error(response.message || 'Registration failed');
     }
 
     if (!response.data) {
-      console.error('❌ No user data in registration response');
       throw new Error('No user data received from server');
     }
 
-    const responseData = response.data;
+    // Backend returns { token, user } inside data
+    const token = response.data.token || response.data.remember_token || response.data.access_token;
+    const newUserData = response.data.user || response.data;
 
-    // Create ProfileModel from response data
-    const userProfile = ProfileModel.fromJson(responseData);
-    
-    // Get token from response
-    const token = responseData.remember_token || responseData.token || responseData.access_token;
-    
     if (!token) {
-      console.error('❌ No token in registration response:', Object.keys(responseData));
       throw new Error('No authentication token received from server');
     }
 
-    // Save user and token using localStorage
-    localStorage.setItem(ugflix_user, JSON.stringify(responseData));
+    localStorage.setItem(ugflix_user, JSON.stringify(newUserData));
     localStorage.setItem(ugflix_auth_token, token);
 
-    console.log('✅ AuthService: Registration successful');
-    return userProfile;
+    return ProfileModel.fromJson(newUserData);
   } catch (error) {
     console.error('❌ AuthService: Registration failed:', error);
     throw error;

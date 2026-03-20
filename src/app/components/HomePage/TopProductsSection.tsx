@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Container, Button, Spinner, Alert } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { BiChevronRight } from "react-icons/bi";
-import ProductCardSimple from "../shared/ProductCardSimple";
+import ProductCard from "../shared/ProductCard";
 import ProductModel from "../../models/ProductModel";
 import { useGetProductsQuery } from "../../services/realProductsApi";
 
@@ -175,7 +175,7 @@ const TopProductsSection: React.FC = () => {
               </div>
             )}
             {!isLoading && !error && products.length > 0 && products.map((product) => (
-              <ProductCardSimple key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
           {/* Optional: Load More button or pagination */}

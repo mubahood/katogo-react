@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Row, Col, Button, Spinner, Badge, ProgressBar } from 'react-bootstrap';
-import { Play, Trash2, Calendar, Clock, Film } from 'react-feather';
+import { Play, Trash2, Calendar, Clock, Film } from 'lucide-react';
 import { AccountApiService } from '../../services/AccountApiService';
 import Utils from '../../services/Utils';
 import ToastService from '../../services/ToastService';

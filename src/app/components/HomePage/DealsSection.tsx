@@ -2,7 +2,7 @@
 import React, { useRef, useCallback, memo } from "react";
 import { Link } from "react-router-dom";
 import Countdown from "./Countdown";
-import ProductCard2 from "../shared/ProductCard2";
+import ProductCard from "../shared/ProductCard";
 import { useGetProductsQuery } from "../../services/realProductsApi";
 import { Spinner, Alert } from "react-bootstrap";
 
@@ -288,7 +288,7 @@ const DealsSection: React.FC = () => {
               </div>
             )}
             {!isLoading && !error && products.length > 0 && products.map((product) => (
-              <ProductCard2 key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
 

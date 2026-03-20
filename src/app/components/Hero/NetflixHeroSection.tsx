@@ -1,7 +1,7 @@
 // src/app/components/Hero/NetflixHeroSection.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
-import { Play, Plus, Info, Volume2, VolumeX, RotateCcw } from 'react-feather';
+import { Play, Plus, Info, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import type { Movie } from '../../services/manifest.service';
 import { truncateDescription } from '../../utils';
 

@@ -2,10 +2,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Spinner } from 'react-bootstrap';
-import { Heart, Download, Share2, Star, Calendar, Clock, Users, Play } from 'lucide-react';
+import { Heart, Download, Share2, Star, Calendar, Clock, Users, Play, Flag } from 'lucide-react';
+import ReportContentModal from '../components/moderation/ReportContentModal';
 import MovieListBuilder from '../components/Movies/MovieListBuilder';
 import { CustomVideoPlayer } from '../components/VideoPlayer/CustomVideoPlayer';
 import { ApiService } from '../services/ApiService';
+import { http_post } from '../services/Api';
+import AnalyticsV2Service from '../services/v2/AnalyticsV2Service';
+import MoviesV2Service from '../services/v2/MoviesV2Service';
 
 interface MovieData {
   id: number;
@@ -1099,12 +1103,17 @@ const WatchPage: React.FC = () => {
 
 
   const [liked, setLiked] = useState(false);
+    // WATCH-02: Resume position
+    const [resumeSeconds, setResumeSeconds] = useState<number | null>(null);
+    const [showResumePrompt, setShowResumePrompt] = useState(false);
+
   const [likesCount, setLikesCount] = useState(0);
   const [isLiking, setIsLiking] = useState(false);
   const [watchlisted, setWatchlisted] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [isWishlisting, setIsWishlisting] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   // Update liked status, likes count, and wishlist status when movieData changes
   useEffect(() => {
@@ -1115,6 +1124,69 @@ const WatchPage: React.FC = () => {
       setWishlistCount(movieData.movie.wishlist_count || 0);
     }
   }, [movieData]);
+
+    // WATCH-01: Report playback start to backend + WATCH-05: track via safemode
+    // WATCH-02: Load saved progress and offer resume prompt
+    useEffect(() => {
+      if (!movieData || !id) return;
+      const movie = movieData.movie;
+
+      // WATCH-01: Report playback
+      MoviesV2Service.reportPlayback(movie.id);
+
+      // WATCH-05: Track 'play' action via safemode analytics
+      AnalyticsV2Service.trackAction({
+        external_video_id: movie.id,
+        action: 'play',
+        video_title: movie.title,
+        genre: movie.genre,
+      });
+
+      // WATCH-02: Fetch saved progress — offer resume if > 30 seconds
+      AnalyticsV2Service.getProgress(movie.id).then((prog) => {
+        if (prog && prog.progress_seconds > 30) {
+          setResumeSeconds(prog.progress_seconds);
+          setShowResumePrompt(true);
+        }
+      });
+    }, [movieData?.movie.id]);
+
+    // WATCH-03: Save progress every 30 seconds while video is playing
+    useEffect(() => {
+      if (!movieData) return;
+      const movie = movieData.movie;
+      const interval = setInterval(() => {
+        const videoEl = document.querySelector('video') as HTMLVideoElement | null;
+        if (videoEl && !videoEl.paused && !videoEl.ended) {
+          AnalyticsV2Service.saveProgress({
+            external_video_id: movie.id,
+            progress_seconds: Math.floor(videoEl.currentTime),
+            duration_seconds: isNaN(videoEl.duration) ? undefined : Math.floor(videoEl.duration),
+            video_title: movie.title,
+          });
+        }
+      }, 30_000);
+      return () => clearInterval(interval);
+    }, [movieData?.movie.id]);
+
+    // WATCH-04: Report video playback failures
+    useEffect(() => {
+      if (!movieData) return;
+      const movieId = movieData.movie.id;
+      const handleVideoError = (e: Event) => {
+        const videoEl = e.target as HTMLVideoElement;
+        const errMsg = videoEl.error?.message || 'Unknown playback error';
+        // Report to dedicated failures endpoint
+        http_post('video-playback-failures', {
+          movie_id: movieId,
+          error_message: errMsg,
+        }).catch(() => {}); // non-critical
+        console.error('[WatchPage] Playback error on movie', movieId, errMsg);
+      };
+      const videoEl = document.querySelector('video');
+      videoEl?.addEventListener('error', handleVideoError);
+      return () => videoEl?.removeEventListener('error', handleVideoError);
+    }, [movieData?.movie.id]);
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {
@@ -1231,6 +1303,19 @@ const WatchPage: React.FC = () => {
     window.open(movie.url, '_blank');
   };
 
+    // WATCH-09: Track download click
+    const handleDownloadTracked = () => {
+      const movie = getCurrentMovie();
+      if (!movie) return;
+      AnalyticsV2Service.recordDownload({
+        movie_model_id: movie.id,
+        download_type: 'in_app',
+        title: movie.title,
+        genre: movie.genre,
+      });
+      window.open(movie.url, '_blank');
+    };
+
   if (loading) {
     return (
       <div className="watch-page-loading">
@@ -1272,6 +1357,35 @@ const WatchPage: React.FC = () => {
           <Col lg={8} className="left-content">
             {/* Video Player */}
             <div className="video-container">
+                {/* WATCH-02: Resume prompt */}
+                {showResumePrompt && resumeSeconds !== null && (
+                  <div style={{
+                    position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 50, background: 'rgba(0,0,0,0.85)', borderRadius: 8,
+                    padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 12,
+                    border: '1px solid var(--ugflix-border,#1e1e1e)'
+                  }}>
+                    <span style={{ color: '#ccc', fontSize: 13 }}>
+                      Resume from {Math.floor(resumeSeconds / 60)}:{String(resumeSeconds % 60).padStart(2, '0')}?
+                    </span>
+                    <button
+                      onClick={() => {
+                        const v = document.querySelector('video') as HTMLVideoElement | null;
+                        if (v && resumeSeconds) v.currentTime = resumeSeconds;
+                        setShowResumePrompt(false);
+                      }}
+                      style={{ color: 'var(--color-brand-red,#E50914)', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                      Resume
+                    </button>
+                    <button
+                      onClick={() => setShowResumePrompt(false)}
+                      style={{ color: '#888', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      Start Over
+                    </button>
+                  </div>
+                )}
               <CustomVideoPlayer
                 url={movie.url}
                 movieId={movie.id}
@@ -1334,16 +1448,21 @@ const WatchPage: React.FC = () => {
                   </button>
                   <button 
                     className="action-btn download-btn"
-                    onClick={handleDownload}
+                    onClick={handleDownloadTracked}
                   >
                     <Download size={14} />
                     Download
                   </button>
+                  <button
+                    className="action-btn"
+                    onClick={() => setReportModalOpen(true)}
+                    title="Report this content"
+                  >
+                    <Flag size={14} />
+                    Report
+                  </button>
                 </div>
               </div>
-
-              
-               
             </div>
           </Col>
 
@@ -1416,6 +1535,16 @@ const WatchPage: React.FC = () => {
           </Col>
         </Row>
       </Container>
+
+      {/* MOD-01/WATCH-08: Report content modal */}
+      {movieData && (
+        <ReportContentModal
+          isOpen={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
+          contentType="movie"
+          contentId={movieData.movie.id}
+        />
+      )}
     </div>
   );
 };

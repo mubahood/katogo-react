@@ -5,6 +5,40 @@
    =================================================================== */
 
 /* ===================================================================
+   0. TAILWIND CSS
+   Utility-first CSS framework
+   =================================================================== */
+@import "tailwindcss";
+
+/* ===================================================================
+   TAILWIND THEME CONFIGURATION
+   Brand colors, fonts, and dark mode support
+   =================================================================== */
+@theme {
+  --color-brand-red: #E50914;
+  --color-brand-red-dark: #B20710;
+  --color-brand-red-light: #FF1A25;
+  --color-brand-gold: #F5A623;
+  --color-brand-gold-dark: #D4911E;
+  --color-brand-gold-light: #FFB938;
+  
+  --color-surface-light: #FFFFFF;
+  --color-surface-dark: #141414;
+  --color-surface-card-light: #F5F5F5;
+  --color-surface-card-dark: #1F1F1F;
+  --color-surface-elevated-light: #FFFFFF;
+  --color-surface-elevated-dark: #2A2A2A;
+  
+  --color-text-primary-light: #141414;
+  --color-text-primary-dark: #E5E5E5;
+  --color-text-secondary-light: #737373;
+  --color-text-secondary-dark: #A3A3A3;
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+}
+
+/* ===================================================================
    1. DESIGN SYSTEM FOUNDATION
    Core design tokens, variables, and system definitions
    =================================================================== */

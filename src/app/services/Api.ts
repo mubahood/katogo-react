@@ -71,68 +71,47 @@ export function debugAuthState() {
 
 // Function to handle user registration
 export async function register(email: string, password: string, additionalData?: Record<string, any>) {
-  const registerData = { 
-    username: email, 
-    password,
+  const registerData = {
     email,
-    ...additionalData 
+    password,
+    name: additionalData?.name || '',
+    phone_number: additionalData?.phone_number || '',
+    ...additionalData
   };
-  return handleAuth("users/register", registerData);
+  return handleAuth("auth/register", registerData);
 }
 
 // Function to handle user login
 export async function login(email: string, password: string) {
-  return handleAuth("users/login", { username: email, password });
+  return handleAuth("auth/login", { email, password });
 }
 
-// Function to request password reset
+// Step 1: Request a password reset code sent to email
 export async function requestPasswordReset(email: string) {
   try {
-    console.log('🔐 Requesting password reset for:', email);
-    
-    const resp = await http_post('users/login', {
-      username: email,
-      task: 'request_password_reset'
-    });
-    
-    console.log('🔐 Password reset request response:', resp);
-    
+    const resp = await http_post('auth/request-password-reset-code', { email });
     if (resp.code !== 1) {
-      console.error('❌ Password reset request failed:', resp);
-      throw new Error(resp.message || "Failed to send password reset email");
+      throw new Error(resp.message || "Failed to send password reset code");
     }
-    
-    console.log('✅ Password reset email sent successfully');
     return resp;
   } catch (error) {
-    console.error('❌ Password reset request error:', error);
     throw new Error(`Password reset request failed: ${error}`);
   }
 }
 
-// Function to reset password with code
+// Step 2: Reset password using the code received by email
 export async function resetPassword(email: string, code: string, newPassword: string) {
   try {
-    console.log('🔐 Resetting password for:', email);
-    
-    const resp = await http_post('users/login', {
+    const resp = await http_post('auth/password-reset', {
       email,
       code,
-      password: newPassword,
-      task: 'reset_password'
+      new_password: newPassword,
     });
-    
-    console.log('🔐 Password reset response:', resp);
-    
     if (resp.code !== 1) {
-      console.error('❌ Password reset failed:', resp);
       throw new Error(resp.message || "Failed to reset password");
     }
-    
-    console.log('✅ Password reset successfully');
     return resp;
   } catch (error) {
-    console.error('❌ Password reset error:', error);
     throw new Error(`Password reset failed: ${error}`);
   }
 }
@@ -160,43 +139,32 @@ async function handleAuth(path: string, params: Record<string, any>) {
   }
 }
 
-// Save user data to local storage - matches backend response structure
+// Save user data to local storage - handles { token, user } shape from /api/auth/* endpoints
 interface AuthResponseData {
-  user: {
-    id: number;
-    token?: string;
-    remember_token?: string;
-    [key: string]: any;
-  };
-  company?: {
+  token?: string;
+  user?: {
     id: number;
     [key: string]: any;
   };
+  // Legacy shape: token stored on user object
+  remember_token?: string;
+  id?: number;
+  [key: string]: any;
 }
 
 function saveUserData(resp: AuthResponseData) {
-  // Backend returns user data nested under 'user' key
-  const user = resp.user;
-  const token = user.token || user.remember_token;
-  
-  console.log('Attempting to save user data:', resp);
-  console.log('Token found:', token ? `${token.substring(0, 10)}...` : 'NO TOKEN');
-  
+  // New shape: { token, user } — from /api/auth/login and /api/auth/register
+  const token = resp.token || resp.remember_token || resp.user?.token || resp.user?.remember_token;
+  const user = resp.user || resp;
+
   if (!token || token.length <= 5) {
     console.error('Invalid or missing token in response:', resp);
     throw new Error("No authentication token received from server");
   }
-  
+
   try {
-    // Store data in the same format as mobile app expects
     Utils.saveToDatabase(ugflix_auth_token, token);
-    Utils.saveToDatabase(ugflix_user, user); // Store user object directly
-    
-    // Also store company data separately if provided
-    if (resp.company) {
-      Utils.saveToDatabase('DB_COMPANY', resp.company);
-    }
-    
+    Utils.saveToDatabase(ugflix_user, user);
     console.log('✅ User data saved successfully');
   } catch (error) {
     console.error('❌ Failed to save user data:', error);
@@ -258,75 +226,61 @@ api.interceptors.request.use(
 
 // Handle response errors globally
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.error('❌ Axios response interceptor error:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      responseHeaders: error.response?.headers ? Object.keys(error.response.headers) : [],
-      responseData: error.response?.data
-    });
-    
-    // Reduce console noise for network errors during development
-    if (error.message?.includes('Network Error') || error.code === 'ERR_NETWORK') {
-      console.warn("🔧 Network unavailable - using offline mode");
-    } else {
-      console.error("API Error:", error.response || error.message);
-    }
-    
-    // Handle Unauthenticated like Dart implementation
-    if (error.response?.data?.message === 'Unauthenticated') {
-      ToastService.error("You are not logged in.");
-      // Utils.logout(); // Uncomment when logout function is available
+    const status = error.response?.status;
+
+    // 401 — session expired: clear storage and redirect to login
+    if (status === 401) {
+      Utils.saveToDatabase(ugflix_auth_token, null);
+      Utils.saveToDatabase(ugflix_user, null);
+      localStorage.removeItem(ugflix_auth_token);
+      localStorage.removeItem(ugflix_user);
+      ToastService.error("Session expired. Please login again.");
+      setTimeout(() => {
+        window.location.href = '/auth/login';
+      }, 1200);
       return Promise.reject(error);
     }
-    
-    // ===== SUBSCRIPTION ENFORCEMENT =====
-    // Backend returns 403 with require_subscription flag when user tries to access
-    // content that requires an active subscription (movies, downloads, premium features)
-    if (error.response?.status === 403 && error.response?.data?.data?.require_subscription) {
+
+    // 503 — backend maintenance mode
+    if (status === 503) {
+      ToastService.error("Service temporarily unavailable. Please try again later.");
+      return Promise.reject(error);
+    }
+
+    // 403 with require_subscription flag
+    if (status === 403 && error.response?.data?.data?.require_subscription) {
       const message = error.response.data.message || 'Active subscription required';
-      console.warn('🔒 Api.ts: Subscription required (AUTO-REDIRECT DISABLED):', message);
-      console.log('🐛 DEBUG MODE: 403 error with require_subscription flag');
-      console.log('📊 Error Data:', error.response?.data);
-      
-      // DISABLED FOR DEBUGGING
-      // ToastService.error(message);
-      // setTimeout(() => {
-      //   window.location.href = '/subscription/plans';
-      // }, 1500);
-      
+      ToastService.error(message);
+      setTimeout(() => {
+        window.location.href = '/subscribe';
+      }, 1500);
       return Promise.reject(error);
     }
-    
-    // Handle rate limiting (429 errors) - suppress retries and flooding
-    if (error.response?.status === 429) {
-      console.warn('🚦 Rate limited (429) - throttling further requests');
-      // Don't show toast for rate limiting in dev to reduce noise
+
+    // 429 — rate limited
+    if (status === 429) {
       if (!import.meta.env.DEV) {
-        ToastService.error("Server busy. Please wait a moment and try again.");
+        ToastService.error("Too many requests. Please wait a moment and try again.");
       }
       return Promise.reject(error);
     }
-    
-    // Show appropriate toast based on error type - but skip for network errors during dev
+
+    // Network errors
     if (!error.response) {
-      // Network error - only show toast in production or if not a simple connectivity issue
       if (!import.meta.env.DEV || !error.message?.includes('Network Error')) {
         ToastService.networkError();
       }
-    } else if (error.response.status >= 500) {
-      // Server error
+    } else if (status >= 500) {
       ToastService.serverError();
-    } else if (error.response.status === 401) {
-      // Unauthorized - could handle logout here
-      ToastService.error("Session expired. Please login again.");
     }
-    
+
+    // Handle Unauthenticated message body (some endpoints return 200 with Unauthenticated message)
+    if (error.response?.data?.message === 'Unauthenticated') {
+      ToastService.error("You are not logged in.");
+    }
+
     return Promise.reject(error);
   }
 );

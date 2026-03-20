@@ -1,198 +1,259 @@
 // src/app/pages/SearchResultsPage.tsx
-import React, { useState, useEffect, useMemo } from "react";
-import { Container, Row, Col, Form, Button, Dropdown, Pagination } from "react-bootstrap";
-import { useSearchParams, Link } from "react-router-dom";
-import ProductCard from "../components/shared/ProductCard";
-import { dealsData, topProductsData } from "../data/optimized/products";
-import type { ProductWithExtras } from "../types";
-import { formatPrice } from "../utils";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { Search, Film, Tv, X, Clock, TrendingUp, ChevronRight } from 'lucide-react';
+import SearchV2Service, {
+  SearchTrending,
+  SearchHistoryItem,
+} from '../services/v2/SearchV2Service';
+import type { MovieV2 } from '../services/v2/MoviesV2Service';
 
 const SearchResultsPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const searchQuery = searchParams.get("q") || "";
-  const [sortBy, setSortBy] = useState("relevance");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const q = searchParams.get('q') || '';
 
-  // Combine all products for searching
-  const allProducts: ProductWithExtras[] = useMemo(() => {
-    return [...dealsData, ...topProductsData];
-  }, []);
-
-  // Filter products based on search query
-  const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-
-    const query = searchQuery.toLowerCase();
-    let filtered = allProducts.filter(product => 
-      product.name.toLowerCase().includes(query) ||
-      (product.description && product.description.toLowerCase().includes(query)) ||
-      (product.category_text && product.category_text.toLowerCase().includes(query))
-    );
-
-    // Sort results
-    switch (sortBy) {
-      case "price-low":
-        filtered.sort((a, b) => parseFloat(a.price_1) - parseFloat(b.price_1));
-        break;
-      case "price-high":
-        filtered.sort((a, b) => parseFloat(b.price_1) - parseFloat(a.price_1));
-        break;
-      case "name":
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case "rating":
-        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
-      default: // relevance
-        // Keep original order for relevance
-        break;
-    }
-
-    return filtered;
-  }, [allProducts, searchQuery, sortBy]);
-
-  // Pagination
-  const totalPages = Math.ceil(searchResults.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedResults = searchResults.slice(startIndex, startIndex + itemsPerPage);
-
-  const handleSortChange = (newSort: string) => {
-    setSortBy(newSort);
-    setCurrentPage(1);
-  };
+  const [tab, setTab] = useState<'all' | 'movies' | 'series'>('all');
+  const [results, setResults] = useState<MovieV2[]>([]);
+  const [filtered, setFiltered] = useState<MovieV2[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [trending, setTrending] = useState<SearchTrending | null>(null);
+  const [history, setHistory] = useState<SearchHistoryItem[]>([]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
+    if (q.length >= 2) {
+      setPage(1);
+      runSearch(q, 1);
+    } else {
+      setResults([]);
+      setTotal(0);
+      loadTrending();
+      loadHistory();
+    }
+  }, [q]);
+
+  useEffect(() => {
+    if (q.length >= 2) runSearch(q, page);
+  }, [page]);
+
+  useEffect(() => {
+    if (tab === 'movies') setFiltered(results.filter((r) => r.type === 'Movie'));
+    else if (tab === 'series') setFiltered(results.filter((r) => r.type !== 'Movie'));
+    else setFiltered(results);
+  }, [tab, results]);
+
+  const runSearch = async (query: string, pageNum: number) => {
+    setLoading(true);
+    try {
+      const data = await SearchV2Service.searchAll(query, pageNum, 20);
+      if (pageNum === 1) setResults(data.items ?? []);
+      else setResults((prev) => [...prev, ...(data.items ?? [])]);
+      setTotal(data.pagination?.total ?? 0);
+    } catch { /* silently */ } finally { setLoading(false); }
+  };
+
+  const loadTrending = async () => {
+    try { setTrending(await SearchV2Service.getTrending()); } catch { /* ok */ }
+  };
+
+  const loadHistory = async () => {
+    try {
+      const data = await SearchV2Service.getSearchHistory(1, 10);
+      setHistory(data.items ?? []);
+    } catch { /* user may not be logged in */ }
+  };
+
+  const handleDeleteHistory = async (id: number) => {
+    try {
+      await SearchV2Service.deleteHistoryItem(id);
+      setHistory((prev) => prev.filter((h) => h.id !== id));
+    } catch { /* ok */ }
+  };
+
+  const handleClearHistory = async () => {
+    try { await SearchV2Service.clearSearchHistory(); setHistory([]); } catch { /* ok */ }
+  };
+
+  const searchFor = useCallback((term: string) => {
+    setSearchParams({ q: term });
+  }, [setSearchParams]);
+
+  const movieCount = results.filter((r) => r.type === 'Movie').length;
+  const seriesCount = results.filter((r) => r.type !== 'Movie').length;
 
   return (
-    <div className="search-results-page">
-      <Container>
-        {/* Breadcrumb */}
-        <nav aria-label="breadcrumb" className="my-4">
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item">
-              <Link to="/" className="text-decoration-none">Home</Link>
-            </li>
-            <li className="breadcrumb-item active">
-              Search Results
-            </li>
-          </ol>
-        </nav>
+    <div className="min-h-screen bg-[var(--ugflix-bg-primary,#0d0d0d)] pb-24 pt-2 px-4">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-lg font-semibold text-white mb-1">
+          {q ? `Results for "${q}"` : 'Search'}
+        </h1>
 
-        {/* Search Header */}
-        <div className="search-header mb-4">
-          <h1 className="h3 mb-2">
-            Search Results {searchQuery && `for "${searchQuery}"`}
-          </h1>
-          <p className="text-muted">
-            {searchResults.length > 0 
-              ? `Found ${searchResults.length} product${searchResults.length !== 1 ? 's' : ''}`
-              : 'No products found'
-            }
-          </p>
-        </div>
-
-        {searchResults.length > 0 ? (
+        {/* Tabs — shown when results exist */}
+        {q && results.length > 0 && (
           <>
-            {/* Results Header */}
-            <div className="results-header d-flex justify-content-between align-items-center mb-4 p-3 bg-light rounded">
-              <div>
-                <span className="text-muted">
-                  Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, searchResults.length)} of {searchResults.length} results
-                </span>
-              </div>
-              
-              <div className="d-flex align-items-center gap-3">
-                <span className="text-muted">Sort by:</span>
-                <Dropdown>
-                  <Dropdown.Toggle variant="outline-secondary" size="sm">
-                    {sortBy === "relevance" && "Relevance"}
-                    {sortBy === "price-low" && "Price: Low to High"}
-                    {sortBy === "price-high" && "Price: High to Low"}
-                    {sortBy === "name" && "Name"}
-                    {sortBy === "rating" && "Rating"}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <Dropdown.Item onClick={() => handleSortChange("relevance")}>
-                      Relevance
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleSortChange("price-low")}>
-                      Price: Low to High
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleSortChange("price-high")}>
-                      Price: High to Low
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleSortChange("name")}>
-                      Name
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={() => handleSortChange("rating")}>
-                      Rating
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-              </div>
-            </div>
-
-            {/* Results Grid */}
-            <Row>
-              {paginatedResults.map(product => (
-                <Col sm={6} lg={3} key={product.id} className="mb-4">
-                  <ProductCard product={product} />
-                </Col>
+            <p className="text-xs text-[var(--ugflix-text-muted,#888)] mb-3">
+              {total} result{total !== 1 ? 's' : ''} found
+            </p>
+            <div className="flex gap-1 mb-4 border-b border-[var(--ugflix-border,#1e1e1e)]">
+              {([
+                { key: 'all' as const, label: 'All', count: results.length },
+                { key: 'movies' as const, label: 'Movies', count: movieCount },
+                { key: 'series' as const, label: 'Series', count: seriesCount },
+              ]).map(({ key, label, count }) => (
+                <button
+                  key={key}
+                  onClick={() => setTab(key)}
+                  className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+                    tab === key
+                      ? 'border-[var(--color-brand-red,#E50914)] text-white'
+                      : 'border-transparent text-[var(--ugflix-text-muted,#888)] hover:text-white'
+                  }`}
+                >
+                  {label} <span className="ml-1 opacity-60">({count})</span>
+                </button>
               ))}
-            </Row>
+            </div>
+          </>
+        )}
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="d-flex justify-content-center mt-5">
-                <Pagination>
-                  <Pagination.Prev
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                  />
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <Pagination.Item
-                      key={page}
-                      active={page === currentPage}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Next
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                  />
-                </Pagination>
+        {/* Skeleton */}
+        {loading && (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+            {Array.from({ length: 18 }).map((_, i) => (
+              <div key={i} className="aspect-[2/3] rounded-md bg-[var(--ugflix-bg-secondary,#161616)] animate-pulse" />
+            ))}
+          </div>
+        )}
+
+        {/* Results grid */}
+        {!loading && filtered.length > 0 && (
+          <>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+              {filtered.map((item) => (
+                <button key={item.id} onClick={() => navigate(`/watch/${item.id}`)} className="group text-left">
+                  <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-[var(--ugflix-bg-secondary,#161616)] mb-1">
+                    <img
+                      src={item.thumbnail_url || item.image_url}
+                      alt={item.title}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {item.is_premium === 'Yes' && (
+                      <span className="absolute top-1 left-1 text-[10px] bg-[var(--color-brand-gold,#F5A623)] text-black font-bold px-1 rounded">PRO</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-white font-medium leading-tight line-clamp-2">{item.title}</p>
+                  {item.vj && <p className="text-[10px] text-[var(--ugflix-text-muted,#888)]">VJ {item.vj}</p>}
+                </button>
+              ))}
+            </div>
+            {results.length < total && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={loading}
+                  className="px-6 py-2 text-sm border border-[var(--ugflix-border,#1e1e1e)] rounded-lg text-white hover:border-[var(--color-brand-red,#E50914)] transition-colors"
+                >
+                  Load More
+                </button>
               </div>
             )}
           </>
-        ) : (
-          <div className="no-results text-center py-5">
-            <i className="bi bi-search fs-1 text-muted mb-4 d-block"></i>
-            <h3>No products found</h3>
-            <p className="text-muted mb-4">
-              {searchQuery 
-                ? `We couldn't find any products matching "${searchQuery}"`
-                : "Enter a search term to find products"
-              }
-            </p>
-            <div className="suggestions">
-              <h5>Try:</h5>
-              <ul className="list-unstyled">
-                <li>• Checking your spelling</li>
-                <li>• Using more general terms</li>
-                <li>• Browsing our categories</li>
-              </ul>
-            </div>
-            <Link to="/products" className="btn btn-primary mt-3">
-              Browse All Products
-            </Link>
+        )}
+
+        {/* Empty state */}
+        {!loading && q.length >= 2 && filtered.length === 0 && (
+          <div className="text-center py-12">
+            <Search size={48} className="mx-auto mb-3 text-[var(--ugflix-text-muted,#888)]" />
+            <h3 className="text-white font-medium mb-1">No results for "{q}"</h3>
+            <p className="text-sm text-[var(--ugflix-text-muted,#888)]">Try different keywords</p>
           </div>
         )}
-      </Container>
+
+        {/* No query — show History + Trending */}
+        {!q && (
+          <div className="space-y-8">
+            {history.length > 0 && (
+              <section>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-[var(--ugflix-text-secondary,#ccc)] flex items-center gap-1.5">
+                    <Clock size={14} /> Recent Searches
+                  </h2>
+                  <button onClick={handleClearHistory} className="text-xs text-[var(--color-brand-red,#E50914)] hover:underline">
+                    Clear All
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {history.map((h) => (
+                    <div key={h.id} className="flex items-center gap-1 bg-[var(--ugflix-bg-secondary,#161616)] rounded-full pl-3 pr-1 py-1">
+                      <button onClick={() => searchFor(h.query)} className="text-xs text-white hover:text-[var(--color-brand-red,#E50914)] transition-colors">
+                        {h.query}
+                      </button>
+                      <button onClick={() => handleDeleteHistory(h.id)} className="p-0.5 rounded-full hover:bg-white/10 transition-colors">
+                        <X size={10} className="text-[var(--ugflix-text-muted,#888)]" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {trending && (
+              <>
+                {trending.trending_terms.length > 0 && (
+                  <section>
+                    <h2 className="text-sm font-semibold text-[var(--ugflix-text-secondary,#ccc)] flex items-center gap-1.5 mb-3">
+                      <TrendingUp size={14} /> Trending
+                    </h2>
+                    <div className="flex flex-wrap gap-2">
+                      {trending.trending_terms.map((term) => (
+                        <button key={term} onClick={() => searchFor(term)}
+                          className="px-3 py-1.5 text-xs bg-[var(--ugflix-bg-secondary,#161616)] rounded-full text-white hover:bg-[var(--color-brand-red,#E50914)] transition-colors">
+                          {term}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                {trending.popular_movies.length > 0 && (
+                  <section>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-sm font-semibold text-white flex items-center gap-1.5"><Film size={14} /> Popular Movies</h2>
+                      <Link to="/movies" className="text-xs text-[var(--ugflix-text-muted,#888)] flex items-center gap-0.5 hover:text-white">See all <ChevronRight size={12} /></Link>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+                      {trending.popular_movies.slice(0, 6).map((m) => (
+                        <button key={m.id} onClick={() => navigate(`/watch/${m.id}`)} className="group text-left">
+                          <img src={m.thumbnail_url || m.image_url} alt={m.title} loading="lazy" className="w-full aspect-[2/3] object-cover rounded-md mb-1 group-hover:scale-105 transition-transform duration-300" />
+                          <p className="text-xs text-white line-clamp-1">{m.title}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                {trending.popular_series.length > 0 && (
+                  <section>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-sm font-semibold text-white flex items-center gap-1.5"><Tv size={14} /> Popular Series</h2>
+                      <Link to="/series" className="text-xs text-[var(--ugflix-text-muted,#888)] flex items-center gap-0.5 hover:text-white">See all <ChevronRight size={12} /></Link>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+                      {trending.popular_series.slice(0, 6).map((s) => (
+                        <button key={s.id} onClick={() => navigate(`/watch/${s.id}`)} className="group text-left">
+                          <img src={s.thumbnail_url || s.image_url} alt={s.title} loading="lazy" className="w-full aspect-[2/3] object-cover rounded-md mb-1 group-hover:scale-105 transition-transform duration-300" />
+                          <p className="text-xs text-white line-clamp-1">{s.title}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

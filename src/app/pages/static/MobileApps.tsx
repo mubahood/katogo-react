@@ -11,7 +11,7 @@ import {
   Star,
   MessageCircle,
   Mail
-} from 'react-feather';
+} from 'lucide-react';
 import { APP_LINKS, COMPANY_INFO } from '../../constants';
 import './MobileApps.css';
 

@@ -16,7 +16,7 @@ import { ProductModel } from "../../models/ProductModel";
 import { useDispatch } from "react-redux";
 import { useCart } from "../../hooks/useCart";
 import { showNotification } from "../../store/slices/notificationSlice";
-import ProductCard2 from "../../components/shared/ProductCard2";
+import ProductCard from "../../components/shared/ProductCard";
 
 interface RouteParams {
   id?: string;
@@ -713,7 +713,7 @@ const ProductDetailPage: React.FC = () => {
                 <Row>
                   {relatedProducts.slice(0, 4).map((relatedProduct) => (
                     <Col key={relatedProduct.id} lg={3} md={6} className="mb-3">
-                      <ProductCard2 product={relatedProduct} />
+                      <ProductCard product={relatedProduct} />
                     </Col>
                   ))}
                 </Row>

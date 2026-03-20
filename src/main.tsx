@@ -1,28 +1,30 @@
 // src/main.tsx
 import React from "react";
+import * as Sentry from "@sentry/react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HelmetProvider } from "react-helmet-async";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { initializeThemeFromStorage } from "./app/hooks/useTheme";
 
-// Force light mode - disable dark mode permanently
-document.documentElement.setAttribute('data-bs-theme', 'light');
-document.documentElement.style.colorScheme = 'light';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
-// Prevent any theme changes
-const preventDarkMode = () => {
-  document.documentElement.setAttribute('data-bs-theme', 'light');
-  document.documentElement.style.colorScheme = 'light';
-};
+// ERR-02: Sentry initialization (only when DSN is provided)
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    tracesSampleRate: import.meta.env.PROD ? 0.2 : 0.0,
+    replaysOnErrorSampleRate: 0,
+    integrations: [],
+  });
+}
 
-// Monitor for any theme changes and override them
-const observer = new MutationObserver(preventDarkMode);
-observer.observe(document.documentElement, {
-  attributes: true,
-  attributeFilter: ['data-bs-theme', 'data-theme', 'class']
-});
+// Apply persisted theme before the first render to avoid theme flash.
+initializeThemeFromStorage();
 
 // Styles - Bootstrap and Icons
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -71,9 +73,8 @@ if (!container) throw new Error("Failed to find the root element");
 
 const root = createRoot(container);
 
-// Conditionally wrap with StrictMode only in development
-const AppWrapper = import.meta.env.DEV ? (
-  <React.StrictMode>
+const AppCore = (
+  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <HelmetProvider>
       <Provider store={store}>
         <QueryClientProvider client={queryClient}>
@@ -85,27 +86,16 @@ const AppWrapper = import.meta.env.DEV ? (
           >
             <App />
           </BrowserRouter>
-          {/* Only show React Query DevTools in development */}
-          <ReactQueryDevtools initialIsOpen={false} />
+          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
       </Provider>
     </HelmetProvider>
-  </React.StrictMode>
-) : (
-  <HelmetProvider>
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <App />
-        </BrowserRouter>
-      </QueryClientProvider>
-    </Provider>
-  </HelmetProvider>
+  </GoogleOAuthProvider>
 );
+
+// Conditionally wrap with StrictMode only in development
+const AppWrapper = import.meta.env.DEV ? (
+  <React.StrictMode>{AppCore}</React.StrictMode>
+) : AppCore;
 
 root.render(AppWrapper);

@@ -101,6 +101,20 @@ const AccountSidebar: React.FC = () => {
       icon: 'bi-gear',
       path: '/account/settings',
       section: 'settings'
+    },
+    {
+      id: 'blocked-users',
+      label: 'Blocked Users',
+      icon: 'bi-person-slash',
+      path: '/account/blocked-users',
+      section: 'settings'
+    },
+    {
+      id: 'my-reports',
+      label: 'My Reports',
+      icon: 'bi-flag',
+      path: '/account/my-reports',
+      section: 'settings'
     }
   ];
 
