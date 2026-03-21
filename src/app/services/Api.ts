@@ -196,18 +196,12 @@ api.interceptors.request.use(
       config.headers['authorization'] = `Bearer ${token}`;
       config.headers['Tok'] = `Bearer ${token}`;
       config.headers['tok'] = `Bearer ${token}`;
-    } else {
-      console.warn('⚠️ NO TOKEN FOUND - Request will be sent without authentication headers!');
-      console.warn('⚠️ Check localStorage for ugflix_auth_token');
     }
     
     if (u && u.id) {
       // Set on BOTH axios defaults AND request config
       api.defaults.headers.common['logged_in_user_id'] = u.id.toString();
       config.headers['logged_in_user_id'] = u.id.toString();
-    } else {
-      console.warn('⚠️ NO USER ID FOUND - Request will be sent without logged_in_user_id header!');
-      console.warn('⚠️ Check localStorage for ugflix_user');
     }
     
     // Add platform type to body for POST requests (like mobile app)
@@ -395,14 +389,19 @@ export const http_post = async (path: string, params: Record<string, any> | Form
 };
 
 // Function to make a GET request
-export const http_get = async (path: string, params?: Record<string, any>) => {
+export const http_get = async (
+  path: string,
+  params?: Record<string, any>,
+  options?: { includeUser?: boolean; headers?: Record<string, string> }
+) => {
   try {
     const u = Utils.loadFromDatabase(ugflix_user);
+    const includeUser = options?.includeUser !== false;
     
     if (!params) params = {};
     
     // Add user identification to query parameters like Dart implementation
-    if (u && u.id) {
+    if (includeUser && u && u.id) {
       params.user = u.id.toString();
       params['User-Id'] = u.id.toString();
       params.user_id = u.id.toString();
@@ -411,11 +410,14 @@ export const http_get = async (path: string, params?: Record<string, any>) => {
       }
     } else {
       if (DEBUG_CONFIG.ENABLE_API_LOGS) {
-        console.log(`🔧 No user logged in, proceeding without user params`);
+        console.log(`🔧 Proceeding without user params for ${path}`);
       }
     }
 
-    const response = await api.get(path, { params });
+    const response = await api.get(path, {
+      params,
+      headers: options?.headers,
+    });
     
     const result = handleResponse(response);
     return result;

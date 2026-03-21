@@ -1,5 +1,6 @@
 import { API_ENDPOINTS, getAuthHeaders } from '../config/api.config';
 import { http_post } from './Api';
+import { googleLogout } from '@react-oauth/google';
 import Utils from './Utils';
 import { ugflix_auth_token, ugflix_user } from '../../Constants';
 
@@ -204,26 +205,53 @@ class AuthService {
 
   /**
    * Login with Google OAuth token — POST /api/auth/google
+   * Matches mobile app flow exactly:
+   * 1. Send id_token to backend (backend auto-creates account if new user)
+   * 2. Validate response has user data with valid id and token
+   * 3. Store token, user, and company in localStorage
    */
   async loginWithGoogle(googleToken: string): Promise<AuthResponse> {
     try {
-      const data = await http_post('auth/google', { google_token: googleToken }) as AuthResponse;
+      // Match mobile app: only send id_token (backend validates via Google tokeninfo)
+      const data = await http_post('auth/google', {
+        id_token: googleToken,
+      }) as AuthResponse;
 
+      // Check response code (mobile: responseModel.code != 1)
       if (data.code !== 1) {
-        throw new Error(data.message || 'Google login failed');
+        throw new Error(data.message || 'Google sign-in failed. Please try again.');
       }
 
-      const token = data.data?.user?.token || data.data?.user?.remember_token;
-      if (token) {
-        localStorage.setItem('ugflix_auth_token', token);
+      // Validate user data exists (mobile: responseModel.data == null || responseModel.data['user'] == null)
+      if (!data.data || !data.data.user) {
+        throw new Error('User data not found in response.');
       }
-      if (data.data?.user) {
-        localStorage.setItem('ugflix_user', JSON.stringify(data.data.user));
+
+      // Validate user has a valid id (mobile: user.id < 1)
+      const user = data.data.user;
+      if (!user.id || Number(user.id) < 1) {
+        throw new Error('Invalid user data received.');
+      }
+
+      // Extract token (mobile: user.token)
+      const token = user.token || user.remember_token;
+      if (!token) {
+        throw new Error('Authentication token not received.');
+      }
+
+      // Store auth data exactly like mobile app does:
+      // mobile: prefs.setString('token', user.token)
+      localStorage.setItem('ugflix_auth_token', token);
+      // mobile: user.save() stores full user object
+      localStorage.setItem('ugflix_user', JSON.stringify(user));
+      // Store company data
+      if (data.data.company) {
+        localStorage.setItem('ugflix_company', JSON.stringify(data.data.company));
       }
 
       return { success: true, code: data.code, data: data.data, message: data.message };
     } catch (error: any) {
-      throw new Error(error.message || 'Google login failed');
+      throw new Error(error.message || 'Google sign-in failed. Please try again.');
     }
   }
 
@@ -244,6 +272,9 @@ class AuthService {
       console.error('Logout error:', error);
       // Continue with local logout even if API call fails
     } finally {
+      // Sign out of Google session (matches mobile's googleSignIn.signOut())
+      try { googleLogout(); } catch (_) { /* ignore if no active Google session */ }
+
       // Clear local storage
       localStorage.removeItem('ugflix_auth_token');
       localStorage.removeItem('ugflix_user');

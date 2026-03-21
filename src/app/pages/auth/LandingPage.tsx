@@ -25,7 +25,7 @@ const fallbackMovie: RandomMovie = {
   id: 0,
   title: 'Featured Luganda Movie',
   description: '',
-  video_url: '',
+  video_url: 'https://munotech2.b-cdn.net/masg/masa43/The.Secret.Of.My.Success.%20vj%20tom.mp4',
   type: 'Featured',
   year: new Date().getFullYear().toString(),
 };
@@ -33,6 +33,7 @@ const fallbackMovie: RandomMovie = {
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hasRetriedWithNoReferrer = useRef(false);
 
   const [movie, setMovie] = useState<RandomMovie>(fallbackMovie);
   const [isFetchingMovie, setIsFetchingMovie] = useState(true);
@@ -56,30 +57,79 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     const fetchRandomMovie = async () => {
       try {
-        const response = await http_get('random-movie');
-        if (response.code === 1 && response.data) {
-          setMovie({
+        const response = await http_get(
+          'random-movie',
+          { _ts: Date.now() },
+          {
+            includeUser: false,
+            headers: {
+              'X-Request-Type': 'player-media',
+              'X-Player-Context': 'landing-page-preview',
+              'Cache-Control': 'no-cache',
+            },
+          }
+        );
+        if (response?.code === 1 && response?.data) {
+          const payload = response.data;
+          const normalizedVideoUrl =
+            payload.video_url ||
+            payload.videoUrl ||
+            payload.url ||
+            payload.file ||
+            fallbackMovie.video_url;
+
+          const apiMovie = {
             ...fallbackMovie,
-            ...response.data,
-            title: response.data.title || fallbackMovie.title,
-            video_url: response.data.video_url || '',
-          });
-          setVideoError(false);
-          setVideoReady(false);
-          setIsPlaybackActive(false);
+            ...payload,
+            title: payload.title || payload.name || fallbackMovie.title,
+            description: payload.description || payload.desc || fallbackMovie.description,
+            video_url: normalizedVideoUrl,
+            thumbnail_url: payload.thumbnail_url || payload.thumbnailUrl || payload.image_url || payload.imageUrl,
+            image_url: payload.image_url || payload.imageUrl || payload.thumbnail_url || payload.thumbnailUrl,
+          };
+          setMovie(apiMovie);
           return;
         }
-      } catch (error) {
-        console.error('Failed to fetch random movie:', error);
+      } catch {
+        // Fall back to static movie URL for uninterrupted playback.
       } finally {
         setIsFetchingMovie(false);
       }
 
+      setIsMuted(true);
       setMovie(fallbackMovie);
     };
 
+    setVideoError(false);
+    setVideoReady(false);
+    setIsPlaybackActive(false);
+    setIsMuted(true);
     fetchRandomMovie();
   }, []);
+
+  useEffect(() => {
+    hasRetriedWithNoReferrer.current = false;
+    setVideoError(false);
+    setVideoReady(false);
+    setIsPlaybackActive(false);
+    setIsMuted(true);
+
+    if (!videoRef.current) return;
+    videoRef.current.defaultMuted = true;
+    videoRef.current.muted = true;
+    videoRef.current.volume = 0;
+    videoRef.current.setAttribute('referrerpolicy', 'no-referrer');
+
+    const tryPlay = () => {
+      void playPreview(false);
+    };
+
+    // Give the browser one immediate and one delayed autoplay attempt.
+    tryPlay();
+    const timer = window.setTimeout(tryPlay, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [movie.video_url]);
 
   const playPreview = async (withSound: boolean) => {
     if (!videoRef.current) return;
@@ -88,12 +138,13 @@ const LandingPage: React.FC = () => {
     video.defaultMuted = !withSound;
     video.muted = !withSound;
     video.volume = withSound ? 1 : 0;
+
     setIsMuted(!withSound);
 
     try {
       await video.play();
     } catch {
-      // Unmuted autoplay can still be blocked until the user interacts.
+      // User interaction may still be required in some browsers.
     }
   };
 
@@ -142,6 +193,9 @@ const LandingPage: React.FC = () => {
   };
 
   const showLoader = isFetchingMovie || (!!movie.video_url && !videoError && (!videoReady || !isPlaybackActive));
+  const videoSource = movie.video_url
+    ? `${movie.video_url}${movie.video_url.includes('?') ? '&' : '?'}player=landing&type=preview`
+    : '';
 
   const landingPageMeta = {
     basic: {
@@ -174,10 +228,17 @@ const LandingPage: React.FC = () => {
           <video
             ref={videoRef}
             className="landing-video"
+            src={videoSource}
             autoPlay
             muted={isMuted}
             playsInline
-            preload="metadata"
+            preload="auto"
+            onLoadedMetadata={() => {
+              void playPreview(false);
+            }}
+            onCanPlay={() => {
+              void playPreview(false);
+            }}
             onLoadedData={handleLoadedData}
             onPlay={() => setIsPlaybackActive(true)}
             onPlaying={() => setIsPlaybackActive(true)}
@@ -186,13 +247,18 @@ const LandingPage: React.FC = () => {
             onStalled={() => setIsPlaybackActive(false)}
             onTimeUpdate={handleTimeUpdate}
             onError={() => {
+              if (!hasRetriedWithNoReferrer.current && videoRef.current) {
+                hasRetriedWithNoReferrer.current = true;
+                videoRef.current.setAttribute('referrerpolicy', 'no-referrer');
+                videoRef.current.load();
+                void playPreview(false);
+                return;
+              }
               setVideoError(true);
               setVideoReady(true);
               setIsPlaybackActive(false);
             }}
-          >
-            <source src={movie.video_url} type="video/mp4" />
-          </video>
+          />
         ) : (
           <div
             className="landing-fallback"
@@ -235,7 +301,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="landing-actions" onClick={(e) => e.stopPropagation()}>
-            <button className="landing-primary-btn" onClick={() => navigate('/auth/register')}>
+            <button className="landing-primary-btn" onClick={() => navigate('/auth/login')}>
               <Play size={18} />
               Start watching
             </button>

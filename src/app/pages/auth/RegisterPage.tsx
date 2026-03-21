@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
-import { authService } from '../../services/auth.service';
-import AuthGuard from '../../components/Auth/AuthGuard';
-import { APP_CONFIG, COMPANY_INFO } from '../../constants';
-import { MovieBackground } from '../../components/MovieBackground';
-import 'bootstrap-icons/font/bootstrap-icons.css';
+import React, { useEffect, useState } from "react";
+import { Alert, Button, Form, Spinner } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { useDispatch } from "react-redux";
+import { loginSuccess, restoreAuthState } from "../../store/slices/authSlice";
+import AuthGuard from "../../components/Auth/AuthGuard";
+import { APP_CONFIG, COMPANY_INFO } from "../../constants";
+import { authService } from "../../services/auth.service";
 
 interface RegisterFormData {
   firstName: string;
@@ -22,893 +23,781 @@ interface RegisterFormErrors {
   firstName?: string;
   lastName?: string;
   email?: string;
-  phoneNumber?: string;
   password?: string;
   confirmPassword?: string;
   agreeToTerms?: string;
 }
 
+const GOOGLE_OAUTH_ENABLED = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
+interface GoogleActionButtonProps {
+  googleEnabled: boolean;
+  disabled: boolean;
+  onError: (message: string) => void;
+  onProcessing: (value: boolean) => void;
+  onSuccess: () => void;
+  label: string;
+}
+
+const GoogleActionButton: React.FC<GoogleActionButtonProps> = ({
+  googleEnabled,
+  disabled,
+  onError,
+  onProcessing,
+  onSuccess,
+  label,
+}) => {
+  const dispatch = useDispatch();
+
+  const handleGoogleCredential = async (credentialResponse: CredentialResponse) => {
+    const idToken = credentialResponse.credential;
+    if (!idToken) {
+      onError("Google login response was invalid.");
+      return;
+    }
+
+    onProcessing(true);
+    onError("");
+    try {
+      const response = await authService.loginWithGoogle(idToken);
+
+      // Validate response structure (matches mobile: check code, data, user, user.id)
+      if (!response.success || !response.data?.user) {
+        onError(response.message || "Google authentication failed.");
+        return;
+      }
+
+      // Sync Redux store with the auth data
+      const token = response.data.user.token || response.data.user.remember_token;
+      if (token && response.data.user) {
+        dispatch(loginSuccess({ user: response.data.user, token }));
+      } else {
+        dispatch(restoreAuthState());
+      }
+      onSuccess();
+    } catch (error: any) {
+      onError(error.message || "Google authentication failed. Please try again.");
+    } finally {
+      onProcessing(false);
+    }
+  };
+
+  if (!googleEnabled) {
+    return (
+      <button
+        type="button"
+        className="auth-google-btn"
+        disabled={disabled}
+        onClick={() => onError("Google sign-up is not configured on this build.")}
+      >
+        <i className="bi bi-google" aria-hidden="true" />
+        <span>{label}</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="auth-google-native-btn" aria-label={label}>
+      <GoogleLogin
+        onSuccess={handleGoogleCredential}
+        onError={() => onError("Google authentication cancelled or failed.")}
+        text="continue_with"
+        shape="pill"
+        size="large"
+        theme="outline"
+        width="100%"
+        logo_alignment="left"
+        itp_support
+        cancel_on_tap_outside={false}
+      />
+    </div>
+  );
+};
+
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  
+  const dispatch = useDispatch();
+
   const [formData, setFormData] = useState<RegisterFormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    password: '',
-    confirmPassword: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
     agreeToTerms: false,
     marketingConsent: true,
   });
 
   const [errors, setErrors] = useState<RegisterFormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [serverError, setServerError] = useState<string>("");
+  const [serverError, setServerError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
+
+  useEffect(() => {
+    document.body.style.paddingTop = "0";
+    return () => {
+      document.body.style.paddingTop = "calc(56px + 35px + 0px)";
+    };
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
-    
-    // Clear error when user starts typing
+
     if (errors[name as keyof RegisterFormErrors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: undefined
-      }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: RegisterFormErrors = {};
+  const validateForm = () => {
+    const nextErrors: RegisterFormErrors = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
-    }
+    if (!formData.firstName.trim()) nextErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) nextErrors.lastName = "Last name is required";
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      nextErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      nextErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      nextErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long";
+      nextErrors.password = "Password must be at least 8 characters long";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      nextErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      nextErrors.confirmPassword = "Passwords do not match";
     }
 
     if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "You must agree to the terms and conditions";
+      nextErrors.agreeToTerms = "You must agree to the terms and conditions";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setIsLoading(true);
-    setErrors({});
     setServerError("");
 
     try {
-      console.log('🔐 Starting registration process...', {
-        name: `${formData.firstName} ${formData.lastName}`.trim(),
-        email: formData.email
-      });
-
-      // Step 1: Register the user
       const registerResponse = await authService.register({
         name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         password: formData.password,
       });
 
-      // Check if registration succeeded (code === 1 means success)
-      if (registerResponse.success && registerResponse.code === 1) {
-        console.log('✅ Registration API call successful:', registerResponse.data.user);
-        
-        // Step 2: Now login the user with the same credentials
-        console.log('🔐 Now logging in the newly registered user...');
-        
-        try {
-          const loginResponse = await authService.login({
-            email: formData.email,
-            password: formData.password,
-            remember: false,
-          });
-
-          console.log('🔍 Login response received:', {
-            success: loginResponse.success,
-            code: loginResponse.code,
-            message: loginResponse.message
-          });
-
-          // Check if login succeeded (code === 1 means success)
-          if (loginResponse.success && loginResponse.code === 1) {
-            console.log('✅ Login successful! Code=1, redirecting immediately...');
-            
-            // Clear any errors
-            setServerError("");
-            
-            // Small delay to ensure localStorage is fully written
-            await new Promise(resolve => setTimeout(resolve, 150));
-            
-            // Redirect immediately - don't check anything else
-            console.log('🚀 Redirecting to home page...');
-            window.location.href = "/";
-            
-            // Prevent further code execution
-            return;
-          } else {
-            console.error('❌ Login failed, code:', loginResponse.code);
-            setServerError("Registration completed but login failed. Please try logging in manually.");
-            setIsLoading(false);
-          }
-        } catch (loginError: any) {
-          console.error('❌ Login exception after registration:', loginError);
-          
-          // Check if user is actually logged in despite the error
-          await new Promise(resolve => setTimeout(resolve, 150));
-          const isUserAuthenticated = authService.isAuthenticated();
-          
-          if (isUserAuthenticated) {
-            console.log('🎉 User is authenticated despite error, redirecting...');
-            setServerError("");
-            window.location.href = "/";
-            return;
-          } else {
-            setServerError("Registration completed but login failed. Please try logging in manually.");
-            setIsLoading(false);
-          }
-        }
-      } else {
-        console.error('❌ Registration failed, code:', registerResponse.code);
+      if (!registerResponse.success || registerResponse.code !== 1) {
         setServerError(registerResponse.message || "Registration failed. Please try again.");
-        setIsLoading(false);
+        return;
+      }
+
+      const loginResponse = await authService.login({
+        email: formData.email,
+        password: formData.password,
+        remember: false,
+      });
+
+      if (loginResponse.success && loginResponse.code === 1) {
+        // Sync Redux store after registration + auto-login
+        dispatch(restoreAuthState());
+        navigate("/", { replace: true });
+      } else {
+        setServerError("Registration completed. Please sign in manually.");
       }
     } catch (error: any) {
-      console.error('❌ Registration exception:', error);
       setServerError(error.message || "Registration failed. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // Remove body padding for auth pages
-  useEffect(() => {
-    document.body.style.paddingTop = '0';
-    return () => {
-      document.body.style.paddingTop = 'calc(56px + 35px + 0px)';
-    };
-  }, []);
-
   return (
     <AuthGuard requireAuth={false}>
-      <div className="fullscreen-auth-layout">
-        {/* Full Background Video */}
-        <div className="auth-background-video">
-          <MovieBackground 
-            showOverlay={true}
-            overlayOpacity={0.75}
-            showMovieInfo={false}
-            muted={false}
-            showControls={false}
-          />
-        </div>
+      <div className="auth-shell">
+        <div className="auth-gradient" />
+        <div className="auth-grid-lines" />
 
-        {/* Centered Form Overlay */}
-        <div className="auth-form-overlay">
-          <div className="auth-form-container register-container">
-            {/* Form Content */}
-            <div className="auth-form-content register-content">
-              <div className="auth-form-header">
-                <div className="auth-logo-container">
-                  <Link to="/" className="auth-logo-link">
-                    <img 
-                      src={APP_CONFIG.LOGO}
-                      alt={APP_CONFIG.NAME}
-                      className="auth-logo"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const textLogo = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (textLogo) textLogo.style.display = 'block';
-                      }}
-                    />
-                    <h2 className="auth-logo-text" style={{ display: 'none' }}>
-                      {APP_CONFIG.NAME}
-                    </h2>
-                  </Link>
-                </div>
-                <h1 className="auth-form-title">Create Account</h1>
-                <p className="auth-form-subtitle">
-                  Join us today
-                </p>
+        <main className="auth-card auth-card-register" role="main" aria-label="Register page">
+          <Link to="/landing" className="auth-brand" aria-label="Go to landing page">
+            <img
+              src={APP_CONFIG.LOGO}
+              alt={APP_CONFIG.NAME}
+              className="auth-brand-logo"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                const sibling = e.currentTarget.nextElementSibling as HTMLElement | null;
+                if (sibling) sibling.style.display = "block";
+              }}
+            />
+            <span className="auth-brand-text" style={{ display: "none" }}>
+              {APP_CONFIG.NAME}
+            </span>
+          </Link>
+
+          <header className="auth-header">
+            <h1>Create account</h1>
+            <p>Start watching in minutes.</p>
+          </header>
+
+          {serverError ? (
+            <Alert variant="danger" className="auth-alert" role="alert">
+              <i className="bi bi-exclamation-triangle-fill" aria-hidden="true" />
+              <span>{serverError}</span>
+            </Alert>
+          ) : null}
+
+          <GoogleActionButton
+            googleEnabled={GOOGLE_OAUTH_ENABLED}
+            disabled={isLoading}
+            label="Proceed with Google"
+            onError={setServerError}
+            onProcessing={setIsLoading}
+            onSuccess={() => navigate("/", { replace: true })}
+          />
+
+          <div className="auth-small-separator">or</div>
+
+          <button
+            type="button"
+            className="auth-text-toggle"
+            onClick={() => setShowEmailForm((prev) => !prev)}
+          >
+            {showEmailForm ? "Hide email and password" : "Register using email and password"}
+          </button>
+
+          {showEmailForm ? (
+            <Form onSubmit={handleSubmit} className="auth-form">
+              <div className="auth-two-col">
+                <Form.Group className="auth-field">
+                  <Form.Label>First name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.firstName}
+                    placeholder="First name"
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.firstName}</Form.Control.Feedback>
+                </Form.Group>
+
+                <Form.Group className="auth-field">
+                  <Form.Label>Last name</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    isInvalid={!!errors.lastName}
+                    placeholder="Last name"
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">{errors.lastName}</Form.Control.Feedback>
+                </Form.Group>
               </div>
 
-              {serverError && (
-                <Alert variant="danger" className="auth-alert">
-                  <i className="bi bi-exclamation-triangle-fill"></i>
-                  {serverError}
-                </Alert>
-              )}
+              <Form.Group className="auth-field">
+                <Form.Label>Email address</Form.Label>
+                <Form.Control
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  isInvalid={!!errors.email}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  required
+                />
+                <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
+              </Form.Group>
 
-              <Form onSubmit={handleSubmit} className="auth-form register-form">
-                {/* Name Fields */}
-                <div className="form-row">
-                  <Form.Group className="auth-form-group half-width">
-                    <Form.Label className="auth-form-label">
-                      <i className="bi bi-person-fill"></i>
-                      First Name
-                    </Form.Label>
+              <Form.Group className="auth-field">
+                <Form.Label>Phone number (optional)</Form.Label>
+                <Form.Control
+                  type="tel"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  placeholder="Phone number"
+                />
+              </Form.Group>
+
+              <div className="auth-two-col">
+                <Form.Group className="auth-field">
+                  <Form.Label>Password</Form.Label>
+                  <div className="auth-password-wrap">
                     <Form.Control
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      value={formData.password}
                       onChange={handleInputChange}
-                      isInvalid={!!errors.firstName}
-                      className="auth-form-input"
-                      placeholder="First name"
+                      isInvalid={!!errors.password}
+                      placeholder="Create password"
+                      autoComplete="new-password"
                       required
                     />
-                    <Form.Control.Feedback type="invalid" className="auth-form-error">
-                      {errors.firstName}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-
-                  <Form.Group className="auth-form-group half-width">
-                    <Form.Label className="auth-form-label">
-                      <i className="bi bi-person-fill"></i>
-                      Last Name
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      isInvalid={!!errors.lastName}
-                      className="auth-form-input"
-                      placeholder="Last name"
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid" className="auth-form-error">
-                      {errors.lastName}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </div>
-
-                {/* Email Field */}
-                <Form.Group className="auth-form-group">
-                  <Form.Label className="auth-form-label">
-                    <i className="bi bi-envelope-fill"></i>
-                    Email Address
-                  </Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    isInvalid={!!errors.email}
-                    className="auth-form-input"
-                    placeholder="Enter your email address"
-                    required
-                    autoComplete="email"
-                  />
-                  <Form.Control.Feedback type="invalid" className="auth-form-error">
-                    {errors.email}
-                  </Form.Control.Feedback>
+                    <button
+                      type="button"
+                      className="auth-password-toggle"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} />
+                    </button>
+                  </div>
+                  <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
                 </Form.Group>
 
-                {/* Phone Field */}
-                <Form.Group className="auth-form-group">
-                  <Form.Label className="auth-form-label">
-                    <i className="bi bi-phone-fill"></i>
-                    Phone Number (Optional)
-                  </Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    isInvalid={!!errors.phoneNumber}
-                    className="auth-form-input"
-                    placeholder="Enter phone number"
-                  />
-                  <Form.Control.Feedback type="invalid" className="auth-form-error">
-                    {errors.phoneNumber}
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                {/* Password Fields */}
-                <div className="form-row">
-                  <Form.Group className="auth-form-group half-width">
-                    <Form.Label className="auth-form-label">
-                      <i className="bi bi-lock-fill"></i>
-                      Password
-                    </Form.Label>
-                    <div className="auth-password-input">
-                      <Form.Control
-                        type={showPassword ? 'text' : 'password'}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.password}
-                        className="auth-form-input"
-                        placeholder="Create password"
-                        required
-                        autoComplete="new-password"
-                      />
-                      <button
-                        type="button"
-                        className="password-toggle"
-                        onClick={() => setShowPassword(!showPassword)}
-                        tabIndex={-1}
-                      >
-                        <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
-                      </button>
-                    </div>
-                    <Form.Control.Feedback type="invalid" className="auth-form-error">
-                      {errors.password}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-
-                  <Form.Group className="auth-form-group half-width">
-                    <Form.Label className="auth-form-label">
-                      <i className="bi bi-lock-fill"></i>
-                      Confirm Password
-                    </Form.Label>
-                    <div className="auth-password-input">
-                      <Form.Control
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        isInvalid={!!errors.confirmPassword}
-                        className="auth-form-input"
-                        placeholder="Confirm password"
-                        required
-                        autoComplete="new-password"
-                      />
-                      <button
-                        type="button"
-                        className="password-toggle"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        tabIndex={-1}
-                      >
-                        <i className={`bi ${showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
-                      </button>
-                    </div>
-                    <Form.Control.Feedback type="invalid" className="auth-form-error">
-                      {errors.confirmPassword}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </div>
-
-                {/* Terms and Marketing */}
-                <div className="auth-form-checkboxes">
-                  <Form.Group className="auth-checkbox-group">
-                    <Form.Check
-                      type="checkbox"
-                      id="agreeToTerms"
-                      name="agreeToTerms"
-                      checked={formData.agreeToTerms}
+                <Form.Group className="auth-field">
+                  <Form.Label>Confirm password</Form.Label>
+                  <div className="auth-password-wrap">
+                    <Form.Control
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      isInvalid={!!errors.agreeToTerms}
-                      className="auth-checkbox"
+                      isInvalid={!!errors.confirmPassword}
+                      placeholder="Confirm password"
+                      autoComplete="new-password"
                       required
-                      label={
-                        <span className="checkbox-label">
-                          I agree to the{" "}
-                          <Link to="/terms" className="auth-link">Terms of Service</Link>
-                          {" "}and{" "}
-                          <Link to="/privacy" className="auth-link">Privacy Policy</Link>
-                        </span>
-                      }
                     />
-                    <Form.Control.Feedback type="invalid" className="auth-form-error">
-                      {errors.agreeToTerms}
-                    </Form.Control.Feedback>
-                  </Form.Group>
+                    <button
+                      type="button"
+                      className="auth-password-toggle"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      <i className={`bi ${showConfirmPassword ? "bi-eye-slash" : "bi-eye"}`} />
+                    </button>
+                  </div>
+                  <Form.Control.Feedback type="invalid">{errors.confirmPassword}</Form.Control.Feedback>
+                </Form.Group>
+              </div>
 
-                  <Form.Group className="auth-checkbox-group">
-                    <Form.Check
-                      type="checkbox"
-                      id="marketingConsent"
-                      name="marketingConsent"
-                      checked={formData.marketingConsent}
-                      onChange={handleInputChange}
-                      className="auth-checkbox"
-                      label={
-                        <span className="checkbox-label">
-                          <i className="bi bi-bell-fill"></i>
-                          Get updates about new movies and exclusive content
-                        </span>
-                      }
-                    />
-                  </Form.Group>
-                </div>
+              <div className="auth-checks">
+                <Form.Check
+                  type="checkbox"
+                  id="agreeToTerms"
+                  name="agreeToTerms"
+                  checked={formData.agreeToTerms}
+                  onChange={handleInputChange}
+                  className="auth-check"
+                  label={
+                    <span>
+                      I agree to the <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>
+                    </span>
+                  }
+                />
+                {errors.agreeToTerms ? <div className="auth-check-error">{errors.agreeToTerms}</div> : null}
 
-                <Button
-                  type="submit"
-                  className="auth-submit-button"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Spinner animation="border" size="sm" />
-                      Creating Account & Signing In...
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-person-plus-fill"></i>
-                      Create My Account
-                    </>
-                  )}
-                </Button>
+                <Form.Check
+                  type="checkbox"
+                  id="marketingConsent"
+                  name="marketingConsent"
+                  checked={formData.marketingConsent}
+                  onChange={handleInputChange}
+                  className="auth-check"
+                  label={<span>Get updates about new releases</span>}
+                />
+              </div>
 
-                <div className="auth-form-footer">
-                  <p>
-                    Already have an account?{" "}
-                    <Link to="/auth/login" className="auth-signup-link">
-                      <i className="bi bi-box-arrow-in-right"></i>
-                      Sign In
-                    </Link>
-                  </p>
-                </div>
-              </Form>
-            </div>
-          </div>
-        </div>
+              <Button type="submit" className="auth-submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Spinner animation="border" size="sm" />
+                    <span>Creating account...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-person-plus-fill" aria-hidden="true" />
+                    <span>Create account</span>
+                  </>
+                )}
+              </Button>
+            </Form>
+          ) : null}
 
-        {/* WhatsApp Help Button */}
-        <a 
-          href={`https://wa.me/${COMPANY_INFO.WHATSAPP.replace(/[^0-9]/g, '')}`}
+          <footer className="auth-footer">
+            <span>Already have an account?</span>
+            <Link to="/auth/login">Sign in</Link>
+          </footer>
+        </main>
+
+        <a
+          href={`https://wa.me/${COMPANY_INFO.WHATSAPP.replace(/[^0-9]/g, "")}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="whatsapp-help-button"
+          className="auth-help"
           title="Need help? Chat with us on WhatsApp"
         >
-          <i className="bi bi-whatsapp"></i>
-          <span className="help-text">Help</span>
+          <i className="bi bi-whatsapp" aria-hidden="true" />
+          <span>Help</span>
         </a>
 
-        {/* Register-specific Styles */}
         <style>{`
-          /* Full Screen Background Video Layout */
-          .fullscreen-auth-layout {
+          .auth-shell {
             position: relative;
-            min-height: 100vh;
-            width: 100%;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: #0a0e16;
             overflow: hidden;
-            background: #000;
           }
-          
-          .auth-background-video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-          }
-          
-          .auth-form-overlay {
-            position: relative;
-            z-index: 10;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
-            overflow-y: auto;
-          }
-          
-          .auth-form-container {
-            width: 100%;
-            max-width: 520px;
-            position: relative;
-          }
-          
-          .auth-form-content {
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(183, 28, 28, 0.3);
-            border-radius: 8px;
-            padding: 2.5rem 2rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-          }
-          
-          .auth-form-header {
-            text-align: center;
-            margin-bottom: 1.75rem;
-          }
-          
-          .auth-logo-container {
-            margin-bottom: 1.25rem;
-          }
-          
-          .auth-logo-link {
-            display: block;
-            text-decoration: none;
-            transition: all 0.3s ease;
-          }
-          
-          .auth-logo-link:hover {
-            transform: scale(1.05);
-          }
-          
-          .auth-logo {
-            height: 55px;
-            width: auto;
-            margin-bottom: 0.5rem;
-            transition: all 0.3s ease;
-            filter: drop-shadow(0 2px 8px rgba(183, 28, 28, 0.5));
-          }
-          
-          .auth-logo-text {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #B71C1C;
-            margin: 0;
-          }
-          
-          .auth-form-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #B71C1C;
-            margin-bottom: 0.5rem;
-          }
-          
-          .auth-form-subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
-            margin: 0;
-          }
-          
-          .auth-alert {
-            background: rgba(220, 53, 69, 0.15);
-            border: 2px solid #B71C1C;
-            border-radius: 0;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-          }
-          
-          .auth-form {
-            width: 100%;
-          }
-          
-          .auth-form-group {
-            margin-bottom: 1.5rem;
-          }
-          
-          .auth-form-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-          }
-          
-          .auth-form-input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 0;
-            padding: 1rem;
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-          }
-          
-          .auth-form-input:focus {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: #B71C1C;
-            box-shadow: 0 0 0 2px rgba(183, 28, 28, 0.2);
-            color: white;
-            outline: none;
-          }
-          
-          .auth-form-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-          }
-          
-          .auth-password-input {
-            position: relative;
-          }
-          
-          .password-toggle {
+
+          .auth-gradient,
+          .auth-grid-lines {
             position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 0;
-            transition: color 0.3s ease;
+            inset: 0;
+            pointer-events: none;
           }
-          
-          .password-toggle:hover {
-            color: #B71C1C;
+
+          .auth-gradient {
+            background:
+              radial-gradient(circle at 12% 16%, rgba(232, 93, 4, 0.22), transparent 36%),
+              radial-gradient(circle at 88% 78%, rgba(16, 185, 129, 0.16), transparent 30%),
+              linear-gradient(155deg, #080b12 0%, #101827 45%, #151515 100%);
           }
-          
-          .auth-submit-button {
-            background: #B71C1C;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 0;
-            padding: 1.2rem;
+
+          .auth-grid-lines {
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 24px 24px;
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+          }
+
+          .auth-card {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            font-weight: 600;
-            font-size: 1rem;
-            color: white;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            max-width: 34rem;
+            border-radius: 1.05rem;
+            padding: 1.25rem;
+            background: rgba(8, 12, 20, 0.82);
+            border: 1px solid rgba(255,255,255,0.14);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 18px 60px rgba(0,0,0,0.45);
           }
-          
-          .auth-submit-button:hover:not(:disabled) {
-            background: #8B0000;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(183, 28, 28, 0.4);
-          }
-          
-          .auth-submit-button:disabled {
-            opacity: 0.7;
-          }
-          
-          .auth-form-footer {
-            text-align: center;
-          }
-          
-          .auth-form-footer p {
-            color: rgba(255, 255, 255, 0.7);
-            margin: 0;
-          }
-          
-          .auth-signup-link {
-            color: #B71C1C;
-            text-decoration: none;
-            font-weight: 600;
+
+          .auth-brand {
             display: inline-flex;
             align-items: center;
-            gap: 0.25rem;
-            transition: color 0.3s ease;
+            gap: 0.5rem;
+            text-decoration: none;
+            margin-bottom: 1rem;
           }
-          
-          .auth-signup-link:hover {
-            color: #8B0000;
+
+          .auth-brand-logo {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.6rem;
+            object-fit: contain;
           }
-          
-          .auth-form-error {
-            color: #B71C1C;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
+
+          .auth-brand-text {
+            color: #f6f7fb;
+            font-weight: 700;
+            font-size: 1.1rem;
           }
-          
-          .auth-checkbox {
-            color: rgba(255, 255, 255, 0.8);
+
+          .auth-header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
           }
-          
-          .auth-checkbox input[type="checkbox"] {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+
+          .auth-header p {
+            margin: 0.35rem 0 1rem;
+            color: rgba(240, 245, 255, 0.72);
+            font-size: 0.92rem;
           }
-          
-          .auth-checkbox input[type="checkbox"]:checked {
-            background: #B71C1C;
-            border-color: #B71C1C;
+
+          .auth-alert {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.72rem 0.85rem;
+            margin-bottom: 1rem;
           }
-          
-          .auth-link {
-            color: #B71C1C;
+
+          .auth-muted {
+            margin: 0 0 0.75rem;
+            font-size: 0.85rem;
+            color: rgba(245, 245, 245, 0.72);
+            text-align: center;
+          }
+
+          .auth-google-btn,
+          .auth-submit {
+            width: 100%;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            min-height: 2.95rem;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+          }
+
+          .auth-google-btn {
+            background: #ffffff;
+            color: #101827;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+          }
+
+          .auth-google-native-btn {
+            width: 100%;
+            min-height: 2.95rem;
+            border-radius: 0.95rem;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.7);
+            background: linear-gradient(135deg, #ffffff 0%, #f3f6fb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+              0 14px 36px rgba(8, 12, 20, 0.34),
+              0 6px 14px rgba(8, 12, 20, 0.2),
+              0 0 0 1px rgba(255, 255, 255, 0.45) inset;
+            animation: googleFloat 4.5s ease-in-out infinite;
+            position: relative;
+          }
+
+          .auth-google-native-btn::after {
+            content: "";
+            position: absolute;
+            inset: -6px;
+            border-radius: 1.1rem;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.35), transparent 70%);
+            opacity: 0.35;
+            z-index: 0;
+            pointer-events: none;
+          }
+
+          .auth-google-native-btn::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.72) 50%, transparent 80%);
+            transform: translateX(-120%);
+            animation: googleShimmer 3.2s ease-in-out infinite;
+            pointer-events: none;
+          }
+
+          .auth-google-native-btn > div {
+            width: 100%;
+            position: relative;
+            z-index: 1;
+          }
+
+          .auth-google-native-btn:hover {
+            transform: translateY(-2px);
+            box-shadow:
+              0 20px 44px rgba(8, 12, 20, 0.46),
+              0 10px 20px rgba(8, 12, 20, 0.28),
+              0 0 0 1px rgba(255, 255, 255, 0.55) inset;
+          }
+
+          .auth-google-btn:hover:not(:disabled),
+          .auth-submit:hover:not(:disabled) {
+            transform: translateY(-1px);
+            opacity: 0.96;
+          }
+
+          .auth-google-btn:disabled,
+          .auth-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+          }
+
+          .auth-small-separator {
+            text-align: center;
+            margin: 0.95rem 0 0.4rem;
+            color: rgba(240, 245, 255, 0.5);
+            font-size: 0.78rem;
+            text-transform: lowercase;
+          }
+
+          .auth-text-toggle {
+            display: block;
+            width: 100%;
+            border: 0;
+            background: transparent;
+            color: #84c5ff;
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 0.4rem 0 0.8rem;
+            text-align: center;
+          }
+
+          .auth-form {
+            border-top: 1px solid rgba(255,255,255,0.12);
+            margin-top: 0.35rem;
+            padding-top: 0.9rem;
+          }
+
+          .auth-two-col {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+          }
+
+          .auth-field {
+            margin-bottom: 0.9rem;
+          }
+
+          .auth-field label {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+          }
+
+          .auth-field .form-control {
+            border-radius: 0.7rem;
+            min-height: 2.85rem;
+            border: 1px solid rgba(255,255,255,0.22);
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+          }
+
+          .auth-field .form-control::placeholder {
+            color: rgba(255,255,255,0.54);
+          }
+
+          .auth-field .form-control:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: #ff8c39;
+            box-shadow: 0 0 0 0.2rem rgba(255, 140, 57, 0.2);
+            color: #fff;
+          }
+
+          .auth-password-wrap {
+            position: relative;
+          }
+
+          .auth-password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 0.7rem;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: rgba(255,255,255,0.74);
+          }
+
+          .auth-checks {
+            display: grid;
+            gap: 0.7rem;
+            margin: 0.15rem 0 1rem;
+            color: rgba(255,255,255,0.86);
+            font-size: 0.83rem;
+          }
+
+          .auth-check a {
+            color: #84c5ff;
             text-decoration: none;
           }
-          
-          .auth-link:hover {
-            color: #8B0000;
+
+          .auth-check-error {
+            color: #ffb4b4;
+            font-size: 0.79rem;
+            margin-top: -0.35rem;
           }
-          
-          /* Register-specific Styles */
-          .register-form-side {
-            overflow-y: auto;
-            max-height: 100vh;
+
+          .auth-submit {
+            background: linear-gradient(120deg, #e85d04, #ff7b00);
+            border-color: transparent;
+            color: #fff;
+            margin-bottom: 0.8rem;
           }
-          
-          .register-container {
-            max-width: 500px;
-            padding: 1rem 0;
-          }
-          
-          .register-content {
-            max-height: none;
-            overflow: visible;
-          }
-          
-          .register-form {
-            max-width: none;
-          }
-          
-          .form-row {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 0;
-          }
-          
-          .half-width {
-            flex: 1;
-          }
-          
-          .auth-form-checkboxes {
-            margin-bottom: 1.5rem;
-          }
-          
-          .auth-checkbox-group {
-            margin: 0 0 1rem 0;
+
+          .auth-footer {
             display: flex;
             align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            color: rgba(255,255,255,0.76);
+            font-size: 0.84rem;
+            flex-wrap: wrap;
           }
-          
-          .checkbox-label {
-            font-size: 0.875rem;
-            line-height: 1.4;
-          }
-          
-          .checkbox-label i {
-            margin-right: 0.5rem;
-            color: #B71C1C;
-          }
-          
-          /* WhatsApp Help Button */
-          .whatsapp-help-button {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #25D366;
-            color: white;
-            padding: 14px 20px;
-            border-radius: 50px;
+
+          .auth-footer a {
+            color: #84c5ff;
             text-decoration: none;
             font-weight: 600;
-            font-size: 1rem;
-            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
-            transition: all 0.3s ease;
-            border: none;
           }
-          
-          .whatsapp-help-button:hover {
-            background: #20BA5A;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
+
+          .auth-help {
+            position: fixed;
+            right: 0.9rem;
+            bottom: 0.9rem;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            color: #fff;
+            background: rgba(18, 163, 93, 0.95);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 999px;
+            padding: 0.5rem 0.8rem;
+            font-size: 0.82rem;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.32);
           }
-          
-          .whatsapp-help-button i {
-            font-size: 1.5rem;
-          }
-          
-          .whatsapp-help-button .help-text {
-            display: inline-block;
-          }
-          
-          /* Tablet adjustments */
-          @media (max-width: 1023px) {
-            .auth-form-overlay {
-              padding: 1.5rem;
+
+          @media (min-width: 640px) {
+            .auth-shell {
+              padding: 1.6rem;
             }
-            
-            .auth-form-content {
-              padding: 2rem 1.5rem;
+
+            .auth-card {
+              padding: 1.65rem;
             }
-          }
-          
-          /* Mobile adjustments */
-          @media (max-width: 768px) {
-            .auth-form-overlay {
-              padding: 1rem;
+
+            .auth-header h1 {
+              font-size: 1.72rem;
             }
-            
-            .auth-form-content {
-              padding: 2rem 1.25rem;
-            }
-            
-            .auth-form-title {
-              font-size: 1.75rem;
-            }
-            
-            .form-row {
-              flex-direction: column;
-              gap: 0;
-            }
-            
-            .whatsapp-help-button {
-              bottom: 20px;
-              right: 20px;
-              padding: 12px 16px;
-            }
-            
-            .whatsapp-help-button .help-text {
-              display: none;
-            }
-            
-            .whatsapp-help-button i {
-              font-size: 1.75rem;
+
+            .auth-two-col {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
             }
           }
-          
-          /* Small mobile */
-          @media (max-width: 480px) {
-            .auth-form-content {
-              padding: 1.75rem 1rem;
+
+          @keyframes googleFloat {
+            0%,
+            100% {
+              transform: translateY(0);
             }
-            
-            .auth-form-title {
-              font-size: 1.5rem;
-            }
-            
-            .checkbox-label {
-              font-size: 0.8rem;
-            }
-            
-            .whatsapp-help-button {
-              bottom: 16px;
-              right: 16px;
-              padding: 12px;
+            50% {
+              transform: translateY(-2px);
             }
           }
-          
-          /* Height adjustments for register form */
-          @media (max-height: 800px) {
-            .auth-form-overlay {
-              padding: 1rem;
+
+          @keyframes googleShimmer {
+            0% {
+              transform: translateX(-120%);
             }
-            
-            .auth-form-content {
-              padding: 1.5rem 1.25rem;
-            }
-            
-            .auth-form-group {
-              margin-bottom: 1rem;
-            }
-            
-            .auth-logo {
-              height: 45px;
-            }
-            
-            .auth-form-header {
-              margin-bottom: 1.25rem;
+            100% {
+              transform: translateX(120%);
             }
           }
         `}</style>

@@ -73,25 +73,35 @@ if (!container) throw new Error("Failed to find the root element");
 
 const root = createRoot(container);
 
-const AppCore = (
-  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-    <HelmetProvider>
-      <Provider store={store}>
-        <QueryClientProvider client={queryClient}>
-          <BrowserRouter
-            future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true,
-            }}
-          >
-            <App />
-          </BrowserRouter>
-          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-        </QueryClientProvider>
-      </Provider>
-    </HelmetProvider>
-  </GoogleOAuthProvider>
+const AppProviders = (
+  <HelmetProvider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <App />
+        </BrowserRouter>
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      </QueryClientProvider>
+    </Provider>
+  </HelmetProvider>
 );
+
+const AppCore = GOOGLE_CLIENT_ID ? (
+  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    {AppProviders}
+  </GoogleOAuthProvider>
+) : (
+  AppProviders
+);
+
+if (!GOOGLE_CLIENT_ID && import.meta.env.DEV) {
+  console.warn("Google OAuth is disabled: VITE_GOOGLE_CLIENT_ID is not set.");
+}
 
 // Conditionally wrap with StrictMode only in development
 const AppWrapper = import.meta.env.DEV ? (
