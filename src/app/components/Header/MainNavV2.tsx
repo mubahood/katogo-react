@@ -219,7 +219,7 @@ const MainNavV2: React.FC = () => {
 
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <img src="/media/logos/logo.png" alt="Katogo" className="h-7 w-auto object-contain" />
+            <img src="/media/logos/logo.png" alt="Katogo" className="h-7 w-auto max-w-[120px] lg:max-w-[140px] object-contain" />
           </Link>
 
           {/* ── Desktop links ────────────────────────────────────────────── */}
