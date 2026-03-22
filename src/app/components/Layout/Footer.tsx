@@ -89,9 +89,10 @@ const Footer: React.FC = () => {
           <div className="col-span-2 md:col-span-4 lg:col-span-2">
             <Link to="/" className="no-underline inline-block mb-4">
               <img
-                src="/media/logos/logo.png"
+                src="/media/logos/logo-2.svg"
                 alt="UgFlix"
                 className="h-8 w-auto"
+                style={{ maxWidth: 160 }}
                 onError={(e) => {
                   const el = e.target as HTMLImageElement;
                   el.style.display = "none";
