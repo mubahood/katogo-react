@@ -1,0 +1,126 @@
+# =============================================================================
+#  Apache .htaccess — UgFlix React SPA
+#  Place this file INSIDE dist/ when the server document root = dist/
+#  https://movies.ugnews24.info
+# =============================================================================
+
+# ── SPA routing — all unknown paths → index.html ─────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Force HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+    # Skip real files and directories (assets, images, fonts …)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # All React routes → index.html
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+
+# =============================================================================
+#  SECURITY HEADERS
+# =============================================================================
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+    Header unset Server
+    Header unset X-Powered-By
+</IfModule>
+
+
+# =============================================================================
+#  CACHE CONTROL
+# =============================================================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault                          "access plus 1 month"
+    ExpiresByType text/html                 "access plus 0 seconds"
+    ExpiresByType text/javascript           "access plus 1 year"
+    ExpiresByType application/javascript    "access plus 1 year"
+    ExpiresByType text/css                  "access plus 1 year"
+    ExpiresByType font/woff                 "access plus 1 year"
+    ExpiresByType font/woff2                "access plus 1 year"
+    ExpiresByType image/png                 "access plus 30 days"
+    ExpiresByType image/jpeg                "access plus 30 days"
+    ExpiresByType image/webp                "access plus 30 days"
+    ExpiresByType image/svg+xml             "access plus 30 days"
+    ExpiresByType image/x-icon              "access plus 30 days"
+    ExpiresByType application/manifest+json "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    <FilesMatch "\.(woff|woff2|ttf|eot)$">
+        Header set Cache-Control "public, max-age=31536000"
+    </FilesMatch>
+    <FilesMatch "\.(png|jpg|jpeg|gif|webp|svg|ico)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    <FilesMatch "\.html$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate"
+        Header set Pragma "no-cache"
+    </FilesMatch>
+    <FilesMatch "(manifest\.json|service-worker\.js)$">
+        Header set Cache-Control "no-store, no-cache, must-revalidate"
+        Header set Pragma "no-cache"
+    </FilesMatch>
+    # CORS for fonts
+    <FilesMatch "\.(woff|woff2|ttf|eot|svg|otf)$">
+        Header set Access-Control-Allow-Origin "*"
+    </FilesMatch>
+</IfModule>
+
+
+# =============================================================================
+#  GZIP COMPRESSION
+# =============================================================================
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/manifest+json image/svg+xml
+    AddOutputFilterByType DEFLATE font/woff font/woff2
+</IfModule>
+
+<IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript
+    AddOutputFilterByType BROTLI_COMPRESS application/json application/manifest+json
+    AddOutputFilterByType BROTLI_COMPRESS image/svg+xml font/woff2
+</IfModule>
+
+
+# =============================================================================
+#  MIME TYPES
+# =============================================================================
+<IfModule mod_mime.c>
+    AddType application/javascript      .js .mjs
+    AddType text/css                    .css
+    AddType image/svg+xml               .svg .svgz
+    AddType image/webp                  .webp
+    AddType font/woff                   .woff
+    AddType font/woff2                  .woff2
+    AddType application/manifest+json   .webmanifest .json
+</IfModule>
+
+AddDefaultCharset UTF-8
+
+# Disable directory listing
+Options -Indexes -MultiViews +FollowSymLinks
+FileETag None
+
+# Block dot-files and sensitive files
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
