@@ -72,8 +72,18 @@ export default defineConfig(({ mode }) => {
           },
 
           manualChunks: (id) => {
-            // Core React
-            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            // Core React + react-bootstrap must share one chunk.
+            // react-bootstrap calls React.createContext at module init time;
+            // separating it from React causes "Cannot read properties of
+            // undefined (reading 'createContext')" before vendor-react loads.
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-bootstrap/') ||
+              id.includes('node_modules/bootstrap/') ||
+              id.includes('node_modules/@restart/') ||  // react-bootstrap peer dep
+              id.includes('node_modules/prop-types/')
+            ) {
               return 'vendor-react'
             }
             // Router
@@ -91,10 +101,6 @@ export default defineConfig(({ mode }) => {
             // UI icons
             if (id.includes('node_modules/lucide-react/')) {
               return 'vendor-icons'
-            }
-            // Bootstrap (legacy)
-            if (id.includes('node_modules/bootstrap/') || id.includes('node_modules/react-bootstrap/')) {
-              return 'vendor-bootstrap'
             }
             // Media / video
             if (id.includes('node_modules/hls.js/') || id.includes('node_modules/react-player/')) {

@@ -1,0 +1,1 @@
+import{j as s,C as a}from"./vendor-react-DR2m3yOG.js";const c=()=>s.jsx(a,{children:s.jsxs("div",{className:"py-5",children:[s.jsx("h1",{children:"Contact Us"}),s.jsx("p",{children:"Contact page coming soon..."})]})});export{c as default};
