@@ -1,6 +1,55 @@
-/* Header Component Styles */
+/* ===================================================================
+   Header & Nav – Global link reset
+   Kill underlines from Bootstrap and other global sheets.
+   =================================================================== */
 
-/* Placeholder to prevent empty file warning */
-.header-placeholder {
-  display: none;
+nav a,
+nav a:hover,
+nav a:focus,
+nav a:active,
+nav button,
+footer a,
+footer a:hover,
+footer a:focus,
+footer a:active {
+  text-decoration: none !important;
+}
+
+/* ===================================================================
+   Fixed header — iOS safe-area support (notch / Dynamic Island)
+   =================================================================== */
+
+/* The header is h-12 (48px) mobile / h-[52px] desktop.
+   On notched iOS devices, the safe-area-inset-top pushes content
+   under the notch. We extend the header to cover it. */
+header,
+.main-nav-wrapper,
+[data-header="true"] {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Ensure body content starts below extended header */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .pt-12 {
+    /* Will be overridden per-element via inline Tailwind if needed */
+  }
+}
+
+/* Ensure links in nav/footer are never underlined */
+nav a,
+nav a:hover,
+nav a:focus,
+nav a:visited,
+footer a,
+footer a:hover,
+footer a:focus,
+footer a:visited {
+  text-decoration: none !important;
+}
+
+/* Desktop: remove bottom padding from main layout (no bottom nav) */
+@media (min-width: 1024px) {
+  main {
+    padding-bottom: 0 !important;
+  }
 }

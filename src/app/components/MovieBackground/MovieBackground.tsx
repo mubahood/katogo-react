@@ -126,6 +126,8 @@ const MovieBackground: React.FC<MovieBackgroundProps> = ({
           muted={isMuted}
           loop
           playsInline
+          referrerPolicy="no-referrer"
+          crossOrigin="anonymous"
           onLoadedData={handleVideoLoad}
           onTimeUpdate={handleVideoTimeUpdate}
           onError={handleVideoError}

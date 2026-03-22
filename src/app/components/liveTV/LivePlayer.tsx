@@ -44,6 +44,8 @@ const LivePlayer: React.FC<LivePlayerProps> = ({ streamUrl, stationName, posterU
         poster={posterUrl}
         controls
         playsInline
+        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
         aria-label={stationName ? `${stationName} live stream` : 'Live stream'}
       />
       {/* LIVE overlay badge */}

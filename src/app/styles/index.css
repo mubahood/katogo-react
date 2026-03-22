@@ -5,8 +5,15 @@
    =================================================================== */
 
 /* ===================================================================
+   0. BOOTSTRAP (legacy — layered below Tailwind to prevent conflicts)
+   Only loaded for pages still using react-bootstrap components.
+   Tailwind utilities always win thanks to CSS layer priority.
+   =================================================================== */
+@import "bootstrap/dist/css/bootstrap.min.css" layer(bootstrap);
+
+/* ===================================================================
    0. TAILWIND CSS
-   Utility-first CSS framework
+   Utility-first CSS framework (higher layer priority — always wins)
    =================================================================== */
 @import "tailwindcss";
 
@@ -127,11 +134,6 @@
     max-width: 720px;
   }
   
-  /* Typography scaling */
-  html {
-    font-size: 17px; /* Slightly larger base for larger screens */
-  }
-  
   /* Navigation adjustments */
   .nav-link {
     padding: var(--space-3) var(--space-4);
@@ -160,10 +162,6 @@
 @media (min-width: 1200px) {
   .container {
     max-width: 1140px;
-  }
-  
-  html {
-    font-size: 18px; /* Optimal reading size for large screens */
   }
   
   /* Enhanced spacing for very large screens */
@@ -207,6 +205,71 @@
 .force-accent {
   color: var(--brand-accent) !important;
   border-color: var(--brand-accent) !important;
+}
+
+/* ===================================================================
+   DARK THEME GLOBAL ENHANCEMENTS
+   color-scheme, scrollbars, selection, image rendering
+   =================================================================== */
+
+/* Tell the browser this is a dark app — native elements render dark */
+:root {
+  color-scheme: dark;
+}
+
+/* Dark scrollbar — webkit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Text selection colors */
+::selection {
+  background: rgba(183, 28, 28, 0.45);
+  color: #fff;
+}
+::-moz-selection {
+  background: rgba(183, 28, 28, 0.45);
+  color: #fff;
+}
+
+/* Crisp image rendering */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Prevent layout shift on scrollbar appear */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Smooth transitions for interactive elements */
+a, button, [role="button"] {
+  transition-property: color, background-color, border-color, opacity, transform, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Remove default tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text inflation on mobile */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* ===================================================================
@@ -274,23 +337,6 @@
    11. ACCESSIBILITY ENHANCEMENTS
    Focus management and accessibility improvements
    =================================================================== */
-
-/* FORCE LIGHT MODE - Override dark mode preferences */
-html[data-bs-theme="dark"],
-html[data-theme="dark"],
-[data-bs-theme="dark"],
-[data-theme="dark"] {
-  color-scheme: light !important;
-}
-
-/* Override any dark mode media queries */
-@media (prefers-color-scheme: dark) {
-  html,
-  body,
-  * {
-    color-scheme: light !important;
-  }
-}
 
 /* Enhanced focus indicators */
 *:focus-visible {

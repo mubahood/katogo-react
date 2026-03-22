@@ -21,6 +21,11 @@ export const getImageUrl = (img: string | null | undefined): string => {
     }
   }
   
+  // If already a full URL (e.g. Google avatar), return as-is
+  if (img0.startsWith('http://') || img0.startsWith('https://')) {
+    return img0;
+  }
+  
   // If the image path starts with 'media/', it's from the public directory
   if (img0.startsWith('media/')) {
     return `/${img0}`; // Serve from public directory

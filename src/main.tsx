@@ -9,6 +9,13 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HelmetProvider } from "react-helmet-async";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { initializeThemeFromStorage } from "./app/hooks/useTheme";
+import './app/hooks/usePwaInstall'; // Register PWA install event listener early
+import { registerServiceWorker } from './app/hooks/usePwaInstall';
+
+// Register service worker so beforeinstallprompt fires (production only)
+if (import.meta.env.PROD) {
+  registerServiceWorker();
+}
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
@@ -26,8 +33,10 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 // Apply persisted theme before the first render to avoid theme flash.
 initializeThemeFromStorage();
 
-// Styles - Bootstrap and Icons
-import "bootstrap/dist/css/bootstrap.min.css";
+// Remove splash-screen class so body is not constrained by overflow:hidden / height:100%
+document.body.classList.remove('page-loading');
+
+// Styles - Icons only (Bootstrap CSS removed — Tailwind is the sole framework)
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 // UGFLIX Master CSS Architecture v2.0

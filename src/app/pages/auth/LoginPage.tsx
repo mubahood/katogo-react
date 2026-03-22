@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Alert, Button, Form, Spinner } from "react-bootstrap";
 import { CredentialResponse, GoogleLogin, useGoogleOneTapLogin } from "@react-oauth/google";
 import { useDispatch } from "react-redux";
 import { loginSuccess, restoreAuthState } from "../../store/slices/authSlice";
@@ -154,7 +153,7 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     document.body.style.paddingTop = "0";
     return () => {
-      document.body.style.paddingTop = "calc(56px + 35px + 0px)";
+      document.body.style.paddingTop = "";
     };
   }, []);
 
@@ -244,10 +243,10 @@ const LoginPage: React.FC = () => {
           </header>
 
           {serverError ? (
-            <Alert variant="danger" className="auth-alert" role="alert">
+            <div className="auth-alert auth-alert-danger" role="alert">
               <i className="bi bi-exclamation-triangle-fill" aria-hidden="true" />
               <span>{serverError}</span>
-            </Alert>
+            </div>
           ) : null}
 
           <GoogleActionButton
@@ -269,31 +268,33 @@ const LoginPage: React.FC = () => {
           </button>
 
           {showEmailForm ? (
-            <Form onSubmit={handleSubmit} className="auth-form">
-              <Form.Group className="auth-field">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control
+            <form onSubmit={handleSubmit} className="auth-form">
+              <div className="auth-field">
+                <label htmlFor="email">Email address</label>
+                <input
+                  id="email"
                   type="email"
                   name="email"
+                  className={`auth-input${errors.email ? ' is-invalid' : ''}`}
                   value={formData.email}
                   onChange={handleInputChange}
-                  isInvalid={!!errors.email}
                   placeholder="you@example.com"
                   autoComplete="email"
                   required
                 />
-                <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
-              </Form.Group>
+                {errors.email && <div className="auth-feedback">{errors.email}</div>}
+              </div>
 
-              <Form.Group className="auth-field">
-                <Form.Label>Password</Form.Label>
+              <div className="auth-field">
+                <label htmlFor="password">Password</label>
                 <div className="auth-password-wrap">
-                  <Form.Control
+                  <input
+                    id="password"
                     type={showPassword ? "text" : "password"}
                     name="password"
+                    className={`auth-input${errors.password ? ' is-invalid' : ''}`}
                     value={formData.password}
                     onChange={handleInputChange}
-                    isInvalid={!!errors.password}
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     required
@@ -307,27 +308,28 @@ const LoginPage: React.FC = () => {
                     <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} />
                   </button>
                 </div>
-                <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
-              </Form.Group>
+                {errors.password && <div className="auth-feedback">{errors.password}</div>}
+              </div>
 
               <div className="auth-row">
-                <Form.Check
-                  type="checkbox"
-                  id="rememberMe"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleInputChange}
-                  label="Remember me"
-                />
+                <label className="auth-checkbox">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleInputChange}
+                  />
+                  <span>Remember me</span>
+                </label>
                 <Link to="/auth/forgot-password" className="auth-inline-link">
                   Forgot password?
                 </Link>
               </div>
 
-              <Button type="submit" className="auth-submit" disabled={isLoading}>
+              <button type="submit" className="auth-submit" disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <Spinner animation="border" size="sm" />
+                    <span className="auth-spinner" />
                     <span>Signing in...</span>
                   </>
                 ) : (
@@ -336,8 +338,8 @@ const LoginPage: React.FC = () => {
                     <span>Sign in</span>
                   </>
                 )}
-              </Button>
-            </Form>
+              </button>
+            </form>
           ) : null}
 
           <footer className="auth-footer">
@@ -442,6 +444,14 @@ const LoginPage: React.FC = () => {
             gap: 0.5rem;
             padding: 0.72rem 0.85rem;
             margin-bottom: 1rem;
+            border-radius: 0.5rem;
+          }
+
+          .auth-alert-danger {
+            background: rgba(220, 53, 69, 0.15);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #ffb4b4;
+            font-size: 0.85rem;
           }
 
           .auth-google-btn,
@@ -565,23 +575,67 @@ const LoginPage: React.FC = () => {
             margin-bottom: 0.4rem;
           }
 
-          .auth-field .form-control {
+          .auth-field .auth-input {
+            display: block;
+            width: 100%;
             border-radius: 0.7rem;
             min-height: 2.85rem;
             border: 1px solid rgba(255,255,255,0.22);
             background: rgba(255,255,255,0.06);
             color: #fff;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
           }
 
-          .auth-field .form-control::placeholder {
+          .auth-field .auth-input::placeholder {
             color: rgba(255,255,255,0.54);
           }
 
-          .auth-field .form-control:focus {
+          .auth-field .auth-input:focus {
             background: rgba(255,255,255,0.08);
             border-color: #ff8c39;
             box-shadow: 0 0 0 0.2rem rgba(255, 140, 57, 0.2);
             color: #fff;
+          }
+
+          .auth-field .auth-input.is-invalid {
+            border-color: #dc3545;
+          }
+
+          .auth-feedback {
+            color: #ffb4b4;
+            font-size: 0.79rem;
+            margin-top: 0.3rem;
+          }
+
+          .auth-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            font-size: 0.83rem;
+          }
+
+          .auth-checkbox input[type="checkbox"] {
+            accent-color: #ff8c39;
+            width: 1rem;
+            height: 1rem;
+          }
+
+          .auth-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: authSpin 0.6s linear infinite;
+          }
+
+          @keyframes authSpin {
+            to { transform: rotate(360deg); }
           }
 
           .auth-password-wrap {

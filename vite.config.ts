@@ -27,7 +27,7 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom'],
           'vendor-redux': ['@reduxjs/toolkit', 'react-redux'],
-          'vendor-bootstrap': ['react-bootstrap', 'bootstrap'],
+          'vendor-bootstrap': ['react-bootstrap'],
           'vendor-ui': ['lucide-react'],
           'vendor-router': ['react-router-dom'],
           'vendor-query': ['@tanstack/react-query'],

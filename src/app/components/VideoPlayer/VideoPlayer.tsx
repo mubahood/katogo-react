@@ -274,6 +274,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
         poster={poster}
         className="video-element"
         playsInline
+        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
       />
 
       {/* Loading State */}

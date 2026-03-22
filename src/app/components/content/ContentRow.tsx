@@ -3,12 +3,15 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { MovieV2 } from '../../services/v2/MoviesV2Service';
+import { ManifestMovie } from '../../services/v2/ManifestV2Service';
 import MovieCard from './MovieCard';
 import ContentRowSkeleton from './ContentRowSkeleton';
 
+type ContentItem = MovieV2 | ManifestMovie;
+
 interface ContentRowProps {
   title: string;
-  items?: MovieV2[];
+  items?: ContentItem[];
   seeAllLink?: string;
   isLoading?: boolean;
   showEpisodeLabel?: boolean;
@@ -36,46 +39,45 @@ const ContentRow: React.FC<ContentRowProps> = ({
   if (!isLoading && (!items || items.length === 0)) return null;
 
   return (
-    <section className="mb-8">
+    <section className="mb-14">
       {/* Row header */}
-      <div className="flex items-center justify-between mb-3 px-4 sm:px-6">
-        <h2 className="text-white text-lg sm:text-xl font-semibold font-heading">{title}</h2>
-        {seeAllLink && !isLoading && (
-          <Link to={seeAllLink} className="text-brand-red text-sm hover:text-brand-gold transition-colors">
+      <div className="flex items-center justify-between mb-3.5 px-4 sm:px-6 lg:px-8">
+        <h2 className="text-white text-[15px] sm:text-base font-semibold font-heading">{title}</h2>
+        {seeAllLink && (
+          <Link to={seeAllLink} className="no-underline text-white/40 text-[12px] hover:text-white/70 transition-colors">
             See all
           </Link>
         )}
       </div>
 
-      {/* Scroll container with arrow buttons */}
+      {/* Scroll container */}
       <div className="relative group/row">
-        {/* Left arrow */}
         <button
           onClick={() => scroll('left')}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/80 hover:bg-black text-white p-2 rounded-r-lg opacity-0 group-hover/row:opacity-100 transition-opacity hidden sm:flex items-center"
+          className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/70 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-opacity hidden sm:flex border border-white/10"
           aria-label="Scroll left"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={16} />
         </button>
 
-        {/* Cards */}
         <div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-4 sm:px-6"
+          className="flex gap-2 sm:gap-2.5 overflow-x-auto scroll-smooth px-4 sm:px-6 lg:px-8"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {items!.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} showEpisodeLabel={showEpisodeLabel} />
+            <div key={movie.id} className="flex-shrink-0 w-[130px] sm:w-[160px]">
+              <MovieCard movie={movie} showEpisodeLabel={showEpisodeLabel} />
+            </div>
           ))}
         </div>
 
-        {/* Right arrow */}
         <button
           onClick={() => scroll('right')}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/80 hover:bg-black text-white p-2 rounded-l-lg opacity-0 group-hover/row:opacity-100 transition-opacity hidden sm:flex items-center"
+          className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/70 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-opacity hidden sm:flex border border-white/10"
           aria-label="Scroll right"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={16} />
         </button>
       </div>
     </section>

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download, Play, Volume2, VolumeX } from 'lucide-react';
 import { APP_CONFIG } from '../../constants';
+import { triggerPwaInstall } from '../../hooks/usePwaInstall';
 import { SEOHead } from '../../components/seo';
 import { http_get } from '../../services/Api';
 
@@ -33,14 +34,14 @@ const fallbackMovie: RandomMovie = {
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const hasRetriedWithNoReferrer = useRef(false);
-
+  const previewStartRef = useRef(0);
   const [movie, setMovie] = useState<RandomMovie>(fallbackMovie);
   const [isFetchingMovie, setIsFetchingMovie] = useState(true);
-  const [videoReady, setVideoReady] = useState(false);
-  const [isPlaybackActive, setIsPlaybackActive] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+
+  const PREVIEW_DURATION = 180; // 3 minutes
 
   useEffect(() => {
     document.body.style.paddingTop = '0';
@@ -48,134 +49,139 @@ const LandingPage: React.FC = () => {
     document.body.classList.add('landing-active');
 
     return () => {
-      document.body.style.paddingTop = 'calc(56px + 35px + 0px)';
+      document.body.style.paddingTop = '';
       document.body.style.overflow = 'auto';
       document.body.classList.remove('landing-active');
     };
   }, []);
 
-  useEffect(() => {
-    const fetchRandomMovie = async () => {
-      try {
-        const response = await http_get(
-          'random-movie',
-          { _ts: Date.now() },
-          {
-            includeUser: false,
-            headers: {
-              'X-Request-Type': 'player-media',
-              'X-Player-Context': 'landing-page-preview',
-              'Cache-Control': 'no-cache',
-            },
-          }
-        );
-        if (response?.code === 1 && response?.data) {
-          const payload = response.data;
-          const normalizedVideoUrl =
-            payload.video_url ||
-            payload.videoUrl ||
-            payload.url ||
-            payload.file ||
-            fallbackMovie.video_url;
+  // Fetch random movie — retry up to 3 times if video fails to load
+  const fetchMovie = async () => {
+    try {
+      const response = await http_get(
+        'random-movie',
+        { _ts: Date.now() },
+        {
+          includeUser: false,
+          headers: {
+            'X-Request-Type': 'player-media',
+            'X-Player-Context': 'landing-page-preview',
+            'Cache-Control': 'no-cache',
+          },
+        }
+      );
+      if (response?.code === 1 && response?.data) {
+        const payload = response.data;
+        const normalizedVideoUrl =
+          payload.video_url ||
+          payload.videoUrl ||
+          payload.url ||
+          payload.file ||
+          '';
 
-          const apiMovie = {
+        if (normalizedVideoUrl) {
+          const apiMovie: RandomMovie = {
             ...fallbackMovie,
             ...payload,
             title: payload.title || payload.name || fallbackMovie.title,
-            description: payload.description || payload.desc || fallbackMovie.description,
+            description: payload.description || payload.desc || '',
             video_url: normalizedVideoUrl,
             thumbnail_url: payload.thumbnail_url || payload.thumbnailUrl || payload.image_url || payload.imageUrl,
             image_url: payload.image_url || payload.imageUrl || payload.thumbnail_url || payload.thumbnailUrl,
           };
-          setMovie(apiMovie);
-          return;
+          return apiMovie;
         }
-      } catch {
-        // Fall back to static movie URL for uninterrupted playback.
-      } finally {
-        setIsFetchingMovie(false);
       }
-
-      setIsMuted(true);
-      setMovie(fallbackMovie);
-    };
-
-    setVideoError(false);
-    setVideoReady(false);
-    setIsPlaybackActive(false);
-    setIsMuted(true);
-    fetchRandomMovie();
-  }, []);
+    } catch {
+      // silent
+    }
+    return null;
+  };
 
   useEffect(() => {
-    hasRetriedWithNoReferrer.current = false;
-    setVideoError(false);
-    setVideoReady(false);
-    setIsPlaybackActive(false);
-    setIsMuted(true);
+    let cancelled = false;
+    const init = async () => {
+      const apiMovie = await fetchMovie();
+      if (!cancelled) {
+        setVideoError(false);
+        setVideoLoaded(false);
+        setMovie(apiMovie || fallbackMovie);
+        setIsFetchingMovie(false);
+      }
+    };
+    init();
+    return () => { cancelled = true; };
+  }, []);
 
-    if (!videoRef.current) return;
-    videoRef.current.defaultMuted = true;
-    videoRef.current.muted = true;
-    videoRef.current.volume = 0;
-    videoRef.current.setAttribute('referrerpolicy', 'no-referrer');
+  // Playback — all controlled by JavaScript, no HTML autoPlay/muted
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid || !movie.video_url) return;
 
+    previewStartRef.current = 0;
+
+    // Mute via JS so browser allows play()
+    vid.muted = true;
+    vid.volume = 0;
+
+    const onPlaying = () => {
+      console.log('[Landing] Video playing —', movie.title);
+      setVideoLoaded(true);
+
+      // Seek to 10% to skip intros
+      if (Number.isFinite(vid.duration) && vid.duration > 0) {
+        vid.currentTime = vid.duration * 0.1;
+      }
+
+      // Unmute after short delay
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.muted = false;
+          videoRef.current.volume = 0.5;
+          setIsMuted(false);
+        }
+      }, 500);
+    };
+    vid.addEventListener('playing', onPlaying, { once: true });
+
+    // 3-minute preview enforcement
+    const onTimeUpdate = () => {
+      if (!Number.isFinite(vid.duration) || vid.duration <= 0) return;
+      const startPoint = vid.duration * 0.1;
+      if (previewStartRef.current === 0 && vid.currentTime >= startPoint) {
+        previewStartRef.current = vid.currentTime;
+      }
+      if (previewStartRef.current > 0 && (vid.currentTime - previewStartRef.current) >= PREVIEW_DURATION) {
+        vid.currentTime = startPoint;
+        previewStartRef.current = startPoint;
+      }
+    };
+    vid.addEventListener('timeupdate', onTimeUpdate);
+
+    // Only play() once the browser has enough data (canplay)
     const tryPlay = () => {
-      void playPreview(false);
+      vid.play().catch((err) => {
+        console.warn('[Landing] Play blocked:', err.message);
+      });
     };
 
-    // Give the browser one immediate and one delayed autoplay attempt.
-    tryPlay();
-    const timer = window.setTimeout(tryPlay, 250);
+    if (vid.readyState >= 3) {
+      tryPlay();
+    } else {
+      vid.addEventListener('canplay', tryPlay, { once: true });
+    }
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      vid.removeEventListener('playing', onPlaying);
+      vid.removeEventListener('canplay', tryPlay);
+      vid.removeEventListener('timeupdate', onTimeUpdate);
+    };
   }, [movie.video_url]);
 
-  const playPreview = async (withSound: boolean) => {
-    if (!videoRef.current) return;
-
-    const video = videoRef.current;
-    video.defaultMuted = !withSound;
-    video.muted = !withSound;
-    video.volume = withSound ? 1 : 0;
-
-    setIsMuted(!withSound);
-
-    try {
-      await video.play();
-    } catch {
-      // User interaction may still be required in some browsers.
-    }
-  };
-
-  const ensureAudiblePlayback = async () => {
-    await playPreview(true);
-  };
-
-  const handleLoadedData = async () => {
-    const video = videoRef.current;
-    if (!video) {
-      setVideoReady(true);
-      return;
-    }
-
-    if (Number.isFinite(video.duration) && video.duration > 0) {
-      video.currentTime = video.duration * 0.08;
-    }
-
-    setVideoReady(true);
-    await playPreview(false);
-  };
-
-  const handleTimeUpdate = () => {
-    const video = videoRef.current;
-    if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
-
-    const startPoint = video.duration * 0.08;
-    const endPoint = video.duration * 0.3;
-    if (video.currentTime >= endPoint) {
-      video.currentTime = startPoint;
-    }
+  // Video error — just show poster
+  const handleVideoError = () => {
+    console.warn('[Landing] Video failed:', movie.video_url);
+    setVideoError(true);
   };
 
   const toggleMute = () => {
@@ -184,7 +190,7 @@ const LandingPage: React.FC = () => {
 
     const nextMuted = !isMuted;
     video.muted = nextMuted;
-    video.volume = nextMuted ? 0 : 1;
+    video.volume = nextMuted ? 0 : 0.5;
     setIsMuted(nextMuted);
 
     if (!nextMuted) {
@@ -192,10 +198,15 @@ const LandingPage: React.FC = () => {
     }
   };
 
-  const showLoader = isFetchingMovie || (!!movie.video_url && !videoError && (!videoReady || !isPlaybackActive));
-  const videoSource = movie.video_url
-    ? `${movie.video_url}${movie.video_url.includes('?') ? '&' : '?'}player=landing&type=preview`
-    : '';
+  const ensureAudiblePlayback = async () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = false;
+    videoRef.current.volume = 0.5;
+    setIsMuted(false);
+    try { await videoRef.current.play(); } catch {}
+  };
+
+  const showLoader = isFetchingMovie || !videoLoaded;
 
   const landingPageMeta = {
     basic: {
@@ -224,66 +235,53 @@ const LandingPage: React.FC = () => {
       <SEOHead config={landingPageMeta} />
 
       <div className="landing-shell" onClick={ensureAudiblePlayback}>
-        {movie.video_url && !videoError ? (
+        {/* Video — render after fetch completes, stays mounted even on error */}
+        {!isFetchingMovie && movie.video_url ? (
           <video
             ref={videoRef}
+            key={movie.video_url}
+            src={movie.video_url}
             className="landing-video"
-            src={videoSource}
-            autoPlay
-            muted={isMuted}
+            muted
             playsInline
             preload="auto"
-            onLoadedMetadata={() => {
-              void playPreview(false);
-            }}
-            onCanPlay={() => {
-              void playPreview(false);
-            }}
-            onLoadedData={handleLoadedData}
-            onPlay={() => setIsPlaybackActive(true)}
-            onPlaying={() => setIsPlaybackActive(true)}
-            onPause={() => setIsPlaybackActive(false)}
-            onWaiting={() => setIsPlaybackActive(false)}
-            onStalled={() => setIsPlaybackActive(false)}
-            onTimeUpdate={handleTimeUpdate}
-            onError={() => {
-              if (!hasRetriedWithNoReferrer.current && videoRef.current) {
-                hasRetriedWithNoReferrer.current = true;
-                videoRef.current.setAttribute('referrerpolicy', 'no-referrer');
-                videoRef.current.load();
-                void playPreview(false);
-                return;
-              }
-              setVideoError(true);
-              setVideoReady(true);
-              setIsPlaybackActive(false);
-            }}
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+            onError={handleVideoError}
+          />
+        ) : null}
+
+        {/* Poster thumbnail — sits ON TOP of video, fades out when playback starts */}
+        {(movie.image_url || movie.thumbnail_url) ? (
+          <img
+            src={movie.image_url || movie.thumbnail_url}
+            alt={movie.title || 'Movie preview'}
+            className="landing-poster"
+            style={{ opacity: videoLoaded ? 0 : 1 }}
           />
         ) : (
           <div
             className="landing-fallback"
-            style={{
-              backgroundImage: movie.image_url || movie.thumbnail_url
-                ? `url(${movie.image_url || movie.thumbnail_url})`
-                : undefined,
-            }}
+            style={{ opacity: videoLoaded ? 0 : 1 }}
           />
         )}
 
         <div className="landing-overlay" />
 
         {showLoader ? (
-          <div className="landing-loader" aria-live="polite" aria-label="Loading movie preview">
-            <div className="landing-loader-panel">
-              <div className="landing-loader-mark" aria-hidden="true">
-                <span />
-                <span />
-                <span />
+          <div className="absolute inset-0 z-[3] flex items-center justify-center pointer-events-none">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative w-14 h-14">
+                <div className="absolute inset-0 rounded-full border-[2.5px] border-white/[0.08]" />
+                <div
+                  className="absolute inset-0 rounded-full border-[2.5px] border-transparent border-t-white/80"
+                  style={{ animation: 'spin 0.9s linear infinite' }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Play size={18} fill="white" className="text-white ml-0.5 opacity-40" />
+                </div>
               </div>
-              <div className="landing-loader-copy">
-                <strong>Loading preview</strong>
-                <span>{movie.title || fallbackMovie.title}</span>
-              </div>
+              <span className="text-white/40 text-[11px] font-medium tracking-widest uppercase">Loading preview</span>
             </div>
           </div>
         ) : null}
@@ -305,7 +303,11 @@ const LandingPage: React.FC = () => {
               <Play size={18} />
               Start watching
             </button>
-            <button className="landing-secondary-btn" onClick={() => navigate('/mobile-apps')}>
+            <button className="landing-secondary-btn" onClick={async (e) => {
+              e.stopPropagation();
+              const result = await triggerPwaInstall();
+              if (result === 'unavailable') navigate('/mobile-apps');
+            }}>
               <Download size={18} />
               Install now
             </button>
@@ -356,10 +358,19 @@ const LandingPage: React.FC = () => {
         }
 
         .landing-video,
-        .landing-fallback {
+        .landing-fallback,
+        .landing-poster {
           width: 100%;
           height: 100%;
           object-fit: cover;
+        }
+
+        .landing-poster {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          transition: opacity 1s ease;
+          pointer-events: none;
         }
 
         .landing-fallback {
@@ -369,6 +380,7 @@ const LandingPage: React.FC = () => {
         }
 
         .landing-overlay {
+          z-index: 2;
           background:
             linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.28) 35%, rgba(0,0,0,0.72) 100%),
             radial-gradient(circle at bottom left, rgba(229, 9, 20, 0.18), transparent 28%);

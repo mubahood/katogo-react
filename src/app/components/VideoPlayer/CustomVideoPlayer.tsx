@@ -1,19 +1,10 @@
 // src/app/components/VideoPlayer/CustomVideoPlayer.tsx
+// Custom HTML5 video player — desktop: overlay controls, mobile: controls below video
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  Play, 
-  Pause, 
-  Volume2, 
-  VolumeX, 
-  Maximize, 
-  SkipForward, 
-  SkipBack, 
-  Settings,
-  PictureInPicture,
-  Loader2,
-  RotateCcw
+import {
+  Play, Pause, Volume2, VolumeX, Maximize, Minimize,
+  SkipForward, SkipBack, Settings, PictureInPicture, Loader2,
 } from 'lucide-react';
-// Styles moved inline below for better encapsulation and consistency
 import { ApiService } from '../../services/ApiService';
 import { PreferencesService } from '../../services/PreferencesService';
 import { VideoProgressModel } from '../../models/VideoProgressModel';
@@ -22,11 +13,12 @@ interface CustomVideoPlayerProps {
   url: string;
   movieId?: number;
   autoPlay?: boolean;
+  startPosition?: number;
   onNext?: () => void;
   onPrevious?: () => void;
   onEnded?: () => void;
   poster?: string;
-  relatedMovies?: Array<{ id: number; title: string; image: string }>; // optional UI enhancement
+  relatedMovies?: Array<{ id: number; title: string; image: string }>;
 }
 
 interface VideoState {
@@ -43,693 +35,380 @@ interface VideoState {
   ready: boolean;
 }
 
-interface ProgressState {
-  canResume: boolean;
-  resumePosition: number;
-  showResumeModal: boolean;
-  lastSavedProgress: number;
-  progressSaveInterval: number;
-  isSaving: boolean;
-  lastSaveTime: number;
-}
-
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
+/* ── Detect mobile (<768px) ── */
+const useIsMobile = () => {
+  const [m, setM] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const h = (e: MediaQueryListEvent) => setM(e.matches);
+    mq.addEventListener('change', h);
+    return () => mq.removeEventListener('change', h);
+  }, []);
+  return m;
+};
+
+/* ── Format time ── */
+const fmtTime = (s: number): string => {
+  const hrs = Math.floor(s / 3600);
+  const mins = Math.floor((s % 3600) / 60);
+  const secs = Math.floor(s % 60);
+  if (hrs > 0) return `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  return `${mins}:${String(secs).padStart(2, '0')}`;
+};
+
 export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
-  url,
-  movieId,
-  autoPlay = true,
-  onNext,
-  onPrevious,
-  onEnded,
-  poster,
-  relatedMovies = []
+  url, movieId, autoPlay = true, startPosition, onNext, onPrevious, onEnded, poster,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout>();
-  const progressSaveTimeoutRef = useRef<NodeJS.Timeout>();
-  const lastProgressSaveTimeRef = useRef<number>(0);
-  const lastSavedProgressRef = useRef<number>(0);
-  const isSavingRef = useRef<boolean>(false);
-  const progressIntervalRef = useRef<NodeJS.Timeout>();
-  const isPlayingRef = useRef<boolean>(false);
-  const loopActiveRef = useRef<boolean>(false);
+  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const lastSaveTimeRef = useRef(0);
+  const lastSavedPosRef = useRef(0);
+  const isSavingRef = useRef(false);
+  const isPlayingRef = useRef(false);
+  const loopActiveRef = useRef(false);
+  const isMobile = useIsMobile();
 
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-  
-  // Load saved preferences
-  const savedPreferences = PreferencesService.getPreferences();
+  const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+  const savedPrefs = PreferencesService.getPreferences();
   const deviceInfo = VideoProgressModel.getDeviceInfo();
-  
+
   const [state, setState] = useState<VideoState>({
-    playing: false,
-    currentTime: 0,
-    duration: 0,
-    volume: 1,
-    muted: false,
-    buffering: true,
-    loaded: 0,
-    playbackRate: savedPreferences.playbackRate,
-    isFullscreen: false,
-    showControls: true,
-    ready: false
+    playing: false, currentTime: 0, duration: 0, volume: 1, muted: false,
+    buffering: true, loaded: 0, playbackRate: savedPrefs.playbackRate,
+    isFullscreen: false, showControls: true, ready: false,
   });
-
-  const [progressState, setProgressState] = useState<ProgressState>({
-    canResume: false,
-    resumePosition: 0,
-    showResumeModal: false,
-    lastSavedProgress: 0,
-    progressSaveInterval: 5, // Save progress every 5 seconds (Flutter pattern)
-    isSaving: false,
-    lastSaveTime: 0
-  });
-
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
-  const [showTooltip, setShowTooltip] = useState<{ text: string; show: boolean }>({ text: '', show: false });
-  const [volumeIndicator, setVolumeIndicator] = useState<{ show: boolean; value: number }>({ show: false, value: 0 });
 
-  // BULLETPROOF progress saving with proper debouncing - NO concurrent requests
-  const saveProgress = useCallback(async (currentTime: number, duration: number, forceImmediate = false) => {
-    if (!movieId || duration <= 0 || currentTime <= 0) {
-      return;
-    }
-
+  // ── Progress save (v1 API, 5s, atomic lock) ──
+  const saveProgress = useCallback(async (ct: number, dur: number, force = false) => {
+    if (!movieId || dur <= 0 || ct <= 0 || isSavingRef.current) return;
     const now = Date.now();
-
-    // � IMMEDIATE REJECTION: If ANY save is in progress, block completely
-    if (isSavingRef.current) {
-      console.log('🚫 Save blocked - request already in progress');
-      return;
-    }
-
-    // ⏰ TIMING CHECK: Only save if forceImmediate OR (5s passed AND significant progress change)
-    if (!forceImmediate) {
-      const timeSinceLastSave = now - lastProgressSaveTimeRef.current;
-      const progressDiff = Math.abs(currentTime - lastSavedProgressRef.current);
-
-      // Wait at least 5 seconds between saves AND require 5+ seconds of progress change
-      if (timeSinceLastSave < 5000 || progressDiff < 5) {
-        return;
-      }
-    }
-
-    // 🔐 ATOMIC LOCK: Set saving flag BEFORE any async operations
+    if (!force && (now - lastSaveTimeRef.current < 5000 || Math.abs(ct - lastSavedPosRef.current) < 5)) return;
     isSavingRef.current = true;
-
     try {
-      const progressData = {
-        movie_id: movieId,
-        progress: Math.floor(currentTime),
-        duration: Math.floor(duration),
-        device: deviceInfo.device,
-        platform: deviceInfo.platform,
-        browser: deviceInfo.browser
-      };
-
-      console.log('📡 Sending progress save request...');
-      await ApiService.saveVideoProgress(progressData);
-
-      // ✅ SUCCESS: Update tracking state
-      lastProgressSaveTimeRef.current = now;
-      lastSavedProgressRef.current = currentTime;
-      setProgressState(prev => ({
-        ...prev,
-        lastSavedProgress: currentTime,
-        lastSaveTime: now
-      }));
-
-      console.log('✅ Progress saved successfully:', {
-        position: VideoProgressModel.formatTime(currentTime),
-        percentage: Math.round((currentTime / duration) * 100)
+      await ApiService.saveVideoProgress({
+        movie_id: movieId, progress: Math.floor(ct), duration: Math.floor(dur),
+        device: deviceInfo.device, platform: deviceInfo.platform, browser: deviceInfo.browser,
       });
-
-    } catch (error) {
-      console.error('❌ Failed to save progress:', error);
-      // Don't update lastProgressSaveRef on failure to allow retry
-    } finally {
-      // 🔓 UNLOCK: Always clear the flag
-      isSavingRef.current = false;
-    }
+      lastSaveTimeRef.current = now;
+      lastSavedPosRef.current = ct;
+    } catch { /* will retry */ }
+    finally { isSavingRef.current = false; }
   }, [movieId, deviceInfo]);
 
-  const loadSavedProgress = useCallback(async () => {
-    if (!movieId) return;
-    
-    try {
-      const progress = await ApiService.getVideoProgress(movieId);
-      if (progress && VideoProgressModel.canResume(progress.progress, progress.duration)) {
-        // Auto-resume without showing modal
-        if (videoRef.current) {
-          videoRef.current.currentTime = progress.progress;
-          console.log('🔄 Auto-resumed from:', {
-            position: VideoProgressModel.formatTime(progress.progress),
-            percentage: VideoProgressModel.calculatePercentage(progress.progress, progress.duration)
-          });
-        }
-        setProgressState(prev => ({
-          ...prev,
-          canResume: false,
-          resumePosition: 0,
-          showResumeModal: false
-        }));
-      }
-    } catch (error) {
-      console.warn('Failed to load saved progress:', error);
-    }
-  }, [movieId]);
+  // Read duration early + seek to startPosition if provided
+  const handleLoadedMetadata = useCallback(() => {
+    if (!videoRef.current) return;
+    const dur = videoRef.current.duration;
+    if (dur && !isNaN(dur)) setState(prev => ({ ...prev, duration: dur }));
+    if (startPosition && startPosition > 0) videoRef.current.currentTime = startPosition;
+  }, [startPosition]);
 
-  const resumeFromSavedPosition = () => {
-    if (videoRef.current && progressState.canResume) {
-      videoRef.current.currentTime = progressState.resumePosition;
-      setProgressState(prev => ({ ...prev, showResumeModal: false }));
-      console.log('📺 Resumed from:', VideoProgressModel.formatTime(progressState.resumePosition));
-    }
-  };
-
-  const startFromBeginning = () => {
-    setProgressState(prev => ({ ...prev, showResumeModal: false }));
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-    }
-  };
-
-  // Format time helper
-  const formatTime = (seconds: number): string => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = Math.floor(seconds % 60);
-    
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Hide controls after timeout
+  // ── Controls auto-hide (desktop overlay only) ──
   const resetControlsTimeout = useCallback(() => {
-    if (controlsTimeoutRef.current) {
-      clearTimeout(controlsTimeoutRef.current);
-    }
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
     setState(prev => ({ ...prev, showControls: true }));
-    
     if (state.playing) {
-      controlsTimeoutRef.current = setTimeout(() => {
-        setState(prev => ({ ...prev, showControls: false }));
-      }, 3000);
+      controlsTimeoutRef.current = setTimeout(() => setState(prev => ({ ...prev, showControls: false })), 3000);
     }
   }, [state.playing]);
 
-  // Video event handlers
-  const handleLoadStart = () => {
-    setState(prev => ({ ...prev, buffering: true, ready: false }));
-  };
+  // ── Video event handlers ──
+  const handleLoadStart = () => setState(prev => ({ ...prev, buffering: true, ready: false }));
 
   const handleCanPlay = () => {
-    setState(prev => ({ ...prev, buffering: false, ready: true }));
-    if (videoRef.current) {
-      videoRef.current.volume = 1;
-      videoRef.current.muted = false;
-    }
-    if (autoPlay && videoRef.current) {
-      videoRef.current.play().catch(console.error);
-    }
+    if (!videoRef.current) return;
+    const dur = videoRef.current.duration;
+    setState(prev => ({ ...prev, buffering: false, ready: true, duration: dur && !isNaN(dur) ? dur : prev.duration }));
+    videoRef.current.volume = 1;
+    videoRef.current.muted = false;
+    if (autoPlay) videoRef.current.play().catch(() => {});
   };
 
   const handleTimeUpdate = useCallback(() => {
     if (videoRef.current) {
-      const currentTime = videoRef.current.currentTime;
-      const duration = videoRef.current.duration || 0;
-      
-      // Just update state, NO progress saving here
       setState(prev => ({
         ...prev,
-        currentTime,
-        duration
+        currentTime: videoRef.current!.currentTime,
+        duration: videoRef.current!.duration || 0,
       }));
     }
   }, []);
 
   const handleProgress = () => {
     if (videoRef.current && videoRef.current.buffered.length > 0) {
-      const loaded = videoRef.current.buffered.end(0) / videoRef.current.duration;
-      setState(prev => ({ ...prev, loaded }));
+      setState(prev => ({ ...prev, loaded: videoRef.current!.buffered.end(0) / videoRef.current!.duration }));
     }
   };
 
-  const handleWaiting = () => {
-    setState(prev => ({ ...prev, buffering: true }));
-  };
+  const handleWaiting = () => setState(prev => ({ ...prev, buffering: true }));
 
   const handlePlaying = () => {
     setState(prev => ({ ...prev, buffering: false, playing: true }));
     isPlayingRef.current = true;
-    // Start recursive save loop if not already running
-    if (!loopActiveRef.current) {
-      startProgressLoop();
-    }
+    if (!loopActiveRef.current) startProgressLoop();
     resetControlsTimeout();
   };
 
   const handlePause = () => {
     setState(prev => ({ ...prev, playing: false }));
-    // Signal the loop to stop on the next check
     isPlayingRef.current = false;
   };
 
-  // Control handlers
+  // ── Control actions ──
   const togglePlay = () => {
-    if (videoRef.current) {
-      if (state.playing) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play().catch(console.error);
-      }
-    }
+    if (!videoRef.current) return;
+    state.playing ? videoRef.current.pause() : videoRef.current.play().catch(() => {});
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const volume = parseFloat(e.target.value);
-    const muted = volume === 0;
-    
-    setState(prev => ({ ...prev, volume, muted }));
-    
-    if (videoRef.current) {
-      videoRef.current.volume = volume;
-      videoRef.current.muted = muted;
-    }
-    
-    // Save volume preference
-    PreferencesService.saveVolume(volume);
-    PreferencesService.saveMuted(muted);
+    const vol = parseFloat(e.target.value);
+    setState(prev => ({ ...prev, volume: vol, muted: vol === 0 }));
+    if (videoRef.current) { videoRef.current.volume = vol; videoRef.current.muted = vol === 0; }
+    PreferencesService.saveVolume(vol);
+    PreferencesService.saveMuted(vol === 0);
   };
 
   const toggleMute = () => {
-    if (videoRef.current) {
-      const newMuted = !state.muted;
-      setState(prev => ({ ...prev, muted: newMuted }));
-      videoRef.current.muted = newMuted;
-      
-      // Save muted preference
-      PreferencesService.saveMuted(newMuted);
-    }
+    if (!videoRef.current) return;
+    const m = !state.muted;
+    setState(prev => ({ ...prev, muted: m }));
+    videoRef.current.muted = m;
+    PreferencesService.saveMuted(m);
   };
 
-  const seek = (time: number) => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = time;
-    }
-  };
+  const seek = (t: number) => { if (videoRef.current) videoRef.current.currentTime = t; };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const newTime = (clickX / rect.width) * state.duration;
-    seek(newTime);
+    seek(((e.clientX - rect.left) / rect.width) * state.duration);
   };
 
-  const skipForward = () => {
-    seek(Math.min(state.currentTime + 10, state.duration));
+  const handleMobileSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    seek(parseFloat(e.target.value));
   };
 
-  const skipBackward = () => {
-    seek(Math.max(state.currentTime - 10, 0));
-  };
+  const skipFwd = () => seek(Math.min(state.currentTime + 10, state.duration));
+  const skipBwd = () => seek(Math.max(state.currentTime - 10, 0));
 
-  const changePlaybackRate = (rate: number) => {
-    setState(prev => ({ ...prev, playbackRate: rate }));
-    if (videoRef.current) {
-      videoRef.current.playbackRate = rate;
-    }
-    
-    // Save playback rate preference
-    PreferencesService.savePlaybackRate(rate);
+  const changeRate = (r: number) => {
+    setState(prev => ({ ...prev, playbackRate: r }));
+    if (videoRef.current) videoRef.current.playbackRate = r;
+    PreferencesService.savePlaybackRate(r);
     setShowSpeedMenu(false);
   };
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement && containerRef.current) {
-      containerRef.current.requestFullscreen().catch(console.error);
-    } else if (document.fullscreenElement) {
-      document.exitFullscreen().catch(console.error);
-    }
+    if (!document.fullscreenElement && containerRef.current) containerRef.current.requestFullscreen().catch(() => {});
+    else if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   };
 
-  const togglePictureInPicture = async () => {
-    if (videoRef.current) {
-      try {
-        if (document.pictureInPictureElement) {
-          await document.exitPictureInPicture();
-        } else {
-          await videoRef.current.requestPictureInPicture();
-        }
-      } catch (error) {
-        console.error('PiP error:', error);
-      }
-    }
+  const togglePiP = async () => {
+    if (!videoRef.current) return;
+    try {
+      document.pictureInPictureElement ? await document.exitPictureInPicture() : await videoRef.current.requestPictureInPicture();
+    } catch { /* unsupported */ }
   };
 
-  // Keyboard shortcuts (expanded)
+  // ── Keyboard shortcuts (desktop) ──
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target === document.body) {
-        switch (e.code) {
-          // Playback toggles
-          case 'Space':
-          case 'KeyK':
-            e.preventDefault();
-            togglePlay();
-            break;
-          // Seek controls
-          case 'ArrowLeft':
-          case 'KeyJ':
-            e.preventDefault();
-            skipBackward();
-            break;
-          case 'ArrowRight':
-          case 'KeyL':
-            e.preventDefault();
-            skipForward();
-            break;
-          // Volume controls
-          case 'ArrowUp':
-            e.preventDefault();
-            if (videoRef.current) {
-              const nv = Math.min(1, (videoRef.current.muted ? 0 : state.volume) + 0.1);
-              videoRef.current.muted = false;
-              setState(prev => ({ ...prev, volume: nv, muted: false }));
-              videoRef.current.volume = nv;
-              PreferencesService.saveVolume(nv);
-              PreferencesService.saveMuted(false);
-              // Show volume indicator
-              setVolumeIndicator({ show: true, value: Math.round(nv * 100) });
-              setTimeout(() => setVolumeIndicator(prev => ({ ...prev, show: false })), 1500);
-            }
-            break;
-          case 'ArrowDown':
-            e.preventDefault();
-            if (videoRef.current) {
-              const nv = Math.max(0, (videoRef.current.muted ? 0 : state.volume) - 0.1);
-              const muted = nv === 0;
-              setState(prev => ({ ...prev, volume: nv, muted }));
-              videoRef.current.volume = nv;
-              videoRef.current.muted = muted;
-              PreferencesService.saveVolume(nv);
-              PreferencesService.saveMuted(muted);
-              // Show volume indicator
-              setVolumeIndicator({ show: true, value: Math.round(nv * 100) });
-              setTimeout(() => setVolumeIndicator(prev => ({ ...prev, show: false })), 1500);
-            }
-            break;
-          case 'KeyM':
-            e.preventDefault();
-            toggleMute();
-            break;
-          case 'KeyF':
-            e.preventDefault();
-            toggleFullscreen();
-            break;
-          case 'KeyP':
-            e.preventDefault();
-            togglePictureInPicture();
-            break;
-          case 'Comma': // < seek backward 10s
-            e.preventDefault();
-            skipBackward();
-            break;
-          case 'Period': // > seek forward 10s
-            e.preventDefault();
-            skipForward();
-            break;
-          case 'KeyS':
-            e.preventDefault();
-            setShowSpeedMenu(prev => !prev);
-            break;
-          case 'Slash': // ? help (without shift)
-            e.preventDefault();
-            setShowHelp(prev => !prev);
-            break;
-          // Number keys 0-9 seek to percentage
-          case 'Digit0': case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4':
-          case 'Digit5': case 'Digit6': case 'Digit7': case 'Digit8': case 'Digit9': {
-            const n = parseInt(e.code.replace('Digit', ''), 10);
-            if (!isNaN(n) && videoRef.current && state.duration > 0) {
-              e.preventDefault();
-              const pct = n === 0 ? 0 : n * 10;
-              seek((pct / 100) * state.duration);
-            }
-            break;
+    const handler = (e: KeyboardEvent) => {
+      if (e.target !== document.body) return;
+      switch (e.code) {
+        case 'Space': case 'KeyK': e.preventDefault(); togglePlay(); break;
+        case 'ArrowLeft': case 'KeyJ': e.preventDefault(); skipBwd(); break;
+        case 'ArrowRight': case 'KeyL': e.preventDefault(); skipFwd(); break;
+        case 'ArrowUp':
+          e.preventDefault();
+          if (videoRef.current) {
+            const nv = Math.min(1, state.volume + 0.1);
+            videoRef.current.volume = nv; videoRef.current.muted = false;
+            setState(p => ({ ...p, volume: nv, muted: false }));
           }
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          if (videoRef.current) {
+            const nv = Math.max(0, state.volume - 0.1);
+            videoRef.current.volume = nv; videoRef.current.muted = nv === 0;
+            setState(p => ({ ...p, volume: nv, muted: nv === 0 }));
+          }
+          break;
+        case 'KeyM': e.preventDefault(); toggleMute(); break;
+        case 'KeyF': e.preventDefault(); toggleFullscreen(); break;
+        case 'KeyP': e.preventDefault(); togglePiP(); break;
+        case 'KeyS': e.preventDefault(); setShowSpeedMenu(p => !p); break;
+        case 'Digit0': case 'Digit1': case 'Digit2': case 'Digit3': case 'Digit4':
+        case 'Digit5': case 'Digit6': case 'Digit7': case 'Digit8': case 'Digit9': {
+          const n = parseInt(e.code.replace('Digit', ''), 10);
+          if (!isNaN(n) && state.duration > 0) { e.preventDefault(); seek((n * 10 / 100) * state.duration); }
+          break;
         }
       }
     };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [state.playbackRate, state.volume, state.muted, state.duration]);
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [state.playbackRate, state.volume, state.muted]);
-
-  // Initialize with saved preferences
+  // ── Init preferences ──
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.volume = state.volume;
       videoRef.current.muted = state.muted;
       videoRef.current.playbackRate = state.playbackRate;
-      
-      console.log('🎵 Restored volume:', state.volume);
-      console.log('🔇 Restored muted:', state.muted);
-      console.log('⚡ Restored playback rate:', state.playbackRate);
     }
-  }, [state.volume, state.muted, state.playbackRate]);
+  }, []);
 
-  // Load saved progress when component mounts
+  // Seek to startPosition when it arrives (handles late-loading resume data)
   useEffect(() => {
-    loadSavedProgress();
-  }, [loadSavedProgress]);
+    if (startPosition != null && startPosition > 0 && videoRef.current && videoRef.current.readyState >= 1) {
+      videoRef.current.currentTime = startPosition;
+    }
+  }, [startPosition]);
 
-  // Page lifecycle management (do not pause on visibility change)
+  // ── sendBeacon on unload ──
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Save progress before page unload
+    const handler = () => {
       if (state.currentTime > 0 && state.duration > 0) {
-        // Use navigator.sendBeacon for reliable save on page unload
-        const progressData = {
-          movie_model_id: movieId,
-          progress: Math.floor(state.currentTime),
-          duration: Math.floor(state.duration),
-          device: deviceInfo.device,
-          platform: deviceInfo.platform,
-          browser: deviceInfo.browser
-        };
-        
         try {
-          // Try synchronous save for page unload
-          navigator.sendBeacon('/api/video-progress', JSON.stringify(progressData));
-        } catch (error) {
-          console.warn('Failed to save progress on unload:', error);
-        }
+          navigator.sendBeacon('/api/video-progress', JSON.stringify({
+            movie_model_id: movieId, progress: Math.floor(state.currentTime),
+            duration: Math.floor(state.duration), device: deviceInfo.device,
+            platform: deviceInfo.platform, browser: deviceInfo.browser,
+          }));
+        } catch { /* best-effort */ }
       }
     };
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [state.currentTime, state.duration, movieId, deviceInfo]);
 
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [state.playing, state.currentTime, state.duration, movieId, deviceInfo, saveProgress]);
-
-  // Recursive self-scheduling progress save loop
+  // ── Recursive save loop (5s) ──
   const startProgressLoop = useCallback(async () => {
     if (loopActiveRef.current) return;
     loopActiveRef.current = true;
     try {
       while (isPlayingRef.current) {
         if (videoRef.current && !videoRef.current.paused && videoRef.current.duration > 0) {
-          const currentTime = videoRef.current.currentTime;
-          const duration = videoRef.current.duration;
-          if (currentTime > 0) {
-            await saveProgress(currentTime, duration);
-          }
+          const ct = videoRef.current.currentTime;
+          if (ct > 0) await saveProgress(ct, videoRef.current.duration);
         }
-        // Wait 5 seconds before next attempt
         await sleep(5000);
       }
-    } finally {
-      loopActiveRef.current = false;
-    }
+    } finally { loopActiveRef.current = false; }
   }, [saveProgress]);
 
-  // Cleanup on unmount: ensure loop stops
+  useEffect(() => () => { isPlayingRef.current = false; }, []);
+
+  // ── Fullscreen change ──
   useEffect(() => {
-    return () => {
-      isPlayingRef.current = false;
-    };
+    const h = () => setState(p => ({ ...p, isFullscreen: !!document.fullscreenElement }));
+    document.addEventListener('fullscreenchange', h);
+    return () => document.removeEventListener('fullscreenchange', h);
   }, []);
 
-  // Fullscreen change handler
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setState(prev => ({ ...prev, isFullscreen: !!document.fullscreenElement }));
-    };
+  const pctPlayed = state.duration ? (state.currentTime / state.duration) * 100 : 0;
+  const pctLoaded = state.loaded * 100;
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
+  // ═══ Shared sub-components ═══
+  const ProgressBar = ({ mobile }: { mobile?: boolean }) => (
+    <input
+      type="range"
+      min={0}
+      max={state.duration || 1}
+      step={0.1}
+      value={state.currentTime}
+      onChange={handleMobileSeek}
+      className={`w-full rounded-full appearance-none cursor-pointer
+        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E50914]
+        ${mobile
+          ? 'h-1.5 [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md'
+          : 'h-[5px] hover:h-[7px] transition-[height] [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-sm'
+        }`}
+      style={{
+        background: `linear-gradient(to right, #E50914 ${pctPlayed}%, rgba(255,255,255,${mobile ? '0.2' : '0.15'}) ${pctPlayed}%)`,
+      }}
+    />
+  );
 
-  // Mouse movement handler
-  const handleMouseMove = () => {
-    resetControlsTimeout();
-  };
+  const PlayPauseBtn = ({ size: sz = 22 }: { size?: number }) => (
+    <button onClick={togglePlay} className="p-1.5 text-white hover:text-[#E50914] transition-colors">
+      {state.playing ? <Pause size={sz} /> : <Play size={sz} />}
+    </button>
+  );
 
-  // Progress percentage
-  const progressPercent = state.duration ? (state.currentTime / state.duration) * 100 : 0;
-  const loadedPercent = state.loaded * 100;
+  const SkipButtons = ({ size: sz = 16 }: { size?: number }) => (
+    <>
+      {onPrevious && (
+        <button onClick={onPrevious} className="p-1.5 text-white hover:text-[#E50914] transition-colors">
+          <SkipBack size={sz} />
+        </button>
+      )}
+      <button onClick={skipBwd} className="p-1.5 text-white/70 hover:text-white transition-colors flex items-center gap-0.5">
+        <SkipBack size={sz - 2} /><span className="text-[9px] font-semibold">10</span>
+      </button>
+      <button onClick={skipFwd} className="p-1.5 text-white/70 hover:text-white transition-colors flex items-center gap-0.5">
+        <span className="text-[9px] font-semibold">10</span><SkipForward size={sz - 2} />
+      </button>
+      {onNext && (
+        <button onClick={onNext} className="p-1.5 text-white hover:text-[#E50914] transition-colors">
+          <SkipForward size={sz} />
+        </button>
+      )}
+    </>
+  );
+
+  const SpeedMenu = () => (
+    <div className="relative">
+      <button
+        onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+        className="p-1.5 text-white hover:text-[#E50914] transition-colors flex items-center gap-0.5"
+      >
+        <Settings size={18} />
+        <span className="text-[11px] font-semibold hidden sm:inline">{state.playbackRate}x</span>
+      </button>
+      {showSpeedMenu && (
+        <div className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur-sm border border-white/10 rounded-lg p-1.5 min-w-[70px] z-30">
+          {PLAYBACK_RATES.map(r => (
+            <button
+              key={r}
+              onClick={() => changeRate(r)}
+              className={`block w-full text-center text-[13px] py-1.5 px-2 rounded transition-colors ${
+                r === state.playbackRate ? 'bg-[#E50914] text-white' : 'text-white/70 hover:bg-white/10'
+              }`}
+            >
+              {r}x
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // ═══ RENDER ═══
+  // Mobile (non-fullscreen): controls render BELOW the video.
+  // Desktop or fullscreen: overlay controls with auto-hide.
+  const showOverlay = !isMobile || state.isFullscreen;
 
   return (
-    <>
-    <div 
+    <div
       ref={containerRef}
-      className={`custom-video-player ${state.isFullscreen ? 'fullscreen' : ''}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => setState(prev => ({ ...prev, showControls: false }))}
+      className={`relative select-none ${
+        state.isFullscreen ? 'fixed inset-0 w-screen h-screen z-[9999] bg-black' : ''
+      }`}
+      onMouseMove={showOverlay ? resetControlsTimeout : undefined}
+      onMouseLeave={showOverlay ? () => { if (state.playing) setState(p => ({ ...p, showControls: false })); } : undefined}
     >
-      {/* Inline styles for the player */}
-      <style>
-        {`
-        :root {
-          --bg: #0b0b0b;
-          --fg: #eaeaea;
-          --muted: #9aa1a9;
-          --accent: #e50914;
-          --accent-2: #ffffff;
-          --overlay: rgba(0,0,0,0.6);
-          --overlay-2: rgba(0,0,0,0.35);
-          --control-bg: rgba(20,20,20,0.85);
-          --control-hover: #1f1f1f;
-        }
-        .custom-video-player {
-          position: relative;
-          width: 100%;
-          aspect-ratio: 16/9;
-          background: #000;
-          border-radius: 0;
-          overflow: hidden;
-          box-shadow: none;
-          color: var(--fg);
-          user-select: none;
-        }
-        .custom-video-player.fullscreen { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 9999; aspect-ratio: unset; }
-        .video-element { width: 100%; height: 100%; object-fit: cover; background: #000; }
-        .loading-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; background: rgba(0,0,0,0.8); color:#fff; z-index:5; }
-        .loading-spinner { animation: spin 1s linear infinite; color: var(--accent); }
-        @keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
-
-        .controls-overlay { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 20%, rgba(0,0,0,0) 80%, rgba(0,0,0,0.8) 100%); display:flex; flex-direction:column; justify-content:space-between; padding:1rem; transition: opacity .3s ease; z-index:10; }
-        .controls-overlay.show { opacity:1; }
-        .controls-overlay.hide { opacity:0; }
-        .controls-overlay:hover { opacity:1; }
-        .center-play-button { position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); width:80px; height:80px; background: var(--accent); border-radius: 50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition: all .3s ease; z-index:15; }
-        .center-play-button:hover { background:#b8070f; transform: translate(-50%,-50%) scale(1.1); }
-
-        .progress-container { margin-top:auto; margin-bottom:1rem; }
-        .progress-bar { position:relative; width:100%; height:6px; background: rgba(255,255,255,0.3); border-radius:3px; cursor:pointer; transition: height .2s ease; }
-        .progress-bar:hover { height:8px; }
-        .progress-loaded { position:absolute; top:0; left:0; height:100%; background: rgba(255,255,255,0.5); border-radius:3px; transition: width .3s ease; }
-        .progress-played { position:absolute; top:0; left:0; height:100%; background: var(--accent); border-radius:3px; transition: width .1s ease; }
-        .progress-handle { position:absolute; top:50%; width:14px; height:14px; background: var(--accent); border:2px solid white; border-radius:50%; transform: translateY(-50%); opacity:0; transition: all .2s ease; }
-        .progress-bar:hover .progress-handle { opacity:1; }
-
-        .bottom-controls { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
-        .controls-left, .controls-right { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
-        .control-btn { background:none; border:none; color:#fff; cursor:pointer; padding:.5rem; display:flex; align-items:center; gap:.25rem; transition: all .2s ease; min-width:36px; min-height:36px; justify-content:center; }
-        .control-btn:hover { background: rgba(255,255,255,0.2); color: var(--accent); }
-        .control-btn:active { transform: scale(0.95); }
-        .skip-text { font-size:10px; font-weight:600; }
-        .volume-control { display:flex; align-items:center; gap:.5rem; }
-        .volume-slider { width:80px; height:4px; background: rgba(255,255,255,0.3); border-radius:2px; outline:none; cursor:pointer; -webkit-appearance:none; }
-        .time-display { color:#fff; font-size:14px; font-weight:500; min-width:100px; text-align:center; }
-        
-        /* Mobile responsive styles */
-        @media (max-width: 768px) {
-          .bottom-controls { gap:0.5rem; padding:0.5rem; }
-          .controls-left, .controls-right { gap:0.4rem; flex:1; justify-content:space-around; }
-          .controls-left { order:1; flex-basis:100%; justify-content:flex-start; }
-          .controls-right { order:2; flex-basis:100%; justify-content:flex-end; }
-          .control-btn { padding:.4rem; min-width:32px; min-height:32px; }
-          .control-btn svg { width:18px; height:18px; }
-          .volume-control { position:relative; }
-          .volume-slider { width:60px; }
-          .time-display { font-size:12px; min-width:80px; order:3; flex-basis:100%; text-align:center; margin-top:0.25rem; }
-          .speed-text { display:none; }
-          .progress-container { margin-bottom:0.5rem; }
-        }
-        
-        @media (max-width: 576px) {
-          .bottom-controls { gap:0.3rem; padding:0.3rem 0.5rem; }
-          .controls-left, .controls-right { gap:0.25rem; }
-          .control-btn { padding:.3rem; min-width:30px; min-height:30px; }
-          .control-btn svg { width:16px; height:16px; }
-          .skip-text { font-size:8px; }
-          .volume-control .volume-slider { display:none; }
-          .time-display { font-size:11px; min-width:70px; }
-          .speed-control { display:flex; }
-          .progress-bar { height:5px; }
-          .progress-bar:hover { height:6px; }
-          .progress-handle { width:12px; height:12px; }
-        }
-        
-        @media (max-width: 400px) {
-          .controls-left { gap:0.15rem; }
-          .controls-right { gap:0.15rem; }
-          .control-btn { padding:.25rem; min-width:28px; min-height:28px; }
-          .control-btn svg { width:14px; height:14px; }
-          .time-display { font-size:10px; min-width:65px; }
-        }
-
-        .speed-control { position:relative; }
-        .speed-text { font-size:12px; font-weight:600; margin-left:.25rem; }
-        .speed-menu { position:absolute; bottom:100%; right:0; background: rgba(0,0,0,0.9); border-radius:8px; padding:.5rem; margin-bottom:.5rem; min-width:80px; backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,0.1); }
-        .speed-option { display:block; width:100%; background:none; border:none; color:#fff; padding:.5rem; cursor:pointer; border-radius:4px; text-align:center; font-size:14px; transition: all .2s ease; }
-        .speed-option:hover { background: rgba(255,255,255,0.1); }
-        .speed-option.active { background: var(--accent); color:#fff; }
-
-
-
-        .help-overlay { position:absolute; top:12px; right:12px; background: rgba(20,20,20,0.9); border:1px solid #222; color:#eaeaea; padding:12px; width: 300px; pointer-events:auto; z-index:25; }
-        .help-overlay h4 { margin:0 0 8px 0; }
-        .help-grid { display:grid; grid-template-columns: auto 1fr; gap:6px 10px; font-size:12px; color:#9aa1a9; }
-
-        .related-wrap { background:#0e0e0e; border-top:1px solid #151515; }
-        .related-title { padding:12px 16px; color:#eaeaea; font-weight:600; font-size:18px; }
-        .related-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px; padding:8px 16px 16px; }
-        .related-card { position:relative; height:280px; background:#1a1a1a; border:1px solid #222; overflow:hidden; cursor:pointer; transition: all .3s ease; }
-        .related-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 8px 32px rgba(229,9,20,0.3); }
-        .related-card .bg { position:absolute; inset:0; background-size:cover; background-position:center; filter: brightness(0.8); transition: all .3s ease; }
-        .related-card:hover .bg { filter: brightness(1.1) saturate(1.2); transform: scale(1.05); }
-        .related-card .overlay { position:absolute; inset:0; background: linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.8)); }
-        .related-card .title { position:absolute; left:12px; right:12px; bottom:12px; color:#fff; font-weight:700; font-size:15px; text-shadow: 0 2px 8px rgba(0,0,0,0.8); line-height:1.3; }
-        .related-card .play-icon { position:absolute; top:50%; left:50%; transform: translate(-50%,-50%); opacity:0; transition: all .3s ease; background: rgba(229,9,20,0.9); border-radius:50%; width:50px; height:50px; display:flex; align-items:center; justify-content:center; }
-        .related-card:hover .play-icon { opacity:1; transform: translate(-50%,-50%) scale(1.1); }
-        
-        .volume-indicator { position:absolute; top:50%; left:50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.8); color:#fff; padding:12px 20px; border-radius:8px; font-weight:600; font-size:18px; z-index:30; transition: all .3s ease; backdrop-filter: blur(10px); }
-        .volume-indicator.hide { opacity:0; transform: translate(-50%,-50%) scale(0.8); }
-        .volume-indicator.show { opacity:1; transform: translate(-50%,-50%) scale(1); }
-        
-        .tooltip { position:absolute; background: rgba(0,0,0,0.9); color:#fff; padding:6px 10px; font-size:12px; border-radius:4px; white-space:nowrap; z-index:25; pointer-events:none; transition: all .2s ease; }
-        .tooltip.hide { opacity:0; transform: translateY(4px); }
-        .tooltip.show { opacity:1; transform: translateY(0); }
-        
-        .buffer-indicator { position:absolute; top:0; left:0; height:2px; background: var(--accent); z-index:12; transition: width .3s ease; }
-        .mini-timeline { position:absolute; bottom:80px; left:50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); padding:8px; border-radius:4px; font-size:12px; color:#fff; opacity:0; transition: all .2s ease; pointer-events:none; }
-        .progress-bar:hover + .mini-timeline { opacity:1; }
-        `}
-      </style>
-
-
+      {/* ── Video element ── */}
       <video
         ref={videoRef}
         src={url}
         poster={poster}
+        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
         onLoadStart={handleLoadStart}
         onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}
@@ -737,175 +416,128 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
         onWaiting={handleWaiting}
         onPlaying={handlePlaying}
         onPause={handlePause}
+        onLoadedMetadata={handleLoadedMetadata}
         onEnded={onEnded}
-        className="video-element"
         preload="metadata"
         onDoubleClick={toggleFullscreen}
-        onClick={togglePlay}
+        onClick={() => { togglePlay(); resetControlsTimeout(); }}
+        className={`w-full bg-black ${
+          state.isFullscreen ? 'h-full object-contain' : 'aspect-video object-cover'
+        }`}
       />
 
-      {/* Loading Spinner */}
+      {/* ── Loading spinner ── */}
       {state.buffering && (
-        <div className="loading-overlay">
-          <Loader2 className="loading-spinner" size={48} />
-          <span>Loading...</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/70 z-[5]">
+          <Loader2 size={40} className="text-[#E50914] animate-spin" />
+          <span className="text-white/60 text-[13px]">Loading...</span>
         </div>
       )}
 
-      {/* Controls Overlay */}
-      <div className={`controls-overlay ${state.showControls ? 'show' : 'hide'}`}>
-        {/* Center Play Button */}
-        {!state.playing && state.ready && (
-          <div className="center-play-button" onClick={togglePlay}>
-            <Play size={64} fill="white" />
-          </div>
-        )}
-
-        {/* Progress Bar */}
-        <div className="progress-container">
-          <div className="progress-bar" onClick={handleProgressClick}>
-            <div className="progress-loaded" style={{ width: `${loadedPercent}%` }} />
-            <div className="progress-played" style={{ width: `${progressPercent}%` }} />
-            <div 
-              className="progress-handle" 
-              style={{ left: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Bottom Controls */}
-        <div className="bottom-controls">
-          <div className="controls-left">
-            <button className="control-btn" onClick={togglePlay}>
-              {state.playing ? <Pause size={24} /> : <Play size={24} />}
+      {/* ───── DESKTOP / FULLSCREEN: Overlay controls ───── */}
+      {showOverlay && (
+        <div
+          className={`absolute inset-0 z-10 flex flex-col justify-end transition-opacity duration-300 ${
+            state.showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+          style={{
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, transparent 25%, transparent 70%, rgba(0,0,0,0.85) 100%)',
+          }}
+          onClick={togglePlay}
+        >
+          {/* Center play button (paused + ready) */}
+          {!state.playing && state.ready && (
+            <button
+              onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[72px] h-[72px] bg-[#E50914] rounded-full flex items-center justify-center hover:bg-[#b8070f] hover:scale-110 transition-all z-20"
+            >
+              <Play size={36} fill="white" className="text-white ml-1" />
             </button>
-            
-            {onPrevious && (
-              <button className="control-btn" onClick={onPrevious}>
-                <SkipBack size={20} />
-              </button>
-            )}
-            
-            <button className="control-btn" onClick={skipBackward}>
-              <SkipBack size={16} />
-              <span className="skip-text">10</span>
-            </button>
-            
-            <button className="control-btn" onClick={skipForward}>
-              <span className="skip-text">10</span>
-              <SkipForward size={16} />
-            </button>
-            
-            {onNext && (
-              <button className="control-btn" onClick={onNext}>
-                <SkipForward size={20} />
-              </button>
-            )}
+          )}
 
-            <div className="volume-control">
-              <button className="control-btn" onClick={toggleMute}>
-                {state.muted || state.volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={state.muted ? 0 : state.volume}
-                onChange={handleVolumeChange}
-                className="volume-slider"
-              />
-            </div>
-
-            <div className="time-display">
-              {formatTime(state.currentTime)} / {formatTime(state.duration)}
-            </div>
-          </div>
-
-          <div className="controls-right">
-            <div className="speed-control">
-              <button 
-                className="control-btn"
-                onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-              >
-                <Settings size={20} />
-                <span className="speed-text">{state.playbackRate}x</span>
-              </button>
-              
-              {showSpeedMenu && (
-                <div className="speed-menu">
-                  {PLAYBACK_RATES.map(rate => (
-                    <button
-                      key={rate}
-                      className={`speed-option ${rate === state.playbackRate ? 'active' : ''}`}
-                      onClick={() => changePlaybackRate(rate)}
-                    >
-                      {rate}x
-                    </button>
-                  ))}
+          {/* Overlay bottom controls */}
+          <div className="px-4 pb-4 space-y-2" onClick={(e) => e.stopPropagation()}>
+            <ProgressBar />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <PlayPauseBtn size={24} />
+                <SkipButtons size={18} />
+                {/* Volume */}
+                <div className="flex items-center gap-1 ml-1">
+                  <button onClick={toggleMute} className="p-1.5 text-white hover:text-[#E50914] transition-colors">
+                    {state.muted || state.volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  </button>
+                  <input
+                    type="range" min="0" max="1" step="0.1"
+                    value={state.muted ? 0 : state.volume}
+                    onChange={handleVolumeChange}
+                    className="w-[70px] h-1 bg-white/30 rounded cursor-pointer appearance-none
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5
+                      [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                  />
                 </div>
-              )}
+                <span className="text-white text-[13px] font-medium tabular-nums ml-2">
+                  {fmtTime(state.currentTime)} / {fmtTime(state.duration)}
+                </span>
+              </div>
+              <div className="flex items-center gap-0.5">
+                <SpeedMenu />
+                <button onClick={togglePiP} className="p-1.5 text-white hover:text-[#E50914] transition-colors">
+                  <PictureInPicture size={18} />
+                </button>
+                <button onClick={toggleFullscreen} className="p-1.5 text-white hover:text-[#E50914] transition-colors">
+                  {state.isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                </button>
+              </div>
             </div>
-
-            <button className="control-btn" onClick={togglePictureInPicture}>
-              <PictureInPicture size={20} />
-            </button>
-
-            <button className="control-btn" onClick={toggleFullscreen}>
-              <Maximize size={20} />
-            </button>
           </div>
-        </div>
-      </div>
-      {/* Volume indicator */}
-      {volumeIndicator.show && (
-        <div className={`volume-indicator ${volumeIndicator.show ? 'show' : 'hide'}`}>
-          🔊 {volumeIndicator.value}%
         </div>
       )}
 
-      {/* Help overlay */}
-      {showHelp && (
-        <div className="help-overlay">
-          <h4>⌨️ Keyboard shortcuts</h4>
-          <div className="help-grid">
-            <span>Space / K</span><span>Play/Pause</span>
-            <span>J / Left</span><span>Back 10s</span>
-            <span>L / Right</span><span>Forward 10s</span>
-            <span>&lt; / &gt;</span><span>Seek ±10s</span>
-            <span>Up / Down</span><span>Volume +/-</span>
-            <span>M</span><span>Mute/Unmute</span>
-            <span>F</span><span>Fullscreen</span>
-            <span>P</span><span>Picture-in-Picture</span>
-            <span>S</span><span>Speed menu</span>
-            <span>0-9</span><span>Seek to %</span>
-            <span>?</span><span>Toggle help</span>
+      {/* ── Mobile tap-to-show center play (paused) ── */}
+      {isMobile && !state.isFullscreen && !state.playing && state.ready && (
+        <button
+          onClick={togglePlay}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-[#E50914] rounded-full flex items-center justify-center z-20"
+        >
+          <Play size={28} fill="white" className="text-white ml-0.5" />
+        </button>
+      )}
+
+      {/* ───── MOBILE (non-fullscreen): Controls BELOW the video ───── */}
+      {isMobile && !state.isFullscreen && (
+        <div className="bg-[#0e0e0e] px-3 pt-2 pb-3 space-y-2">
+          {/* Seek bar (native range input for smooth touch) */}
+          <ProgressBar mobile />
+
+          {/* Time display */}
+          <div className="flex items-center justify-between text-[11px] text-white/50 tabular-nums -mt-1">
+            <span>{fmtTime(state.currentTime)}</span>
+            <span>{fmtTime(state.duration)}</span>
+          </div>
+
+          {/* Main controls row */}
+          <div className="flex items-center justify-between">
+            {/* Left: skip controls */}
+            <div className="flex items-center gap-1">
+              <SkipButtons size={16} />
+            </div>
+
+            {/* Center: big play/pause */}
+            <PlayPauseBtn size={28} />
+
+            {/* Right: speed, fullscreen */}
+            <div className="flex items-center gap-0.5">
+              <SpeedMenu />
+              <button onClick={toggleFullscreen} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                <Maximize size={18} />
+              </button>
+            </div>
           </div>
         </div>
       )}
     </div>
-    {/* Related movies section */}
-    {relatedMovies.length > 0 && (
-      <div className="related-wrap">
-        <div className="related-title">Related</div>
-        <div className="related-grid">
-          {relatedMovies.map((m) => (
-            <div 
-              key={m.id} 
-              className="related-card"
-              onClick={() => console.log('Navigate to movie:', m.id)}
-            >
-              <div className="bg" style={{ backgroundImage: `url(${m.image})` }} />
-              <div className="overlay" />
-              <div className="play-icon">
-                <Play size={20} fill="white" />
-              </div>
-              <div className="title">{m.title}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-    </>
   );
 };
+
+export default CustomVideoPlayer;

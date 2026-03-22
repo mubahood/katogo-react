@@ -1,5 +1,5 @@
 // src/app/pages/SearchResultsPage.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Search, Film, Tv, X, Clock, TrendingUp, ChevronRight } from 'lucide-react';
 import SearchV2Service, {
@@ -7,6 +7,7 @@ import SearchV2Service, {
   SearchHistoryItem,
 } from '../services/v2/SearchV2Service';
 import type { MovieV2 } from '../services/v2/MoviesV2Service';
+import { getImageUrl } from '../utils/imageUtils';
 
 const SearchResultsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -80,12 +81,43 @@ const SearchResultsPage: React.FC = () => {
     setSearchParams({ q: term });
   }, [setSearchParams]);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [inputVal, setInputVal] = useState(q);
+
+  /* sync input when q changes (e.g. from trending click) */
+  useEffect(() => { setInputVal(q); }, [q]);
+
+  const handleInlineSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputVal.trim()) setSearchParams({ q: inputVal.trim() });
+  };
+
   const movieCount = results.filter((r) => r.type === 'Movie').length;
   const seriesCount = results.filter((r) => r.type !== 'Movie').length;
 
   return (
     <div className="min-h-screen bg-[var(--ugflix-bg-primary,#0d0d0d)] pb-24 pt-2 px-4">
       <div className="max-w-5xl mx-auto">
+
+        {/* Inline search bar */}
+        <form onSubmit={handleInlineSearch} className="mb-4">
+          <div className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.08] rounded-xl px-3 py-2 focus-within:border-white/20 transition-colors">
+            <Search size={18} className="text-gray-500 flex-shrink-0" />
+            <input
+              ref={inputRef}
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              placeholder="Search movies, series, actors…"
+              className="flex-1 bg-transparent text-white placeholder-gray-600 text-[14px] outline-none"
+            />
+            {inputVal && (
+              <button type="button" onClick={() => { setInputVal(''); setSearchParams({}); }} className="text-gray-500 hover:text-white transition-colors">
+                <X size={16} />
+              </button>
+            )}
+          </div>
+        </form>
+
         <h1 className="text-lg font-semibold text-white mb-1">
           {q ? `Results for "${q}"` : 'Search'}
         </h1>
@@ -135,9 +167,10 @@ const SearchResultsPage: React.FC = () => {
                 <button key={item.id} onClick={() => navigate(`/watch/${item.id}`)} className="group text-left">
                   <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-[var(--ugflix-bg-secondary,#161616)] mb-1">
                     <img
-                      src={item.thumbnail_url || item.image_url}
+                      src={getImageUrl(item.thumbnail_url || item.image_url)}
                       alt={item.title}
                       loading="lazy"
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     {item.is_premium === 'Yes' && (
@@ -187,11 +220,11 @@ const SearchResultsPage: React.FC = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {history.map((h) => (
-                    <div key={h.id} className="flex items-center gap-1 bg-[var(--ugflix-bg-secondary,#161616)] rounded-full pl-3 pr-1 py-1">
+                    <div key={h.id} className="flex items-center gap-1 bg-[var(--ugflix-bg-secondary,#161616)] rounded-full pl-3 pr-1.5 py-1 group">
                       <button onClick={() => searchFor(h.query)} className="text-xs text-white hover:text-[var(--color-brand-red,#E50914)] transition-colors">
                         {h.query}
                       </button>
-                      <button onClick={() => handleDeleteHistory(h.id)} className="p-0.5 rounded-full hover:bg-white/10 transition-colors">
+                      <button onClick={() => handleDeleteHistory(h.id)} className="p-0.5 rounded-full hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100">
                         <X size={10} className="text-[var(--ugflix-text-muted,#888)]" />
                       </button>
                     </div>
@@ -226,7 +259,7 @@ const SearchResultsPage: React.FC = () => {
                     <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
                       {trending.popular_movies.slice(0, 6).map((m) => (
                         <button key={m.id} onClick={() => navigate(`/watch/${m.id}`)} className="group text-left">
-                          <img src={m.thumbnail_url || m.image_url} alt={m.title} loading="lazy" className="w-full aspect-[2/3] object-cover rounded-md mb-1 group-hover:scale-105 transition-transform duration-300" />
+                          <img src={getImageUrl(m.thumbnail_url || m.image_url)} alt={m.title} loading="lazy" referrerPolicy="no-referrer" className="w-full aspect-[2/3] object-cover rounded-md mb-1 group-hover:scale-105 transition-transform duration-300" />
                           <p className="text-xs text-white line-clamp-1">{m.title}</p>
                         </button>
                       ))}
@@ -242,7 +275,7 @@ const SearchResultsPage: React.FC = () => {
                     <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
                       {trending.popular_series.slice(0, 6).map((s) => (
                         <button key={s.id} onClick={() => navigate(`/watch/${s.id}`)} className="group text-left">
-                          <img src={s.thumbnail_url || s.image_url} alt={s.title} loading="lazy" className="w-full aspect-[2/3] object-cover rounded-md mb-1 group-hover:scale-105 transition-transform duration-300" />
+                          <img src={getImageUrl(s.thumbnail_url || s.image_url)} alt={s.title} loading="lazy" referrerPolicy="no-referrer" className="w-full aspect-[2/3] object-cover rounded-md mb-1 group-hover:scale-105 transition-transform duration-300" />
                           <p className="text-xs text-white line-clamp-1">{s.title}</p>
                         </button>
                       ))}

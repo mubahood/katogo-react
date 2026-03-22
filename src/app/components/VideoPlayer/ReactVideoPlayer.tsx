@@ -198,6 +198,8 @@ export const ReactVideoPlayer: React.FC<ReactVideoPlayerProps> = ({
         ref={playerRef}
         src={url}
         poster={poster}
+        referrerPolicy="no-referrer"
+        crossOrigin="anonymous"
         style={{
           position: 'absolute',
           top: 0,

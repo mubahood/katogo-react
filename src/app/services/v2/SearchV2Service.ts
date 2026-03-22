@@ -11,10 +11,8 @@ export interface SearchV2Result {
 }
 
 export interface SearchSuggestion {
-  type: 'movie' | 'series' | 'vj' | 'genre';
-  id?: number;
-  title: string;
-  thumbnail_url?: string;
+  text: string;
+  type: 'movie' | 'series' | 'vj' | 'genre' | 'search';
 }
 
 export interface SearchTrending {

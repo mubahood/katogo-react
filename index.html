@@ -4,13 +4,14 @@
 <head>
   <!-- Required Meta Tags -->
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
   <meta name="theme-color" content="#B71C1C" /> <!-- Matches UgFlix brand color -->
   <meta name="description"
     content="UgFlix is your one-stop electronics shop offering top-brand gadgets, devices, and accessories at unbeatable prices. Discover great deals on laptops, smartphones, and more." />
   <meta name="keywords"
     content="UgFlix, electronics, online store, e-commerce, gadgets, devices, laptops, smartphones, accessories, tech, deals, Uganda" />
   <meta name="robots" content="index, follow" />
+  <meta name="referrer" content="no-referrer" />
   <meta name="author" content="UgFlix" />
   
   <!-- PWA Meta Tags -->
@@ -21,6 +22,12 @@
   <meta name="application-name" content="UgFlix" />
   <meta name="msapplication-TileColor" content="#B71C1C" />
   <meta name="msapplication-tap-highlight" content="no" />
+  <!-- iOS Splash Screens -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="/icons/splash-1290x2796.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" href="/icons/splash-1179x2556.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/icons/splash-1170x2532.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="/icons/splash-1125x2436.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" href="/icons/splash-828x1792.png" />
   
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
@@ -64,7 +71,25 @@
   <style>
     html {
       font-size: 14px;
-      /* Adjust if you want slightly bigger or smaller text */
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    /* Native app feel — remove browser chrome defaults */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    /* Allow text selection on text elements */
+    p, h1, h2, h3, h4, h5, h6, span, a {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    body {
+      overscroll-behavior: none; /* prevent pull-to-refresh on root */
     }
 
     body,

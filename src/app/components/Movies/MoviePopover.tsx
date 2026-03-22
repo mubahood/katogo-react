@@ -256,6 +256,8 @@ const MoviePopover: React.FC<MoviePopoverProps> = ({
               muted={isMuted}
               loop
               playsInline
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
               poster={movie.thumbnail_url}
             >
               <source src={movie.url} type="video/mp4" />

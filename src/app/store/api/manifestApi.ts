@@ -21,9 +21,18 @@ export const manifestApi = createApi({
   endpoints: (builder) => ({
     getManifest: builder.query<ManifestV2Response, void>({
       query: () => 'v2/manifest',
-      transformResponse: (response: { code?: number; data?: ManifestV2Response }) =>
-        response?.data ?? (response as ManifestV2Response),
-      // Cache for 15 minutes
+      transformResponse: (response: { code?: number; data?: Record<string, unknown> }) => {
+        const d = response?.data ?? {};
+        return {
+          featured: d.featured as ManifestV2Response['featured'],
+          sections: Array.isArray(d.sections) ? d.sections : [],
+          genres: Array.isArray(d.genres) ? d.genres : [],
+          vjs: Array.isArray(d.vjs) ? d.vjs : [],
+          config: d.config as ManifestV2Response['config'],
+          subscription: d.subscription as ManifestV2Response['subscription'],
+          stats: d.stats as ManifestV2Response['stats'],
+        } as ManifestV2Response;
+      },
       keepUnusedDataFor: 15 * 60,
     }),
   }),

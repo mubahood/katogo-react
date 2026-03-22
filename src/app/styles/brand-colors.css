@@ -97,10 +97,12 @@
 /* Link overrides */
 a {
   color: var(--brand-primary);
+  text-decoration: none;
 }
 
 a:hover {
   color: var(--brand-primary-dark);
+  text-decoration: none;
 }
 
 /* Form control focus states */

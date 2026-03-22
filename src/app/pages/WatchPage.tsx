@@ -1,1294 +1,358 @@
 // src/app/pages/WatchPage.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+// Clean, responsive watch/player page — Tailwind-only, V2 API via RTK Query
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Spinner } from 'react-bootstrap';
-import { Heart, Download, Share2, Star, Calendar, Clock, Users, Play, Flag } from 'lucide-react';
+import { Heart, Download, Share2, Star, Clock, Users, Play, Flag, ChevronLeft, Loader2, Wrench, CheckCircle2, XCircle } from 'lucide-react';
 import ReportContentModal from '../components/moderation/ReportContentModal';
-import MovieListBuilder from '../components/Movies/MovieListBuilder';
 import { CustomVideoPlayer } from '../components/VideoPlayer/CustomVideoPlayer';
+import { useGetMovieQuery, useGetRelatedMoviesQuery, useGetSeriesEpisodesQuery } from '../store/api/moviesApi';
+import type { MovieV2 } from '../services/v2/MoviesV2Service';
 import { ApiService } from '../services/ApiService';
 import { http_post } from '../services/Api';
 import AnalyticsV2Service from '../services/v2/AnalyticsV2Service';
 import MoviesV2Service from '../services/v2/MoviesV2Service';
 
-interface MovieData {
-  id: number;
-  title: string;
-  description: string;
-  year: string;
-  rating: string;
-  duration?: string;
-  genre: string;
-  director?: string;
-  country?: string;
-  language?: string;
-  thumbnail_url: string;
-  url: string;
-  views_count: number;
-  likes_count: number;
-  wishlist_count?: number;
-  type: 'Movie' | 'Series';
-  episode_number?: number;
-  category?: string;
-}
-
-interface ApiMovieResponse {
-  movie: MovieData;
-  related_movies: MovieData[];
-  user_interactions: {
-    has_liked: boolean;
-    has_wishlisted: boolean;
-    has_viewed: boolean;
-  };
-}
-
-// Inline styles for WatchPage - Following UgFlix Design System
-const watchPageStyles = `
-  .watch-page {
-    background: var(--ugflix-bg-primary);
-    color: var(--ugflix-text-primary);
-    min-height: 100vh;
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-    padding-bottom: 80px;
-  }
-
-  .watch-container {
-    padding: 0 !important;
-    max-width: var(--ugflix-max-width);
-    margin: 0 auto;
-  }
-
-  .watch-page .row {
-    margin: 0;
-    --bs-gutter-x: 0;
-  }
-
-  .share-toast {
-    position: fixed;
-    top: calc(var(--ugflix-header-height) + 5px);
-    right: 20px;
-    background: var(--ugflix-primary);
-    color: var(--ugflix-text-primary);
-    padding: 12px 20px;
-    border-radius: var(--ugflix-border-radius);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: var(--ugflix-shadow);
-    z-index: 9999;
-    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
-  }
-
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-
-  @keyframes fadeOut {
-    to { opacity: 0; transform: translateX(100%); }
-  }
-
-  .video-container {
-    position: relative;
-    background: #000;
-    width: 100%;
-    aspect-ratio: 16/9;
-    margin: 0;
-    border-radius: var(--ugflix-border-radius);
-    overflow: hidden;
-  }
-
-  .movie-info-section {
-    background: transparent;
-    padding: 0.5rem 1rem; /* Add horizontal padding for mobile */
-    border-bottom: none;
-  }
-
-  .movie-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--ugflix-text-high-contrast);
-    margin: 0 0 0.75rem 0;
-    line-height: 1.4;
-  }
-
-  .movie-meta-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-
-  .meta-badges {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-
-  .meta-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.3rem 0.6rem;
-    border-radius: var(--ugflix-border-radius);
-    font-size: 0.7rem;
-    font-weight: 500;
-    background: transparent;
-    color: var(--ugflix-text-muted);
-    border: 1px solid var(--ugflix-border);
-  }
-
-  .meta-badge svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .year-badge {
-    background: transparent;
-    color: var(--ugflix-text-muted);
-    border-color: var(--ugflix-border);
-  }
-
-  .rating-badge {
-    background: transparent;
-    color: var(--ugflix-accent);
-    border-color: var(--ugflix-border);
-  }
-
-  .duration-badge {
-    background: transparent;
-    color: var(--ugflix-text-muted);
-    border-color: var(--ugflix-border);
-  }
-
-  .episode-badge {
-    background: transparent;
-    color: var(--ugflix-text-muted);
-    border-color: var(--ugflix-border);
-  }
-
-  .movie-stats {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.7rem;
-    color: var(--ugflix-text-muted);
-    font-weight: 400;
-  }
-
-  .stat-item svg {
-    width: 13px;
-    height: 13px;
-    color: var(--ugflix-text-muted);
-  }
-
-  .genre-tags {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .genre-tag {
-    padding: 0.3rem 0.65rem;
-    border-radius: var(--ugflix-border-radius);
-    font-size: 0.65rem;
-    font-weight: 500;
-    background: transparent;
-    color: var(--ugflix-text-muted);
-    border: 1px solid var(--ugflix-border);
-    transition: var(--ugflix-transition-fast);
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-
-  .genre-tag:hover {
-    background: var(--ugflix-hover-bg-subtle);
-    border-color: var(--ugflix-primary);
-    color: var(--ugflix-primary);
-  }
-
-  .action-buttons {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin: 0;
-    padding: 0;
-    border-bottom: none;
-  }
-
-  .action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: var(--ugflix-border-radius);
-    font-size: 0.7rem;
-    font-weight: 500;
-    border: 1px solid var(--ugflix-border);
-    background: transparent;
-    color: var(--ugflix-text-secondary);
-    cursor: pointer;
-    transition: var(--ugflix-transition-fast);
-    text-transform: none;
-    letter-spacing: 0;
-  }
-
-  .action-btn:hover {
-    background: var(--ugflix-hover-bg-subtle);
-    border-color: var(--ugflix-primary);
-    color: var(--ugflix-primary);
-    transform: translateY(-1px);
-  }
-
-  .action-btn:active {
-    transform: translateY(0);
-  }
-
-  .action-btn svg {
-    width: 13px;
-    height: 13px;
-  }
-
-  .like-btn.active {
-    background: var(--ugflix-hover-bg-medium);
-    border-color: var(--ugflix-primary);
-    color: var(--ugflix-primary);
-  }
-
-  .watchlist-btn.active {
-    background: var(--ugflix-accent-hover-bg);
-    border-color: var(--ugflix-accent);
-    color: var(--ugflix-accent);
-  }
-
-  .share-btn:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: #3b82f6;
-    color: #3b82f6;
-  }
-
-  .download-btn:hover {
-    background: rgba(76, 175, 80, 0.1);
-    border-color: var(--ugflix-text-success);
-    color: var(--ugflix-text-success);
-  }
-
-  .movie-description {
-    margin-bottom: 0.75rem;
-  }
-
-  .section-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--ugflix-text-secondary);
-    margin: 0 0 0.4rem 0;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .movie-description p {
-    font-size: 0.85rem;
-    line-height: 1.6;
-    color: var(--ugflix-text-secondary);
-    margin: 0;
-  }
-
-  .movie-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .detail-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.6rem;
-    font-size: 0.8rem;
-  }
-
-  .detail-label {
-    font-weight: 500;
-    color: var(--ugflix-text-muted);
-    min-width: 65px;
-    font-size: 0.75rem;
-  }
-
-  .detail-value {
-    color: var(--ugflix-text-secondary);
-    flex: 1;
-    font-size: 0.8rem;
-  }
-
-  .related-movies-sidebar {
-    background: transparent;
-    padding: 0 1rem; /* Add horizontal padding to prevent touching screen borders */
-    height: 100%;
-  }
-
-  .sidebar-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--ugflix-text-high-contrast);
-    margin: 0 0 0.75rem 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--ugflix-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .related-movies-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    max-height: calc(100vh - 140px);
-    overflow-y: auto;
-    padding-right: 0.5rem;
-  }
-
-  .related-movies-list::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  .related-movies-list::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .related-movies-list::-webkit-scrollbar-thumb {
-    background: var(--ugflix-primary);
-    border-radius: 10px;
-  }
-
-  .related-movies-list::-webkit-scrollbar-thumb:hover {
-    background: var(--ugflix-primary-light);
-  }
-
-  .related-movie-card {
-    display: flex;
-    gap: 1rem;
-    cursor: pointer;
-    transition: var(--ugflix-transition-fast);
-    border-radius: var(--ugflix-border-radius);
-    overflow: hidden;
-    background: transparent;
-    border: 1px solid var(--ugflix-border);
-    padding: 0.75rem;
-    position: relative;
-    min-height: 120px;
-  }
-
-  .related-movie-card.next-episode {
-    border: 2px solid var(--ugflix-primary);
-    background: rgba(183, 28, 28, 0.08);
-    box-shadow: 0 0 20px rgba(183, 28, 28, 0.3);
-  }
-
-  .related-movie-card.next-episode::before {
-    opacity: 1;
-    width: 5px;
-  }
-
-  .related-movie-card.next-episode .next-badge {
-    display: flex;
-  }
-
-  .related-movie-card:hover {
-    border-color: var(--ugflix-primary);
-    background: var(--ugflix-hover-bg-subtle);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-
-  .related-movie-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: var(--ugflix-primary);
-    opacity: 0;
-    transition: var(--ugflix-transition-fast);
-  }
-
-  .related-movie-card:hover::before {
-    opacity: 1;
-  }
-
-  .related-movie-thumbnail {
-    position: relative;
-    width: 160px;
-    min-width: 160px;
-    height: 90px;
-    background: #000;
-    overflow: hidden;
-    border-radius: var(--ugflix-border-radius);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .related-movie-thumbnail img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: var(--ugflix-transition);
-  }
-
-  .related-movie-card:hover .related-movie-thumbnail img {
-    transform: scale(1.1);
-    filter: brightness(1.1);
-  }
-
-  .play-overlay-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    background: rgba(183, 28, 28, 0.95);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: var(--ugflix-transition-fast);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  }
-
-  .play-overlay-icon svg {
-    margin-left: 2px;
-  }
-
-  .related-movie-card:hover .play-overlay-icon {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.15);
-  }
-
-  .related-movie-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 0.35rem 0;
-    min-width: 0;
-  }
-
-  .related-movie-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--ugflix-text-high-contrast);
-    margin: 0 0 0.5rem 0;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
-    transition: var(--ugflix-transition-fast);
-  }
-
-  .related-movie-card:hover .related-movie-title {
-    color: var(--ugflix-primary);
-  }
-
-  .related-movie-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: 0.7rem;
-    flex-wrap: wrap;
-  }
-
-  .meta-type {
-    padding: 0.3rem 0.6rem;
-    border-radius: var(--ugflix-border-radius);
-    background: rgba(183, 28, 28, 0.15);
-    color: var(--ugflix-primary);
-    font-weight: 600;
-    border: 1px solid var(--ugflix-primary);
-    font-size: 0.65rem;
-    text-transform: uppercase;
-  }
-
-  .meta-vj {
-    padding: 0.3rem 0.6rem;
-    border-radius: var(--ugflix-border-radius);
-    background: transparent;
-    color: var(--ugflix-text-muted);
-    font-weight: 500;
-    border: 1px solid var(--ugflix-border);
-    font-size: 0.65rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 120px;
-  }
-
-  .meta-episode {
-    padding: 0.3rem 0.6rem;
-    border-radius: var(--ugflix-border-radius);
-    background: var(--ugflix-primary);
-    color: var(--ugflix-text-primary);
-    font-weight: 600;
-    font-size: 0.7rem;
-  }
-
-  .meta-rating {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    color: var(--ugflix-accent);
-    font-weight: 600;
-    font-size: 0.7rem;
-  }
-
-  .meta-rating svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .meta-duration {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    color: var(--ugflix-text-muted);
-    font-size: 0.7rem;
-  }
-
-  .meta-duration svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .next-badge {
-    display: none;
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.35rem 0.7rem;
-    border-radius: var(--ugflix-border-radius);
-    background: var(--ugflix-primary);
-    color: var(--ugflix-text-primary);
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    z-index: 2;
-    box-shadow: 0 2px 8px rgba(183, 28, 28, 0.5);
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-  }
-
-  .no-related {
-    text-align: center;
-    padding: 2rem 1rem;
-    color: var(--ugflix-text-muted);
-    font-size: 0.85rem;
-  }
-
-  .watch-page-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 70vh;
-    gap: 1.5rem;
-  }
-
-  .loading-text {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--ugflix-text-secondary);
-  }
-
-  .watch-page-error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 70vh;
-    text-align: center;
-    padding: 2rem;
-  }
-
-  .watch-page-error h2 {
-    font-size: 1.8rem;
-    margin-bottom: 1rem;
-    color: var(--ugflix-primary);
-  }
-
-  .watch-page-error p {
-    font-size: 0.95rem;
-    color: var(--ugflix-text-muted);
-    margin-bottom: 2rem;
-    max-width: 500px;
-  }
-
-  .back-btn {
-    background: var(--ugflix-primary);
-    border: none;
-    color: var(--ugflix-text-primary);
-    padding: 0.875rem 2rem;
-    border-radius: var(--ugflix-border-radius);
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--ugflix-transition-fast);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .back-btn:hover {
-    background: var(--ugflix-primary-light);
-    transform: translateY(-2px);
-    box-shadow: var(--ugflix-shadow-hover);
-  }
-
-  .left-content,
-  .right-content {
-    padding: 0;
-  }
-
-  @media (max-width: 575px) {
-    .related-movie-card {
-      min-height: 100px;
-      padding: 0.6rem;
-      gap: 0.75rem;
-    }
-
-    .related-movie-thumbnail {
-      width: 130px;
-      min-width: 130px;
-      height: 73px;
-    }
-
-    .related-movie-title {
-      font-size: 0.8rem;
-      margin: 0 0 0.4rem 0;
-    }
-
-    .related-movie-meta {
-      gap: 0.4rem;
-    }
-
-    .meta-type,
-    .meta-vj,
-    .meta-episode,
-    .meta-rating,
-    .meta-duration {
-      font-size: 0.6rem;
-      padding: 0.25rem 0.5rem;
-    }
-
-    .next-badge {
-      font-size: 0.6rem;
-      padding: 0.3rem 0.6rem;
-      top: 0.4rem;
-      right: 0.4rem;
-    }
-
-    .play-overlay-icon {
-      width: 35px;
-      height: 35px;
-    }
-  }
-
-  @media (min-width: 576px) {
-    .movie-info-section {
-      padding: 0.5rem 1.5rem; /* Increase padding on small tablets */
-    }
-    
-    .movie-title {
-      font-size: 1rem;
-    }
-
-    .related-movies-sidebar {
-      padding: 0 1.5rem; /* Increase padding on slightly larger screens */
-    }
-
-    .related-movie-card {
-      min-height: 120px;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .movie-info-section {
-      padding: 1rem 1.5rem; /* Maintain comfortable padding on tablets */
-    }
-    
-    .movie-title {
-      font-size: 1.2rem;
-    }
-    
-    .meta-badge {
-      font-size: 0.75rem;
-      padding: 0.35rem 0.7rem;
-    }
-    
-    .stat-item {
-      font-size: 0.75rem;
-    }
-    
-    .action-btn {
-      font-size: 0.75rem;
-      padding: 0.45rem 0.85rem;
-    }
-    
-    .genre-tag {
-      font-size: 0.7rem;
-      padding: 0.35rem 0.75rem;
-    }
-    
-    .movie-description p {
-      font-size: 0.9rem;
-      line-height: 1.7;
-    }
-    
-    .detail-row {
-      font-size: 0.85rem;
-    }
-    
-    .sidebar-title {
-      font-size: 0.9rem;
-    }
-    
-    .related-movie-title {
-      font-size: 0.85rem;
-    }
-
-    .related-movie-card {
-      min-height: 125px;
-    }
-
-    .related-movie-thumbnail {
-      width: 170px;
-      min-width: 170px;
-      height: 95px;
-    }
-  }
-
-  @media (min-width: 992px) {
-    .watch-container {
-      padding: 0 0rem !important;
-    }
-    
-    .left-content {
-      padding-right: 0.75rem !important;
-    }
-    
-    .right-content {
-      padding-left: 0.75rem !important;
-    }
-    
-    .movie-info-section {
-      padding: 1rem 1.5rem;
-    }
-    
-    .movie-title {
-      font-size: 1.25rem;
-    }
-    
-    .related-movies-sidebar {
-      position: sticky;
-      top: 0;
-      padding: 0 1.5rem; /* Keep padding on desktop to maintain consistent spacing */
-      max-height: 100vh;
-      overflow: hidden;
-    }
-    
-    .related-movies-list {
-      max-height: calc(100vh - 100px);
-    }
-
-    .related-movie-card {
-      min-height: 130px;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    .watch-container {
-      padding: 0 0rem !important;
-    }
-    
-    .movie-info-section {
-      padding: 1rem 2rem; /* Larger padding on desktop */
-    }
-    
-    .movie-title {
-      font-size: 1.3rem;
-    }
-    
-    .sidebar-title {
-      font-size: 0.95rem;
-    }
-  }
-
-    @media (min-width: 1400px) {
-    .movie-info-section {
-      padding: 1.5rem 3rem; /* Maximum padding on large screens */
-    }
-`;
-
+const formatNumber = (num: number) => {
+  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+  if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+  return num.toString();
+};
+
+const formatTime = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = String(Math.floor(seconds % 60)).padStart(2, '0');
+  return `${m}:${s}`;
+};
+
+/* ─── Action Button ─────────────────────────── */
+const ActionBtn: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  active?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}> = ({ icon, label, active, disabled, onClick }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-medium transition-all duration-200 ${
+      active
+        ? 'bg-brand-red/20 text-brand-red border border-brand-red/30'
+        : 'bg-white/[0.05] text-white/60 border border-white/[0.06] hover:bg-white/[0.08] hover:text-white/80'
+    } disabled:opacity-40 disabled:cursor-not-allowed`}
+  >
+    {icon}
+    <span className="hidden sm:inline">{label}</span>
+  </button>
+);
+
+/* ─── Related Movie Card ────────────────────── */
+const RelatedCard: React.FC<{
+  movie: MovieV2;
+  isNext?: boolean;
+  onClick: () => void;
+}> = ({ movie, isNext, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex gap-3 p-2 rounded-lg text-left transition-colors group ${
+      isNext ? 'bg-brand-red/10 border border-brand-red/20' : 'hover:bg-white/[0.05]'
+    }`}
+  >
+    <div className="relative flex-shrink-0 w-[120px] sm:w-[140px] aspect-video rounded-md overflow-hidden bg-[#1a1a1e]">
+      <img
+        src={movie.thumbnail_url}
+        alt={movie.title}
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+        <Play size={20} fill="white" className="text-white" />
+      </div>
+      {isNext && (
+        <div className="absolute top-1 left-1 bg-brand-red text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+          UP NEXT
+        </div>
+      )}
+    </div>
+    <div className="flex-1 min-w-0 py-0.5">
+      <p className="text-white text-[12px] sm:text-[13px] font-medium leading-tight line-clamp-2 mb-1.5">
+        {movie.title}
+      </p>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-white/40">
+        {movie.type === 'Series' && movie.episode_number && (
+          <span className="text-brand-gold font-medium">Ep {movie.episode_number}</span>
+        )}
+        {movie.vj && <span>VJ {movie.vj}</span>}
+        {movie.rating && (
+          <span className="flex items-center gap-0.5 text-brand-gold">
+            <Star size={9} fill="currentColor" /> {String(movie.rating)}
+          </span>
+        )}
+        {movie.duration && (
+          <span className="flex items-center gap-0.5">
+            <Clock size={9} /> {movie.duration}
+          </span>
+        )}
+      </div>
+    </div>
+  </button>
+);
+
+/* ─── Episode Row (series sidebar) ───────────── */
+const EpisodeRow: React.FC<{
+  episode: MovieV2;
+  isCurrent: boolean;
+  isNext: boolean;
+  onClick: () => void;
+}> = ({ episode, isCurrent, isNext, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg text-left transition-colors group ${
+      isCurrent
+        ? 'bg-brand-red/15 border border-brand-red/20'
+        : isNext
+        ? 'bg-white/[0.04] border border-white/[0.06]'
+        : 'hover:bg-white/[0.04]'
+    }`}
+  >
+    {/* Episode number badge */}
+    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold ${
+      isCurrent ? 'bg-brand-red text-white' : 'bg-white/[0.06] text-white/40'
+    }`}>
+      {episode.episode_number || '?'}
+    </div>
+    {/* Thumbnail */}
+    <div className="relative flex-shrink-0 w-[80px] aspect-video rounded overflow-hidden bg-[#1a1a1e]">
+      <img src={episode.thumbnail_url} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+      {isCurrent && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+          <Play size={14} fill="white" className="text-white" />
+        </div>
+      )}
+      {isNext && !isCurrent && (
+        <div className="absolute top-0.5 left-0.5 bg-brand-red text-white text-[7px] font-bold px-1 py-0.5 rounded">
+          NEXT
+        </div>
+      )}
+    </div>
+    {/* Info */}
+    <div className="flex-1 min-w-0">
+      <p className={`text-[12px] font-medium leading-tight line-clamp-2 ${isCurrent ? 'text-white' : 'text-white/70'}`}>
+        {episode.episode_title || episode.title}
+      </p>
+      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-white/30">
+        {episode.duration && <span>{episode.duration}</span>}
+        {episode.vj && <span>VJ {episode.vj}</span>}
+      </div>
+    </div>
+  </button>
+);
+
+/* ═══════════════════════════════════════════════
+   WATCH PAGE — V2 API with RTK Query
+   ═══════════════════════════════════════════════ */
 const WatchPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [movieData, setMovieData] = useState<ApiMovieResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(0);
-  const [hasOverflow, setHasOverflow] = useState(false);
+  const movieId = Number(id);
+  const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ─── V2 API via RTK Query ─────────────────────
+  const {
+    data: movie,
+    isLoading,
+    isError,
+    error: fetchError,
+  } = useGetMovieQuery(movieId, { skip: !movieId || isNaN(movieId) });
+
+  const { data: relatedMovies = [] } = useGetRelatedMoviesQuery(movieId, {
+    skip: !movieId || isNaN(movieId),
+  });
+
+  // ─── Series detection: if movie is a series, fetch all episodes ─────
+  const isSeries = movie?.type === 'Series';
+  const categoryId = movie?.category_id;
+  const { data: episodes = [] } = useGetSeriesEpisodesQuery(
+    { categoryId: categoryId! },
+    { skip: !isSeries || !categoryId },
+  );
+
+  // ─── Derived series data ──────────────────────
+  const currentEpIndex = isSeries ? episodes.findIndex(ep => ep.id === movieId) : -1;
+  const nextEpisode = currentEpIndex >= 0 && currentEpIndex < episodes.length - 1
+    ? episodes[currentEpIndex + 1] : null;
+  const prevEpisode = currentEpIndex > 0 ? episodes[currentEpIndex - 1] : null;
+  const hasNext = isSeries ? !!nextEpisode : relatedMovies.length > 0;
+  const hasPrev = isSeries ? !!prevEpisode : false;
+
+  // Group episodes by season for display
+  const seasonGroups = React.useMemo(() => {
+    if (!episodes.length) return [];
+    const map = new Map<number, MovieV2[]>();
+    for (const ep of episodes) {
+      const s = Number(ep.season_number || 1);
+      if (!map.has(s)) map.set(s, []);
+      map.get(s)!.push(ep);
+    }
+    return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
+  }, [episodes]);
+  const hasMultipleSeasons = seasonGroups.length > 1;
+
+  // ─── Local state ──────────────────────────────
   const [shouldAutoPlay, setShouldAutoPlay] = useState(true);
-
-  // Inject styles into document head
-  useEffect(() => {
-    const styleElement = document.createElement('style');
-    styleElement.innerHTML = watchPageStyles;
-    document.head.appendChild(styleElement);
-    
-    return () => {
-      document.head.removeChild(styleElement);
-    };
-  }, []);
-
-  // Check if page content overflows viewport
-  const checkOverflow = useCallback(() => {
-    const contentHeight = document.documentElement.scrollHeight;
-    const viewportHeight = window.innerHeight;
-    const overflow = contentHeight > viewportHeight;
-    setHasOverflow(overflow);
-    
-    console.log('📏 Content height:', contentHeight, 'Viewport:', viewportHeight, 'Overflow:', overflow);
-  }, []);
-
-  useEffect(() => {
-    if (id) {
-      fetchMovieData(id);
-    }
-  }, [id]);
-
-  // Check overflow after data loads and on window resize
-  useEffect(() => {
-    if (movieData) {
-      // Use setTimeout to ensure DOM has updated
-      const timer = setTimeout(checkOverflow, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [movieData, checkOverflow]);
-
-  useEffect(() => {
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [checkOverflow]);
-
-  // Keyboard controls for video player
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      const videoElement = document.querySelector('video') as HTMLVideoElement;
-      if (!videoElement) return;
-
-      switch(e.key.toLowerCase()) {
-        case ' ':
-        case 'k':
-          e.preventDefault();
-          if (videoElement.paused) {
-            videoElement.play();
-          } else {
-            videoElement.pause();
-          }
-          break;
-        case 'arrowleft':
-        case 'j':
-          e.preventDefault();
-          videoElement.currentTime = Math.max(0, videoElement.currentTime - 10);
-          break;
-        case 'arrowright':
-        case 'l':
-          e.preventDefault();
-          videoElement.currentTime = Math.min(videoElement.duration, videoElement.currentTime + 10);
-          break;
-        case 'arrowup':
-          e.preventDefault();
-          videoElement.volume = Math.min(1, videoElement.volume + 0.1);
-          break;
-        case 'arrowdown':
-          e.preventDefault();
-          videoElement.volume = Math.max(0, videoElement.volume - 0.1);
-          break;
-        case 'm':
-          e.preventDefault();
-          videoElement.muted = !videoElement.muted;
-          break;
-        case 'f':
-          e.preventDefault();
-          if (document.fullscreenElement) {
-            document.exitFullscreen();
-          } else {
-            videoElement.requestFullscreen();
-          }
-          break;
-        case 'n':
-          e.preventDefault();
-          if (hasNextEpisode()) {
-            handleNextEpisode();
-          }
-          break;
-        case 'p':
-          e.preventDefault();
-          if (hasPreviousEpisode()) {
-            handlePreviousEpisode();
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [movieData, currentEpisodeIndex]);
-
-  const fetchMovieData = async (movieId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Call the new backend API endpoint
-      const data = await ApiService.getMovieById(movieId);
-      
-      // CRITICAL FIX: Convert related_movies from object to array if needed
-      if (data.related_movies && !Array.isArray(data.related_movies)) {
-        console.warn('Converting related_movies from object to array');
-        data.related_movies = Object.values(data.related_movies);
-      }
-      
-      // Ensure related_movies is always an array
-      if (!data.related_movies) {
-        data.related_movies = [];
-      }
-      
-      setMovieData(data);
-      
-    } catch (err) {
-      console.error('Error fetching movie data:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred loading the movie');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Get current movie (for series, this could be a specific episode)
-  const getCurrentMovie = (): MovieData | null => {
-    if (!movieData) return null;
-    
-    // If it's a series, we might want to show episodes in related movies
-    // For now, just return the main movie
-    return movieData.movie;
-  };
-
-  // Get next episode for series
-  const getNextEpisode = (): MovieData | null => {
-    if (!movieData || movieData.movie.type !== 'Series') return null;
-    if (!Array.isArray(movieData.related_movies) || movieData.related_movies.length === 0) return null;
-    
-    const currentEpisode = movieData.movie.episode_number || 0;
-    
-    // Find the next episode by episode number
-    const nextEp = movieData.related_movies.find(m => 
-      m.type === 'Series' && 
-      m.category === movieData.movie.category &&
-      m.episode_number === currentEpisode + 1
-    );
-    
-    if (nextEp) return nextEp;
-    
-    // If not found by episode number, find the first episode with a higher number
-    const sortedEpisodes = movieData.related_movies
-      .filter(m => m.type === 'Series' && m.category === movieData.movie.category)
-      .sort((a, b) => (a.episode_number || 0) - (b.episode_number || 0));
-    
-    const nextInLine = sortedEpisodes.find(m => (m.episode_number || 0) > currentEpisode);
-    return nextInLine || null;
-  };
-
-  // Handle next episode for series or related movie
-  const handleNextEpisode = () => {
-    if (!movieData) return;
-    
-    // For series, try to find next episode
-    if (movieData.movie.type === 'Series') {
-      const nextEpisode = getNextEpisode();
-      
-      if (nextEpisode) {
-        setShouldAutoPlay(true);
-        navigate(`/watch/${nextEpisode.id}`);
-        return;
-      }
-    }
-    
-    // For movies or when no more episodes, play first related movie
-    if (Array.isArray(movieData.related_movies) && movieData.related_movies.length > 0) {
-      const nextMovie = movieData.related_movies[0];
-      setShouldAutoPlay(true);
-      navigate(`/watch/${nextMovie.id}`);
-    }
-  };
-
-  // Handle previous episode for series
-  const handlePreviousEpisode = () => {
-    if (!movieData || movieData.movie.type !== 'Series') return;
-    if (!Array.isArray(movieData.related_movies)) return;
-    
-    const relatedEpisodes = movieData.related_movies.filter(m => 
-      m.type === 'Series' && m.category === movieData.movie.category
-    );
-    
-    if (currentEpisodeIndex > 0) {
-      const prevEpisode = relatedEpisodes[currentEpisodeIndex - 1];
-      navigate(`/watch/${prevEpisode.id}`);
-    }
-  };
-
-  // Check if there are next/previous episodes
-  const hasNextEpisode = (): boolean => {
-    if (!movieData || !Array.isArray(movieData.related_movies)) return false;
-    
-    // For series, check if there are more episodes
-    if (movieData.movie.type === 'Series') {
-      const relatedEpisodes = movieData.related_movies.filter(m => 
-        m.type === 'Series' && m.category === movieData.movie.category
-      );
-      if (currentEpisodeIndex < relatedEpisodes.length - 1) return true;
-    }
-    
-    // Always return true if there are related movies
-    return movieData.related_movies.length > 0;
-  };
-
-  const hasPreviousEpisode = (): boolean => {
-    if (!movieData || movieData.movie.type !== 'Series') return false;
-    if (!Array.isArray(movieData.related_movies)) return false;
-    return currentEpisodeIndex > 0;
-  };
-
-  // Handle related movie click
-  const handleRelatedMovieClick = (relatedMovie: MovieData) => {
-    navigate(`/watch/${relatedMovie.id}`);
-  };
-
-
-
   const [liked, setLiked] = useState(false);
-    // WATCH-02: Resume position
-    const [resumeSeconds, setResumeSeconds] = useState<number | null>(null);
-    const [showResumePrompt, setShowResumePrompt] = useState(false);
-
   const [likesCount, setLikesCount] = useState(0);
   const [isLiking, setIsLiking] = useState(false);
   const [watchlisted, setWatchlisted] = useState(false);
-  const [wishlistCount, setWishlistCount] = useState(0);
   const [isWishlisting, setIsWishlisting] = useState(false);
   const [showShareToast, setShowShareToast] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [isFixing, setIsFixing] = useState(false);
+  const [fixToast, setFixToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [resumeSeconds, setResumeSeconds] = useState<number | null>(null);
+  const [resumeToast, setResumeToast] = useState(false);
+  const [showFullDesc, setShowFullDesc] = useState(false);
 
-  // Update liked status, likes count, and wishlist status when movieData changes
+  // ─── Sync likes count from movie data ─────────
   useEffect(() => {
-    if (movieData) {
-      setLiked(movieData.user_interactions.has_liked);
-      setLikesCount(movieData.movie.likes_count || 0);
-      setWatchlisted(movieData.user_interactions.has_wishlisted || false);
-      setWishlistCount(movieData.movie.wishlist_count || 0);
-    }
-  }, [movieData]);
+    if (movie) setLikesCount(movie.likes_count || 0);
+  }, [movie]);
 
-    // WATCH-01: Report playback start to backend + WATCH-05: track via safemode
-    // WATCH-02: Load saved progress and offer resume prompt
-    useEffect(() => {
-      if (!movieData || !id) return;
-      const movie = movieData.movie;
-
-      // WATCH-01: Report playback
-      MoviesV2Service.reportPlayback(movie.id);
-
-      // WATCH-05: Track 'play' action via safemode analytics
-      AnalyticsV2Service.trackAction({
-        external_video_id: movie.id,
-        action: 'play',
-        video_title: movie.title,
-        genre: movie.genre,
-      });
-
-      // WATCH-02: Fetch saved progress — offer resume if > 30 seconds
-      AnalyticsV2Service.getProgress(movie.id).then((prog) => {
-        if (prog && prog.progress_seconds > 30) {
-          setResumeSeconds(prog.progress_seconds);
-          setShowResumePrompt(true);
+  // ─── Fetch user interactions via v1 (has_liked, has_wishlisted) ───
+  useEffect(() => {
+    if (!movieId || isNaN(movieId)) return;
+    ApiService.getMovieById(String(movieId))
+      .then((data: any) => {
+        if (data?.user_interactions) {
+          setLiked(data.user_interactions.has_liked || false);
+          setWatchlisted(data.user_interactions.has_wishlisted || false);
         }
-      });
-    }, [movieData?.movie.id]);
+      })
+      .catch(() => {});
+  }, [movieId]);
 
-    // WATCH-03: Save progress every 30 seconds while video is playing
-    useEffect(() => {
-      if (!movieData) return;
-      const movie = movieData.movie;
-      const interval = setInterval(() => {
-        const videoEl = document.querySelector('video') as HTMLVideoElement | null;
-        if (videoEl && !videoEl.paused && !videoEl.ended) {
-          AnalyticsV2Service.saveProgress({
-            external_video_id: movie.id,
-            progress_seconds: Math.floor(videoEl.currentTime),
-            duration_seconds: isNaN(videoEl.duration) ? undefined : Math.floor(videoEl.duration),
-            video_title: movie.title,
-          });
-        }
-      }, 30_000);
-      return () => clearInterval(interval);
-    }, [movieData?.movie.id]);
+  // ─── Analytics: play event + resume check ─────
+  useEffect(() => {
+    if (!movie) return;
+    MoviesV2Service.reportPlayback(movie.id);
+    AnalyticsV2Service.trackAction({
+      external_video_id: movie.id,
+      action: 'play',
+      video_title: movie.title,
+      genre: movie.genre,
+    });
+    setResumeSeconds(null);
+    setResumeToast(false);
+    AnalyticsV2Service.getProgress(movie.id).then((prog) => {
+      if (prog && prog.progress_seconds > 30) {
+        setResumeSeconds(prog.progress_seconds);
+        setResumeToast(true);
+        setTimeout(() => setResumeToast(false), 4000);
+      }
+    });
+  }, [movie?.id]);
 
-    // WATCH-04: Report video playback failures
-    useEffect(() => {
-      if (!movieData) return;
-      const movieId = movieData.movie.id;
-      const handleVideoError = (e: Event) => {
-        const videoEl = e.target as HTMLVideoElement;
-        const errMsg = videoEl.error?.message || 'Unknown playback error';
-        // Report to dedicated failures endpoint
-        http_post('video-playback-failures', {
-          movie_id: movieId,
-          error_message: errMsg,
-        }).catch(() => {}); // non-critical
-        console.error('[WatchPage] Playback error on movie', movieId, errMsg);
-      };
-      const videoEl = document.querySelector('video');
-      videoEl?.addEventListener('error', handleVideoError);
-      return () => videoEl?.removeEventListener('error', handleVideoError);
-    }, [movieData?.movie.id]);
+  // ─── V2 progress saving: every 5 seconds ─────
+  useEffect(() => {
+    if (!movie) return;
+    const saveV2 = () => {
+      const v = document.querySelector('video') as HTMLVideoElement | null;
+      if (v && !v.paused && !v.ended && v.currentTime > 0) {
+        AnalyticsV2Service.saveProgress({
+          external_video_id: movie.id,
+          progress_seconds: Math.floor(v.currentTime),
+          duration_seconds: isNaN(v.duration) ? undefined : Math.floor(v.duration),
+          video_title: movie.title,
+        });
+      }
+    };
+    progressRef.current = setInterval(saveV2, 5_000);
+    return () => { if (progressRef.current) clearInterval(progressRef.current); };
+  }, [movie?.id]);
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) {
-      return `${(num / 1000000).toFixed(1)}M`;
+  // ─── Report playback failures ─────────────────
+  useEffect(() => {
+    if (!movie) return;
+    const mid = movie.id;
+    const handler = (e: Event) => {
+      const v = e.target as HTMLVideoElement;
+      http_post('video-playback-failures', {
+        movie_id: mid,
+        error_message: v.error?.message || 'Unknown playback error',
+      }).catch(() => {});
+    };
+    const v = document.querySelector('video');
+    v?.addEventListener('error', handler);
+    return () => v?.removeEventListener('error', handler);
+  }, [movie?.id]);
+
+  // ─── Keyboard shortcuts ───────────────────────
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const v = document.querySelector('video') as HTMLVideoElement;
+      if (!v) return;
+      switch (e.key.toLowerCase()) {
+        case ' ': case 'k': e.preventDefault(); v.paused ? v.play() : v.pause(); break;
+        case 'arrowleft': case 'j': e.preventDefault(); v.currentTime = Math.max(0, v.currentTime - 10); break;
+        case 'arrowright': case 'l': e.preventDefault(); v.currentTime = Math.min(v.duration, v.currentTime + 10); break;
+        case 'arrowup': e.preventDefault(); v.volume = Math.min(1, v.volume + 0.1); break;
+        case 'arrowdown': e.preventDefault(); v.volume = Math.max(0, v.volume - 0.1); break;
+        case 'm': e.preventDefault(); v.muted = !v.muted; break;
+        case 'f': e.preventDefault(); document.fullscreenElement ? document.exitFullscreen() : v.requestFullscreen(); break;
+        case 'n': e.preventDefault(); handleNext(); break;
+        case 'p': e.preventDefault(); handlePrev(); break;
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [movie, relatedMovies]);
+
+  // ─── Episode navigation (series-aware) ────────
+  const handleNext = useCallback(() => {
+    if (isSeries && nextEpisode) {
+      setShouldAutoPlay(true); navigate(`/watch/${nextEpisode.id}`); return;
     }
-    if (num >= 1000) {
-      return `${(num / 1000).toFixed(1)}K`;
-    }
-    return num.toString();
-  };
+    if (relatedMovies.length) { setShouldAutoPlay(true); navigate(`/watch/${relatedMovies[0].id}`); }
+  }, [isSeries, nextEpisode, relatedMovies, navigate]);
 
+  const handlePrev = useCallback(() => {
+    if (isSeries && prevEpisode) {
+      setShouldAutoPlay(true); navigate(`/watch/${prevEpisode.id}`);
+    }
+  }, [isSeries, prevEpisode, navigate]);
+
+  // ─── Interaction handlers ─────────────────────
   const handleLike = async () => {
-    if (!movieData || isLiking) return;
-    
-    // Optimistic UI update
-    const previousLiked = liked;
-    const previousCount = likesCount;
-    
+    if (!movie || isLiking) return;
+    const pLiked = liked, pCount = likesCount;
     setLiked(!liked);
-    setLikesCount(prev => liked ? Math.max(0, prev - 1) : prev + 1);
+    setLikesCount((c) => (liked ? Math.max(0, c - 1) : c + 1));
     setIsLiking(true);
-    
     try {
-      const result = await ApiService.toggleMovieLike(movieData.movie.id);
-      
-      // Update with server response
-      setLiked(result.liked);
-      setLikesCount(result.likes_count);
-      
-      // Update movieData to keep it in sync
-      if (movieData) {
-        movieData.user_interactions.has_liked = result.liked;
-        movieData.movie.likes_count = result.likes_count;
-      }
-      
-    } catch (error: any) {
-      console.error('Error toggling like:', error);
-      
-      // Revert optimistic update on error
-      setLiked(previousLiked);
-      setLikesCount(previousCount);
-      
-      // Error toast is already shown by ApiService
-      // If authentication error, could redirect to login
-      if (error?.message === 'Authentication required') {
-        // Optionally redirect to login page
-        // navigate('/login', { state: { from: location.pathname } });
-      }
-    } finally {
-      setIsLiking(false);
-    }
+      const res = await ApiService.toggleMovieLike(movie.id);
+      setLiked(res.liked);
+      setLikesCount(res.likes_count);
+    } catch { setLiked(pLiked); setLikesCount(pCount); }
+    finally { setIsLiking(false); }
   };
 
   const handleWatchlist = async () => {
-    if (!movieData || isWishlisting) return;
-    
-    // Optimistic UI update
-    const previousWatchlisted = watchlisted;
-    const previousCount = wishlistCount;
-    
+    if (!movie || isWishlisting) return;
+    const prev = watchlisted;
     setWatchlisted(!watchlisted);
-    setWishlistCount(prev => watchlisted ? Math.max(0, prev - 1) : prev + 1);
     setIsWishlisting(true);
-    
     try {
-      const result = await ApiService.toggleMovieWishlist(movieData.movie.id);
-      
-      // Update with server response
-      setWatchlisted(result.wishlisted);
-      setWishlistCount(result.wishlist_count);
-      
-      // Update movieData to keep it in sync
-      if (movieData) {
-        movieData.user_interactions.has_wishlisted = result.wishlisted;
-        movieData.movie.wishlist_count = result.wishlist_count;
-      }
-      
-    } catch (error: any) {
-      console.error('Error toggling wishlist:', error);
-      
-      // Revert optimistic update on error
-      setWatchlisted(previousWatchlisted);
-      setWishlistCount(previousCount);
-      
-      // Error toast is already shown by ApiService
-      if (error?.message === 'Authentication required') {
-        // Optionally redirect to login page
-        // navigate('/login', { state: { from: location.pathname } });
-      }
-    } finally {
-      setIsWishlisting(false);
-    }
+      const res = await ApiService.toggleMovieWishlist(movie.id);
+      setWatchlisted(res.wishlisted);
+    } catch { setWatchlisted(prev); }
+    finally { setIsWishlisting(false); }
   };
 
   const handleShare = () => {
-    const movie = getCurrentMovie();
     if (navigator.share) {
-      navigator.share({
-        title: movie?.title,
-        text: `Watch "${movie?.title}" on UgFlix`,
-        url: window.location.href,
-      });
+      navigator.share({ title: movie?.title, text: `Watch "${movie?.title}" on UgFlix`, url: window.location.href });
     } else {
       navigator.clipboard.writeText(window.location.href);
       setShowShareToast(true);
@@ -1297,254 +361,318 @@ const WatchPage: React.FC = () => {
   };
 
   const handleDownload = () => {
-    const movie = getCurrentMovie();
     if (!movie) return;
-    // Open video URL in new tab for download
+    AnalyticsV2Service.recordDownload({ movie_model_id: movie.id, download_type: 'in_app', title: movie.title, genre: movie.genre });
     window.open(movie.url, '_blank');
   };
 
-    // WATCH-09: Track download click
-    const handleDownloadTracked = () => {
-      const movie = getCurrentMovie();
-      if (!movie) return;
-      AnalyticsV2Service.recordDownload({
-        movie_model_id: movie.id,
-        download_type: 'in_app',
-        title: movie.title,
-        genre: movie.genre,
-      });
-      window.open(movie.url, '_blank');
-    };
+  const handleFixMovie = async () => {
+    if (!movie || isFixing) return;
+    setIsFixing(true);
+    setFixToast(null);
+    try {
+      const res = await http_post(`v2/movies/${movie.id}/fix`, { action: 'fix' });
+      const resp = (res as any)?.data ?? res;
+      if (resp?.code === 1 && resp?.data) {
+        const changes = resp.data.changes as string[] | undefined;
+        const msg = changes?.length ? `Fixed: ${changes.join(', ')}` : resp.data.message || 'Movie fixed successfully';
+        setFixToast({ type: 'success', message: msg });
+        if (resp.data.movie) window.location.reload();
+      } else {
+        setFixToast({ type: 'error', message: resp?.message || 'Fix failed' });
+      }
+    } catch { setFixToast({ type: 'error', message: 'Network error — could not fix movie' }); }
+    finally { setIsFixing(false); setTimeout(() => setFixToast(null), 4000); }
+  };
 
-  if (loading) {
+  // ─── Loading state ────────────────────────────
+  if (isLoading) {
     return (
-      <div className="watch-page-loading">
-        <Spinner animation="border" variant="warning" />
-        <div className="loading-text">Loading movie...</div>
+      <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={28} className="text-brand-red animate-spin" />
+          <p className="text-white/40 text-[13px]">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  if (error || !movieData) {
+  // ─── Error state ──────────────────────────────
+  if (isError || !movie) {
+    const errMsg =
+      fetchError && 'data' in fetchError
+        ? (fetchError.data as any)?.message
+        : 'Movie not found';
     return (
-      <div className="watch-page-error">
-        <h2>{error ? 'Error Loading Movie' : 'Movie Not Found'}</h2>
-        <p>{error || "The movie you're looking for doesn't exist."}</p>
-        <button onClick={() => navigate(-1)} className="back-btn">
-          Go Back
-        </button>
+      <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center px-4">
+        <div className="text-center max-w-sm">
+          <h2 className="text-white text-lg font-semibold mb-2">
+            {isError ? 'Error Loading Movie' : 'Movie Not Found'}
+          </h2>
+          <p className="text-white/40 text-[13px] mb-4">
+            {errMsg || "The movie you're looking for doesn't exist."}
+          </p>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/[0.08] text-white text-[13px] rounded-lg hover:bg-white/[0.12] transition-colors"
+          >
+            <ChevronLeft size={14} /> Go Back
+          </button>
+        </div>
       </div>
     );
   }
 
-  const movie = getCurrentMovie();
-  if (!movie) return null;
+  const descShort = movie.description && movie.description.length > 200;
 
+  // ─── Main render ──────────────────────────────
   return (
-    <div className={`watch-page ${hasOverflow ? 'has-overflow' : 'no-overflow'}`}>
-      <Container fluid className="watch-container">
-        {/* Share Toast */}
-        {showShareToast && (
-          <div className="share-toast">
-            <Share2 size={18} />
-            Link copied to clipboard!
+    <div className="min-h-screen bg-[#0a0a0c]">
+      {/* Share toast */}
+      {showShareToast && (
+        <div className="fixed top-14 right-4 z-50 flex items-center gap-2.5 bg-brand-red text-white text-[13px] font-medium px-4 py-3 rounded-lg shadow-xl animate-[slideIn_0.3s_ease]">
+          <Share2 size={16} />
+          Link copied to clipboard!
+        </div>
+      )}
+      {/* Fix toast */}
+      {fixToast && (
+        <div className={`fixed top-14 right-4 z-50 flex items-center gap-2.5 text-white text-[13px] font-medium px-4 py-3 rounded-lg shadow-xl animate-[slideIn_0.3s_ease] ${
+          fixToast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'
+        }`}>
+          {fixToast.type === 'success' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+          {fixToast.message}
+        </div>
+      )}
+
+      {/* Resume toast */}
+      {resumeToast && resumeSeconds !== null && (
+        <div className="fixed top-14 right-4 z-50 flex items-center gap-2.5 bg-white/10 backdrop-blur-sm text-white text-[13px] font-medium px-4 py-3 rounded-lg shadow-xl animate-[slideIn_0.3s_ease]">
+          <Clock size={16} className="text-brand-gold" />
+          Resuming from {formatTime(resumeSeconds)}
+        </div>
+      )}
+
+      {/* ─── Video Player (full width) ─── */}
+      <div className="w-full bg-black">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="relative w-full aspect-video">
+            <CustomVideoPlayer
+              url={movie.url}
+              movieId={movie.id}
+              poster={movie.thumbnail_url || movie.image_url}
+              autoPlay={shouldAutoPlay}
+              startPosition={resumeSeconds ?? undefined}
+              onNext={hasNext ? handleNext : undefined}
+              onPrevious={hasPrev ? handlePrev : undefined}
+              onEnded={hasNext ? handleNext : undefined}
+            />
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* Main Content */}
-        <Row className="g-3 g-md-4">
-          {/* Left Column: Video Player + Movie Info */}
-          <Col lg={8} className="left-content">
-            {/* Video Player */}
-            <div className="video-container">
-                {/* WATCH-02: Resume prompt */}
-                {showResumePrompt && resumeSeconds !== null && (
-                  <div style={{
-                    position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-                    zIndex: 50, background: 'rgba(0,0,0,0.85)', borderRadius: 8,
-                    padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 12,
-                    border: '1px solid var(--ugflix-border,#1e1e1e)'
-                  }}>
-                    <span style={{ color: '#ccc', fontSize: 13 }}>
-                      Resume from {Math.floor(resumeSeconds / 60)}:{String(resumeSeconds % 60).padStart(2, '0')}?
-                    </span>
-                    <button
-                      onClick={() => {
-                        const v = document.querySelector('video') as HTMLVideoElement | null;
-                        if (v && resumeSeconds) v.currentTime = resumeSeconds;
-                        setShowResumePrompt(false);
-                      }}
-                      style={{ color: 'var(--color-brand-red,#E50914)', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
-                    >
-                      Resume
-                    </button>
-                    <button
-                      onClick={() => setShowResumePrompt(false)}
-                      style={{ color: '#888', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer' }}
-                    >
-                      Start Over
-                    </button>
-                  </div>
+      {/* ─── Content below player ─── */}
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-5 lg:px-8">
+        <div className="flex flex-col lg:flex-row gap-5 lg:gap-8 pt-4 pb-24 lg:pb-10">
+
+          {/* ── Left: Movie info ── */}
+          <div className="flex-1 min-w-0">
+            {/* Title + episode badge */}
+            <div className="flex items-start gap-2 mb-2">
+              {isSeries && movie.episode_number && (
+                <span className="flex-shrink-0 mt-0.5 bg-brand-gold/20 text-brand-gold font-semibold px-2 py-0.5 rounded text-[10px]">
+                  EP {movie.episode_number}
+                </span>
+              )}
+              <div className="min-w-0">
+                <h1 className="text-white text-[15px] sm:text-lg lg:text-xl font-semibold leading-tight">
+                  {movie.title}
+                </h1>
+                {isSeries && movie.series_title && movie.series_title !== movie.title && (
+                  <p className="text-white/30 text-[11px] mt-0.5">{movie.series_title}</p>
                 )}
-              <CustomVideoPlayer
-                url={movie.url}
-                movieId={movie.id}
-                poster={movie.thumbnail_url}
-                autoPlay={shouldAutoPlay}
-                onNext={hasNextEpisode() ? handleNextEpisode : undefined}
-                onPrevious={hasPreviousEpisode() ? handlePreviousEpisode : undefined}
-                onEnded={hasNextEpisode() ? handleNextEpisode : undefined}
-              />
-            </div>
-
-            {/* Movie Information Section */}
-            <div className="movie-info-section">
-              {/* Movie Title */}
-              <h1 className="movie-title">{movie.title}</h1>
-
-              {/* Movie Meta */}
-              <div className="movie-meta-row">
-                <div className="meta-badges">
-                   
-                  {movie.type === 'Series' && movie.episode_number && (
-                    <span className="meta-badge episode-badge">
-                      Ep {movie.episode_number}
-                    </span>
-                  )}
-                  <span className="stat-item">
-                    <Users size={13} />
-                    {formatNumber(movie.views_count)}
-                  </span>
-                  <span className="stat-item">
-                    <Heart size={13} />
-                    {formatNumber(likesCount)}
-                  </span>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="action-buttons">
-                  <button 
-                    className={`action-btn like-btn ${liked ? 'active' : ''}`}
-                    onClick={handleLike}
-                    disabled={isLiking}
-                  >
-                    <Heart size={14} fill={liked ? 'currentColor' : 'none'} />
-                    Like
-                  </button>
-                  <button 
-                    className={`action-btn watchlist-btn ${watchlisted ? 'active' : ''}`}
-                    onClick={handleWatchlist}
-                    disabled={isWishlisting}
-                  >
-                    <Star size={14} fill={watchlisted ? 'currentColor' : 'none'} />
-                    Watchlist
-                  </button>
-                  <button 
-                    className="action-btn share-btn"
-                    onClick={handleShare}
-                  >
-                    <Share2 size={14} />
-                    Share
-                  </button>
-                  <button 
-                    className="action-btn download-btn"
-                    onClick={handleDownloadTracked}
-                  >
-                    <Download size={14} />
-                    Download
-                  </button>
-                  <button
-                    className="action-btn"
-                    onClick={() => setReportModalOpen(true)}
-                    title="Report this content"
-                  >
-                    <Flag size={14} />
-                    Report
-                  </button>
-                </div>
               </div>
             </div>
-          </Col>
 
-          {/* Right Column: Related Movies */}
-          <Col lg={4} className="right-content">
-            <div className="related-movies-sidebar">
-              <h3 className="sidebar-title">
-                {movie.type === 'Series' ? 'More Episodes' : 'Related Movies'}
-              </h3>
-              
-              {Array.isArray(movieData.related_movies) && movieData.related_movies.length > 0 ? (
-                <div className="related-movies-list">
-                  {movieData.related_movies.map((relatedMovie) => {
-                    const nextEpisode = getNextEpisode();
-                    const isNextEpisode = nextEpisode && nextEpisode.id === relatedMovie.id;
-                    
-                    return (
-                      <div 
-                        key={relatedMovie.id} 
-                        className={`related-movie-card ${isNextEpisode ? 'next-episode' : ''}`}
-                        onClick={() => handleRelatedMovieClick(relatedMovie)}
-                      >
-                        {isNextEpisode && (
-                          <div className="next-badge">▶ Up Next</div>
-                        )}
-                        <div className="related-movie-thumbnail">
-                          <img 
-                            src={relatedMovie.thumbnail_url} 
-                            alt={relatedMovie.title}
-                            loading="lazy"
-                          />
-                          <div className="play-overlay-icon">
-                            <Play size={20} fill="white" />
-                          </div>
-                        </div>
-                        <div className="related-movie-info">
-                          <h4 className="related-movie-title">{relatedMovie.title}</h4>
-                          <div className="related-movie-meta">
-                            <span className="meta-type">{relatedMovie.type}</span>
-                            {relatedMovie.director && (
-                              <span className="meta-vj" title={relatedMovie.director}>VJ {relatedMovie.director}</span>
-                            )}
-                            {relatedMovie.type === 'Series' && relatedMovie.episode_number && (
-                              <span className="meta-episode">Ep {relatedMovie.episode_number}</span>
-                            )}
-                            {relatedMovie.rating && (
-                              <span className="meta-rating">
-                                <Star size={11} fill="currentColor" />
-                                {relatedMovie.rating}
-                              </span>
-                            )}
-                            {relatedMovie.duration && (
-                              <span className="meta-duration">
-                                <Clock size={11} />
-                                {relatedMovie.duration}
-                              </span>
-                            )}
-                          </div>
+            {/* Meta row */}
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/40 mb-3">
+              {movie.year ? <span>{movie.year}</span> : null}
+              {movie.genre ? <span className="bg-white/[0.06] px-2 py-0.5 rounded">{movie.genre}</span> : null}
+              {movie.duration ? (
+                <span className="flex items-center gap-1"><Clock size={10} /> {movie.duration}</span>
+              ) : null}
+              {movie.language ? <span>{movie.language}</span> : null}
+              <span className="flex items-center gap-1"><Users size={10} /> {formatNumber(movie.views_count)}</span>
+              <span className="flex items-center gap-1"><Heart size={10} /> {formatNumber(likesCount)}</span>
+            </div>
+
+            {/* VJ / Director / Stars */}
+            {(movie.vj || movie.director) && (
+              <div className="flex flex-wrap items-center gap-3 text-[11px] text-white/35 mb-3">
+                {movie.vj && <span>VJ: <span className="text-white/55">{movie.vj}</span></span>}
+                {movie.director && <span>Director: <span className="text-white/55">{movie.director}</span></span>}
+                {movie.stars && <span>Stars: <span className="text-white/55">{movie.stars}</span></span>}
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-4">
+              <ActionBtn icon={<Heart size={14} fill={liked ? 'currentColor' : 'none'} />} label="Like" active={liked} disabled={isLiking} onClick={handleLike} />
+              <ActionBtn icon={<Star size={14} fill={watchlisted ? 'currentColor' : 'none'} />} label="Watchlist" active={watchlisted} disabled={isWishlisting} onClick={handleWatchlist} />
+              <ActionBtn icon={<Share2 size={14} />} label="Share" onClick={handleShare} />
+              <ActionBtn icon={<Download size={14} />} label="Download" onClick={handleDownload} />
+              <ActionBtn icon={isFixing ? <Loader2 size={14} className="animate-spin" /> : <Wrench size={14} />} label={isFixing ? 'Fixing...' : 'Fix'} disabled={isFixing} onClick={handleFixMovie} />
+              <ActionBtn icon={<Flag size={14} />} label="Report" onClick={() => setReportModalOpen(true)} />
+            </div>
+
+            {/* Description */}
+            {movie.description && (
+              <div className="mb-4">
+                <p className={`text-white/45 text-[12px] sm:text-[13px] leading-relaxed max-w-2xl ${!showFullDesc && descShort ? 'line-clamp-3' : ''}`}>
+                  {movie.description}
+                </p>
+                {descShort && (
+                  <button
+                    onClick={() => setShowFullDesc(!showFullDesc)}
+                    className="text-white/30 text-[11px] mt-1 hover:text-white/50 transition-colors"
+                  >
+                    {showFullDesc ? 'Show less' : 'Show more'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Episodes strip (mobile, series only) — from v2/series/{categoryId}/episodes */}
+            {isSeries && episodes.length > 1 && (
+              <div className="lg:hidden mb-4">
+                <h3 className="text-white text-[13px] font-semibold mb-2">
+                  Episodes{hasMultipleSeasons ? '' : ` (${episodes.length})`}
+                </h3>
+                {hasMultipleSeasons ? (
+                  // Multiple seasons: show grouped
+                  <div className="space-y-3">
+                    {seasonGroups.map(([sNum, eps]) => (
+                      <div key={sNum}>
+                        <p className="text-white/30 text-[10px] font-semibold uppercase tracking-wide mb-1.5">Season {sNum}</p>
+                        <div className="flex gap-2 overflow-x-auto pb-1.5 -mx-3 px-3 scrollbar-hide">
+                          {eps.map(ep => {
+                            const isCurrent = ep.id === movie.id;
+                            return (
+                              <button
+                                key={ep.id}
+                                onClick={() => { if (!isCurrent) { setShouldAutoPlay(true); navigate(`/watch/${ep.id}`); } }}
+                                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors ${
+                                  isCurrent
+                                    ? 'bg-brand-red text-white'
+                                    : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.1] hover:text-white/70'
+                                }`}
+                              >
+                                Ep {ep.episode_number}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="no-related">
-                  <p>No related {movie.type === 'Series' ? 'episodes' : 'movies'} available</p>
-                </div>
-              )}
-            </div>
-          </Col>
-        </Row>
-      </Container>
+                    ))}
+                  </div>
+                ) : (
+                  // Single season: flat strip
+                  <div className="flex gap-2 overflow-x-auto pb-2 -mx-3 px-3 scrollbar-hide">
+                    {episodes.map(ep => {
+                      const isCurrent = ep.id === movie.id;
+                      return (
+                        <button
+                          key={ep.id}
+                          onClick={() => { if (!isCurrent) { setShouldAutoPlay(true); navigate(`/watch/${ep.id}`); } }}
+                          className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors ${
+                            isCurrent
+                              ? 'bg-brand-red text-white'
+                              : 'bg-white/[0.06] text-white/50 hover:bg-white/[0.1] hover:text-white/70'
+                          }`}
+                        >
+                          Ep {ep.episode_number}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
-      {/* MOD-01/WATCH-08: Report content modal */}
-      {movieData && (
-        <ReportContentModal
-          isOpen={reportModalOpen}
-          onClose={() => setReportModalOpen(false)}
-          contentType="movie"
-          contentId={movieData.movie.id}
-        />
-      )}
+          {/* ── Right sidebar ── */}
+          <div className="w-full lg:w-[360px] flex-shrink-0">
+            {/* Series: show full episode list from dedicated API */}
+            {isSeries && episodes.length > 0 ? (
+              <div>
+                <h3 className="text-white text-[13px] sm:text-[14px] font-semibold mb-2">
+                  Episodes ({episodes.length})
+                </h3>
+                <div className="flex flex-col gap-0.5 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-1" style={{ scrollbarWidth: 'thin' }}>
+                  {hasMultipleSeasons ? (
+                    seasonGroups.map(([sNum, eps]) => (
+                      <div key={sNum} className="mb-3">
+                        <p className="text-white/30 text-[10px] font-semibold uppercase tracking-wide px-2 mb-1">Season {sNum}</p>
+                        {eps.map(ep => (
+                          <EpisodeRow
+                            key={ep.id}
+                            episode={ep}
+                            isCurrent={ep.id === movie.id}
+                            isNext={nextEpisode?.id === ep.id}
+                            onClick={() => { if (ep.id !== movie.id) { setShouldAutoPlay(true); navigate(`/watch/${ep.id}`); } }}
+                          />
+                        ))}
+                      </div>
+                    ))
+                  ) : (
+                    episodes.map(ep => (
+                      <EpisodeRow
+                        key={ep.id}
+                        episode={ep}
+                        isCurrent={ep.id === movie.id}
+                        isNext={nextEpisode?.id === ep.id}
+                        onClick={() => { if (ep.id !== movie.id) { setShouldAutoPlay(true); navigate(`/watch/${ep.id}`); } }}
+                      />))
+                  )}
+                </div>
+                {/* Related movies below episodes for series */}
+                {relatedMovies.length > 0 && (
+                  <div className="mt-5">
+                    <h3 className="text-white text-[13px] sm:text-[14px] font-semibold mb-2">You May Also Like</h3>
+                    <div className="flex flex-col gap-0.5">
+                      {relatedMovies.filter(rm => rm.category_id !== movie.category_id).slice(0, 6).map(rm => (
+                        <RelatedCard key={rm.id} movie={rm} onClick={() => { setShouldAutoPlay(true); navigate(`/watch/${rm.id}`); }} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Movies: show related
+              <div>
+                <h3 className="text-white text-[13px] sm:text-[14px] font-semibold mb-2">Related Movies</h3>
+                {relatedMovies.length > 0 ? (
+                  <div className="flex flex-col gap-0.5 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-1" style={{ scrollbarWidth: 'thin' }}>
+                    {relatedMovies.map(rm => (
+                      <RelatedCard key={rm.id} movie={rm} onClick={() => { setShouldAutoPlay(true); navigate(`/watch/${rm.id}`); }} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-white/25 text-[12px]">No related movies available</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Report modal */}
+      <ReportContentModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        contentType="movie"
+        contentId={movie.id}
+      />
     </div>
   );
 };

@@ -112,6 +112,23 @@ class MoviesV2Service {
   }
 
   /**
+   * Series episodes — GET /api/v2/series/{categoryId}/episodes
+   * Returns all episodes for a series sorted by season + episode number
+   */
+  static async getSeriesEpisodes(categoryId: number, season?: number): Promise<MovieV2[]> {
+    const params: Record<string, any> = {};
+    if (season != null) params.season = season;
+    const response = await http_get(`v2/series/${categoryId}/episodes`, params);
+    const items: MovieV2[] = response.data?.items || response.data || [];
+    // Sort by season then episode number (server may already sort, but ensure)
+    return items.sort((a, b) => {
+      const sa = Number(a.season_number || 0), sb = Number(b.season_number || 0);
+      if (sa !== sb) return sa - sb;
+      return Number(a.episode_number || 0) - Number(b.episode_number || 0);
+    });
+  }
+
+  /**
    * Report playback event — POST /api/v2/movies/{id}/playback
    */
   static async reportPlayback(id: number): Promise<void> {

@@ -20,6 +20,8 @@ const LiveTVPage = React.lazy(() => import("../pages/liveTV/LiveTVPage"));
 const LiveStationPage = React.lazy(() => import("../pages/liveTV/LiveStationPage"));
 const BlogPage = React.lazy(() => import("../pages/blog/BlogPage"));
 const BlogPostPage = React.lazy(() => import("../pages/blog/BlogPostPage"));
+const NewsPage = React.lazy(() => import("../pages/news/NewsPage"));
+const NewsDetailPage = React.lazy(() => import("../pages/news/NewsDetailPage"));
 const ProductDetailPageWrapper = React.lazy(() => import("../pages/ProductDetailPage/ProductDetailPageWrapper"));
 const ProductsPage = React.lazy(() => import("../pages/ProductsPage"));
 const MoviesPage = React.lazy(() => import("../pages/Movies/MoviesPage"));
@@ -109,15 +111,8 @@ const AppRoutes: React.FC = () => {
       <Routes>
         {/* Main Layout Routes */}
         <Route path="/" element={<MainLayout />}>
-          {/* Home - Protected */}
-          <Route 
-            index 
-            element={
-              <ProtectedRoute>
-                <StreamingHomePage />
-              </ProtectedRoute>
-            } 
-          />
+          {/* Home - Public (listing & preview are free) */}
+          <Route index element={<StreamingHomePage />} />
           
           {/* Products - Protected */}
           <Route 
@@ -147,9 +142,7 @@ const AppRoutes: React.FC = () => {
           <Route 
             path="search" 
             element={
-              <ProtectedRoute>
                 <SearchResultsPage />
-              </ProtectedRoute>
             } 
           />
 
@@ -179,27 +172,13 @@ const AppRoutes: React.FC = () => {
           <Route path="blog" element={<BlogPage />} />
           <Route path="blog/:id" element={<BlogPostPage />} />
           
-          {/* Movies & Series - Subscription Required */}
-          <Route 
-            path="movies" 
-            element={
-              <ProtectedRoute>
-                <SubscriptionProtectedRoute>
-                  <MoviesPage contentType="Movie" />
-                </SubscriptionProtectedRoute>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="series" 
-            element={
-              <ProtectedRoute>
-                <SubscriptionProtectedRoute>
-                  <MoviesPage contentType="Series" />
-                </SubscriptionProtectedRoute>
-              </ProtectedRoute>
-            } 
-          />
+          {/* Local News - Public (WordPress API) */}
+          <Route path="news" element={<NewsPage />} />
+          <Route path="news/:id" element={<NewsDetailPage />} />
+          
+          {/* Movies & Series Listing - Public (browsing open to all) */}
+          <Route path="movies" element={<MoviesPage contentType="Movie" />} />
+          <Route path="series" element={<MoviesPage contentType="Series" />} />
           <Route 
             path="movies/:id" 
             element={
@@ -210,26 +189,8 @@ const AppRoutes: React.FC = () => {
               </ProtectedRoute>
             } 
           />
-          <Route
-            path="series/:id"
-            element={
-              <ProtectedRoute>
-                <SubscriptionProtectedRoute>
-                  <SeriesDetailPage />
-                </SubscriptionProtectedRoute>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="movie/:id"
-            element={
-              <ProtectedRoute>
-                <SubscriptionProtectedRoute>
-                  <MovieDetailPage />
-                </SubscriptionProtectedRoute>
-              </ProtectedRoute>
-            }
-          />
+          <Route path="series/:id" element={<SeriesDetailPage />} />
+          <Route path="movie/:id" element={<MovieDetailPage />} />
           <Route 
             path="watch/:id" 
             element={

@@ -60,7 +60,7 @@ const ForgotPasswordPage: React.FC = () => {
   useEffect(() => {
     document.body.style.paddingTop = '0';
     return () => {
-      document.body.style.paddingTop = 'calc(56px + 35px + 0px)';
+      document.body.style.paddingTop = '';
     };
   }, []);
 

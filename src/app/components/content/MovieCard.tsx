@@ -1,98 +1,89 @@
 // src/app/components/content/MovieCard.tsx — HOME-04
+// Overlay-focused movie card — navigates to movie detail
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Play, Plus, Info, Star } from 'lucide-react';
+import { Play, Star } from 'lucide-react';
 import { MovieV2 } from '../../services/v2/MoviesV2Service';
+import { ManifestMovie } from '../../services/v2/ManifestV2Service';
+import { getImageUrl } from '../../utils/imageUtils';
 
 interface MovieCardProps {
-  movie: MovieV2;
-  /** Show episode label for series rows */
+  movie: MovieV2 | ManifestMovie;
   showEpisodeLabel?: boolean;
+}
+
+function movieDetailPath(movie: MovieV2 | ManifestMovie): string {
+  return `/watch/${movie.id}`;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie, showEpisodeLabel = false }) => {
   const [imgError, setImgError] = useState(false);
 
   const isPremium = movie.is_premium === 'Yes';
-  const isSeries = movie.type === 'Series';
-  const watchPath = isSeries ? `/series/${movie.id}` : `/watch/${movie.id}`;
+  const genre = movie.genre?.split(',')[0]?.trim();
+  const ratingDisplay = movie.rating ? String(movie.rating) : null;
+  const episodeNumber = 'episode_number' in movie ? movie.episode_number : undefined;
 
   const imageSrc = imgError
     ? '/placeholder-poster.jpg'
-    : movie.thumbnail_url || movie.image_url || '/placeholder-poster.jpg';
-
-  const ratingDisplay = movie.rating ? movie.rating.toFixed(1) : null;
+    : getImageUrl(movie.thumbnail_url || ('image_url' in movie ? movie.image_url : ''));
 
   return (
-    <div className="group relative flex-shrink-0 w-36 sm:w-44 cursor-pointer select-none">
+    <Link
+      to={movieDetailPath(movie)}
+      className="group relative cursor-pointer select-none no-underline"
+    >
       {/* Poster */}
-      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">
+      <div className="relative aspect-[2/3] rounded-lg sm:rounded-xl overflow-hidden bg-[#1a1a1e]">
         <img
           src={imageSrc}
           alt={movie.title}
           loading="lazy"
           onError={() => setImgError(true)}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
+
+        {/* Always-visible bottom gradient */}
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
         {/* Premium badge */}
         {isPremium && (
-          <span className="absolute top-2 left-2 bg-brand-gold text-black text-[10px] font-bold px-1.5 py-0.5 rounded">
-            PREMIUM
+          <span className="absolute top-2.5 left-2.5 bg-brand-gold text-black text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider shadow-lg">
+            Premium
           </span>
         )}
 
         {/* Episode label */}
-        {showEpisodeLabel && movie.episode_number && (
-          <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded">
-            EP {movie.episode_number}
+        {showEpisodeLabel && episodeNumber && (
+          <span className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded-md">
+            EP {episodeNumber}
           </span>
         )}
 
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-          <Link
-            to={watchPath}
-            className="p-2 bg-white rounded-full text-black hover:bg-gray-200 transition-colors"
-            title="Play"
-          >
-            <Play size={16} fill="currentColor" />
-          </Link>
-          <button
-            className="p-2 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors border border-white/50"
-            title="Add to watchlist"
-          >
-            <Plus size={16} />
-          </button>
-          <Link
-            to={watchPath}
-            className="p-2 bg-white/20 rounded-full text-white hover:bg-white/30 transition-colors border border-white/50"
-            title="More info"
-          >
-            <Info size={16} />
-          </Link>
+        {/* Hover play button */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="w-11 h-11 rounded-full bg-white/90 flex items-center justify-center shadow-xl shadow-black/30 transition-transform duration-300 group-hover:scale-100 scale-75">
+            <Play size={18} fill="black" className="text-black ml-0.5" />
+          </div>
         </div>
-      </div>
 
-      {/* Info below poster */}
-      <div className="mt-2 px-0.5">
-        <p className="text-white text-sm font-medium leading-tight line-clamp-1" title={movie.title}>
-          {movie.title}
-        </p>
-        <div className="flex items-center gap-2 mt-1 text-gray-400 text-xs">
-          {movie.year && <span>{movie.year}</span>}
-          {ratingDisplay && (
-            <span className="flex items-center gap-0.5 text-brand-gold">
-              <Star size={10} fill="currentColor" />
-              {ratingDisplay}
-            </span>
-          )}
-          {movie.genre && (
-            <span className="bg-gray-700 text-gray-300 px-1.5 rounded">{movie.genre.split(',')[0].trim()}</span>
-          )}
+        {/* Bottom overlay info */}
+        <div className="absolute bottom-0 left-0 right-0 p-2.5 z-10">
+          <p className="text-white text-[12px] font-semibold leading-tight line-clamp-1 mb-1">
+            {movie.title}
+          </p>
+          <div className="flex items-center gap-1.5 text-[10px]">
+            {ratingDisplay && (
+              <span className="flex items-center gap-0.5 text-brand-gold font-medium">
+                <Star size={8} fill="currentColor" /> {ratingDisplay}
+              </span>
+            )}
+            {movie.year && <span className="text-white/50">{movie.year}</span>}
+            {genre && <span className="text-white/40">{genre}</span>}
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

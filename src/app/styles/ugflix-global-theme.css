@@ -716,3 +716,178 @@ body {
 .modern-footer {
   display: none !important;
 }
+/* ===================================================================
+   PRODUCTION POLISH — added March 2026
+   Global consistency fixes for dark-first design
+   =================================================================== */
+
+/* Consistent focus ring across all interactive elements */
+*:focus-visible {
+  outline: 2px solid rgba(183, 28, 28, 0.8);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Kill Bootstrap's focus-shadow on form controls */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  box-shadow: 0 0 0 3px rgba(183, 28, 28, 0.2) !important;
+  border-color: var(--ugflix-primary) !important;
+  outline: none !important;
+}
+
+/* Ensure buttons have a pointer cursor */
+button,
+[role="button"],
+label[for] {
+  cursor: pointer;
+}
+
+/* Remove Bootstrap's light-mode form defaults that leak through */
+.form-control,
+.form-select {
+  background-color: var(--ugflix-bg-card) !important;
+  color: var(--ugflix-text-primary) !important;
+  border-color: var(--ugflix-border) !important;
+}
+
+.form-control::placeholder,
+.form-select::placeholder {
+  color: var(--ugflix-text-muted) !important;
+}
+
+/* Fix Bootstrap modals/dropdowns that render with light backgrounds */
+.dropdown-menu {
+  background-color: var(--ugflix-bg-card) !important;
+  border-color: var(--ugflix-border) !important;
+  color: var(--ugflix-text-primary) !important;
+}
+
+.dropdown-item {
+  color: var(--ugflix-text-secondary) !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--ugflix-bg-hover) !important;
+  color: var(--ugflix-text-primary) !important;
+}
+
+/* Fix Bootstrap modal backdrop / content */
+.modal-content {
+  background-color: var(--ugflix-bg-card) !important;
+  border-color: var(--ugflix-border) !important;
+  color: var(--ugflix-text-primary) !important;
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--ugflix-border) !important;
+}
+
+/* Fix Bootstrap table */
+.table {
+  color: var(--ugflix-text-primary) !important;
+}
+
+.table > :not(caption) > * > * {
+  background-color: transparent !important;
+  border-bottom-color: var(--ugflix-border) !important;
+}
+
+/* Consistent link colour across the app */
+a:not([class]) {
+  color: var(--ugflix-primary-light);
+  text-decoration: none;
+}
+
+a:not([class]):hover {
+  color: var(--ugflix-accent);
+  text-decoration: underline;
+}
+
+/* Image aspect-ratio stability — prevents layout shift */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Card base dark background */
+.card {
+  background-color: var(--ugflix-bg-card) !important;
+  border-color: var(--ugflix-border) !important;
+  color: var(--ugflix-text-primary) !important;
+}
+
+.card-header,
+.card-footer {
+  background-color: var(--ugflix-bg-secondary) !important;
+  border-color: var(--ugflix-border) !important;
+}
+
+/* Badge overrides */
+.badge {
+  font-weight: 600;
+}
+
+/* Remove extra margins Bootstrap adds to headings inside cards */
+.card-body h1,
+.card-body h2,
+.card-body h3,
+.card-body h4,
+.card-body h5,
+.card-body h6 {
+  color: var(--ugflix-text-primary);
+}
+
+/* Pagination dark styling */
+.pagination .page-link {
+  background-color: var(--ugflix-bg-card) !important;
+  border-color: var(--ugflix-border) !important;
+  color: var(--ugflix-text-secondary) !important;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--ugflix-primary) !important;
+  border-color: var(--ugflix-primary) !important;
+  color: #fff !important;
+}
+
+.pagination .page-link:hover {
+  background-color: var(--ugflix-bg-hover) !important;
+  color: var(--ugflix-text-primary) !important;
+}
+
+/* Spinner color */
+.spinner-border {
+  border-color: var(--ugflix-primary);
+  border-right-color: transparent;
+}
+
+/* ===================================================================
+   RESPONSIVE TYPOGRAPHY SCALE
+   Fluid type using clamp — no rem-shift hacks
+   =================================================================== */
+
+/* Body text stays at 14px (set in index.html) across all sizes.
+   Only display headings scale up on wider screens. */
+
+h1 { font-size: clamp(1.6rem, 4vw, 2.5rem); }
+h2 { font-size: clamp(1.3rem, 3vw, 1.875rem); }
+h3 { font-size: clamp(1.1rem, 2.5vw, 1.5rem); }
+h4 { font-size: clamp(1rem, 2vw, 1.25rem); }
+
+/* ===================================================================
+   BOTTOM-NAV SAFE-AREA PADDING for main content
+   Applied as a utility class for pages that need it
+   =================================================================== */
+.pb-safe-nav {
+  padding-bottom: calc(65px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 992px) {
+  .pb-safe-nav {
+    padding-bottom: 0;
+  }
+}

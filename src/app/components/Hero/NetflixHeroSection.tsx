@@ -652,6 +652,8 @@ const NetflixHeroSection: React.FC<NetflixHeroSectionProps> = ({
               playsInline
               loop
               preload="metadata"
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
               onClick={handleVideoClick}
               style={{ cursor: 'pointer' }}
             >
