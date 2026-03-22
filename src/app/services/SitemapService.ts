@@ -19,7 +19,7 @@ export interface SitemapData {
  * Handles products, categories, and static pages
  */
 export class SitemapService {
-  private static readonly BASE_URL = 'https://ugflix.com';
+  private static readonly BASE_URL = 'https://movies.ugnews24.info';
   private static readonly MAX_URLS_PER_SITEMAP = 50000; // Google's limit
 
   /**

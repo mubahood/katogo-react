@@ -4,13 +4,14 @@
 <head>
   <!-- Required Meta Tags -->
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
   <meta name="theme-color" content="#B71C1C" /> <!-- Matches UgFlix brand color -->
   <meta name="description"
     content="UgFlix is your one-stop electronics shop offering top-brand gadgets, devices, and accessories at unbeatable prices. Discover great deals on laptops, smartphones, and more." />
   <meta name="keywords"
     content="UgFlix, electronics, online store, e-commerce, gadgets, devices, laptops, smartphones, accessories, tech, deals, Uganda" />
   <meta name="robots" content="index, follow" />
+  <meta name="referrer" content="no-referrer" />
   <meta name="author" content="UgFlix" />
   
   <!-- PWA Meta Tags -->
@@ -21,6 +22,12 @@
   <meta name="application-name" content="UgFlix" />
   <meta name="msapplication-TileColor" content="#B71C1C" />
   <meta name="msapplication-tap-highlight" content="no" />
+  <!-- iOS Splash Screens -->
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="/icons/splash-1290x2796.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" href="/icons/splash-1179x2556.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/icons/splash-1170x2532.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="/icons/splash-1125x2436.png" />
+  <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" href="/icons/splash-828x1792.png" />
   
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
@@ -44,7 +51,7 @@
   <title>UgFlix - Your One-Stop Electronics Shop</title>
 
   <!-- Canonical URL -->
-  <link rel="canonical" href="https://www.ugflix.com/" />
+  <link rel="canonical" href="https://movies.ugnews24.info/" />
 
   <!-- Open Graph Tags -->
   <meta property="og:title" content="UgFlix - Your One-Stop Electronics Shop" />
@@ -52,7 +59,7 @@
     content="Browse and buy the latest electronics and gadgets from UgFlix. Shop now and get fast shipping on laptops, smartphones, accessories, and more." />
   <meta property="og:image" content="/media/logos/logo.png" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://www.ugflix.com/" />
+  <meta property="og:url" content="https://movies.ugnews24.info/" />
 
   <!-- Favicon -->
   <link rel="shortcut icon" href="/media/logos/logo.ico" />
@@ -64,7 +71,25 @@
   <style>
     html {
       font-size: 14px;
-      /* Adjust if you want slightly bigger or smaller text */
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    /* Native app feel — remove browser chrome defaults */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    /* Allow text selection on text elements */
+    p, h1, h2, h3, h4, h5, h6, span, a {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    body {
+      overscroll-behavior: none; /* prevent pull-to-refresh on root */
     }
 
     body,
@@ -87,14 +112,15 @@
       padding: 0;
     }
   </style>
-  <script type="module" crossorigin src="/assets/index-DfDU3iyt.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/vendor-react-CSr-5IoM.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-bootstrap-ChUyj-zl.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-redux-DhM9Zidd.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-router-D8gtpe-b.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-query-BMKTzOUJ.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-ui-DDI46p9o.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-C9qOUE3-.css">
+  <script type="module" crossorigin src="/assets/js/index-yw4mE2t8.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/js/vendor-bootstrap-CfDeNtjF.js">
+  <link rel="modulepreload" crossorigin href="/assets/js/vendor-react-DOqGolQY.js">
+  <link rel="modulepreload" crossorigin href="/assets/js/vendor-redux-CT3Oyiy4.js">
+  <link rel="modulepreload" crossorigin href="/assets/js/vendor-router-DeI25Nxo.js">
+  <link rel="modulepreload" crossorigin href="/assets/js/vendor-query-ByoxG09X.js">
+  <link rel="modulepreload" crossorigin href="/assets/js/vendor-sentry-DNTABgk6.js">
+  <link rel="modulepreload" crossorigin href="/assets/js/vendor-icons-D6OA3OCb.js">
+  <link rel="stylesheet" crossorigin href="/assets/css/index-DVWSZGQp.css">
 </head>
 
 <body id="kt_body" class="page-loading">

@@ -1,175 +1,137 @@
-// Service Worker for PWA functionality
-const CACHE_NAME = 'ugflix-v2.0.0';
-const urlsToCache = [
+// Service Worker — UgFlix PWA
+// Hosted at: https://movies.ugnews24.info
+
+const CACHE_VERSION = 'v2.1.0';
+const STATIC_CACHE  = `ugflix-static-${CACHE_VERSION}`;
+const IMAGE_CACHE   = `ugflix-images-${CACHE_VERSION}`;
+const API_CACHE     = `ugflix-api-${CACHE_VERSION}`;
+
+const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/offline.html',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];
 
-// Install event - cache essential resources
+// ── Install ─────────────────────────────────────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('✅ Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((error) => {
-        console.error('❌ Cache install failed:', error);
-      })
+    caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_ASSETS))
   );
-  // Force waiting service worker to become active
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// ── Activate ─────────────────────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('🗑️ Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((k) => ![STATIC_CACHE, IMAGE_CACHE, API_CACHE].includes(k))
+          .map((k) => caches.delete(k))
+      )
+    )
   );
-  // Take control of all pages immediately
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// ── Fetch ─────────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
+  const { request } = event;
+  const url = new URL(request.url);
 
-  // Network-first strategy for API calls
-  if (event.request.url.includes('/api/')) {
+  // Skip non-GET and cross-origin except our API
+  if (request.method !== 'GET') return;
+
+  // API calls — network first, no cache
+  if (url.hostname === 'katogo.ugnews24.info') {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Clone the response before caching
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
-        })
-        .catch(() => {
-          // Fallback to cache if network fails
-          return caches.match(event.request);
-        })
+      fetch(request).catch(() => new Response('{"error":"offline"}', {
+        headers: { 'Content-Type': 'application/json' }
+      }))
     );
     return;
   }
 
-  // Cache-first strategy for static assets
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
+  // Skip other cross-origin requests
+  if (url.origin !== self.location.origin) return;
 
-        return fetch(event.request).then((response) => {
-          // Don't cache if not a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-
-          return response;
-        });
+  // Images — cache first, then network, store in image cache
+  if (request.destination === 'image') {
+    event.respondWith(
+      caches.open(IMAGE_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        const response = await fetch(request).catch(() => null);
+        if (response?.ok) cache.put(request, response.clone());
+        return response ?? new Response('', { status: 404 });
       })
-      .catch((error) => {
-        console.error('❌ Fetch failed:', error);
-        // Return offline page if available
-        return caches.match('/offline.html');
-      })
-  );
-});
-
-// Background sync
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-data') {
-    event.waitUntil(syncData());
+    );
+    return;
   }
-});
 
-async function syncData() {
-  // Implement your sync logic here
-  console.log('🔄 Background sync triggered');
-}
+  // Navigation (HTML pages) — network first with offline fallback
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() =>
+        caches.match('/offline.html') ?? caches.match('/index.html')
+      )
+    );
+    return;
+  }
 
-// Push notification
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
+  // JS/CSS assets (hashed filenames) — cache first, then network
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      caches.open(STATIC_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        const response = await fetch(request);
+        if (response.ok) cache.put(request, response.clone());
+        return response;
+      })
+    );
+    return;
+  }
 
-  const data = event.data.json();
-  const options = {
-    body: data.body || 'New notification from UgFlix',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
-    vibrate: [200, 100, 200],
-    data: {
-      url: data.url || '/',
-    },
-    actions: [
-      {
-        action: 'open',
-        title: 'Open',
-      },
-      {
-        action: 'close',
-        title: 'Close',
-      },
-    ],
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'UgFlix', options)
+  // Default — stale-while-revalidate for static files
+  event.respondWith(
+    caches.open(STATIC_CACHE).then(async (cache) => {
+      const cached = await cache.match(request);
+      const fetchPromise = fetch(request).then((response) => {
+        if (response.ok) cache.put(request, response.clone());
+        return response;
+      });
+      return cached ?? fetchPromise;
+    })
   );
 });
 
-// Notification click
+// ── Push Notifications ───────────────────────────────────────────────────────
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? { title: 'UgFlix', body: 'New update available!' };
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/icon-96x96.png',
+      vibrate: [100, 50, 100],
+      data: { url: data.url ?? '/' },
+    })
+  );
+});
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
-  if (event.action === 'open' || !event.action) {
-    const urlToOpen = event.notification.data?.url || '/';
-    
-    event.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true })
-        .then((windowClients) => {
-          // Check if there is already a window/tab open with the target URL
-          for (let i = 0; i < windowClients.length; i++) {
-            const client = windowClients[i];
-            if (client.url === urlToOpen && 'focus' in client) {
-              return client.focus();
-            }
-          }
-          // If not, open a new window/tab with the target URL
-          if (clients.openWindow) {
-            return clients.openWindow(urlToOpen);
-          }
-        })
-    );
-  }
-});
-
-// Message handling (for communication with client)
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  event.waitUntil(
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      const url = event.notification.data?.url ?? '/';
+      for (const client of clientList) {
+        if (client.url === url && 'focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
+  );
 });

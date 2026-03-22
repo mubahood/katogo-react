@@ -75,7 +75,7 @@ const PWAInstallPrompt: React.FC = () => {
           </div>
           <div>
             <h3 className="pwa-sheet-title">Install UgFlix</h3>
-            <p className="pwa-sheet-domain">ugflix.com</p>
+            <p className="pwa-sheet-domain">movies.ugnews24.info</p>
           </div>
         </div>
 

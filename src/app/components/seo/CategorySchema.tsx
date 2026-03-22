@@ -23,7 +23,7 @@ const CategorySchema: React.FC<CategorySchemaProps> = ({
   category, 
   businessInfo = {
     name: "UgFlix",
-    url: "https://ugflix.com"
+    url: "https://movies.ugnews24.info"
   }
 }) => {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';

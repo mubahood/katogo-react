@@ -47,7 +47,7 @@ export interface MetaTagsConfig {
  * @returns Complete meta tags configuration
  */
 export const generateMetaTags = (config: SEOConfig): MetaTagsConfig => {
-  const baseUrl = 'https://ugflix.com'; // Update with your actual domain
+  const baseUrl = 'https://movies.ugnews24.info'; // Update with your actual domain
   const defaultImage = '/images/ugflix-og-image.jpg'; // Update with your default OG image
   
   return {
@@ -115,7 +115,7 @@ export const generateProductMetaTags = (product: {
     description: productDescription,
     keywords: productKeywords,
     image: product.image,
-    url: `https://ugflix.com/products/${product.id}`,
+    url: `https://movies.ugnews24.info/products/${product.id}`,
     type: 'product',
     price: product.price_1.toString(),
     currency: 'UGX',
@@ -151,7 +151,7 @@ export const generateCategoryMetaTags = (category: {
     title: categoryTitle,
     description: categoryDescription,
     keywords: categoryKeywords,
-    url: `https://ugflix.com/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`,
+    url: `https://movies.ugnews24.info/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}`,
     type: 'website'
   });
 };
@@ -165,7 +165,7 @@ export const generateHomePageMetaTags = (): MetaTagsConfig => {
     title: 'UgFlix - Your One-Stop Electronics Shop in Uganda | Best Prices Online',
     description: 'Shop the best electronics, gadgets, and accessories in Uganda. Fast delivery, competitive prices, and quality products. Mobile phones, computers, audio equipment, and more.',
     keywords: 'electronics uganda, online shopping uganda, mobile phones, computers, gadgets, audio equipment, ugflix, best prices uganda',
-    url: 'https://ugflix.com',
+    url: 'https://movies.ugnews24.info',
     type: 'website'
   });
 };
@@ -184,7 +184,7 @@ export const generateSearchMetaTags = (query: string, resultCount: number): Meta
     title: searchTitle,
     description: searchDescription,
     keywords: `${query}, search results, electronics uganda, ugflix`,
-    url: `https://ugflix.com/search?q=${encodeURIComponent(query)}`,
+    url: `https://movies.ugnews24.info/search?q=${encodeURIComponent(query)}`,
     type: 'website'
   });
 };

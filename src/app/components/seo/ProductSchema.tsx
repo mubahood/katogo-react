@@ -41,8 +41,8 @@ const ProductSchema: React.FC<ProductSchemaProps> = ({
   product, 
   businessInfo = {
     name: "UgFlix",
-    url: "https://ugflix.com",
-    logo: "https://ugflix.com/logo.png"
+    url: "https://movies.ugnews24.info",
+    logo: "https://movies.ugnews24.info/logo.png"
   }
 }) => {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
