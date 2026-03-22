@@ -219,7 +219,7 @@ const MainNavV2: React.FC = () => {
 
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <img src="/media/logos/logo-2.svg" alt="UgFlix" className="h-7 w-auto" style={{ maxWidth: 140 }} />
+            <img src="/media/logos/logo.png" alt="UgFlix" className="h-8 w-8 object-contain flex-shrink-0" />
           </Link>
 
           {/* ── Desktop links ────────────────────────────────────────────── */}

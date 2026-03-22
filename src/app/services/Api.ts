@@ -203,11 +203,17 @@ api.interceptors.request.use(
       api.defaults.headers.common['logged_in_user_id'] = u.id.toString();
       config.headers['logged_in_user_id'] = u.id.toString();
     }
-    
-    // Add platform type to body for POST requests (like mobile app)
-    // Only add if data is not FormData (FormData is handled in http_post)
+
+    // Identify this as the WEB platform on every request
+    api.defaults.headers.common['X-App-Type'] = 'web';
+    api.defaults.headers.common['X-Platform-Type'] = 'web';
+    config.headers['X-App-Type'] = 'web';
+    config.headers['X-Platform-Type'] = 'web';
+
+    // Add platform/app type to body for POST requests
     if (config.method === 'post' && config.data && !(config.data instanceof FormData)) {
       config.data.platform_type = 'web';
+      config.data.app_type = 'web';
     }
     
     return config;
